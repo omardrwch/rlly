@@ -20,15 +20,9 @@ int main(void)
             
     */
 
-    mdp::Chain mdp(20);
+    env::Chain mdp(20);
     cout << mdp.id << endl << endl;
-
     int max_t = 15;
-
-    // Setting up the history, with two extra variables stored.
-    mdp.history.reserve_mem(max_t, 2);
-    std::vector<std::string> names = {"extra_var_1", "extra_var_2"};
-    mdp.history.set_names(names);
 
     for(int i = 0; i < max_t; i++)
     {
@@ -37,28 +31,12 @@ int main(void)
         std::vector<double> extra_vars = {0.001, 0.002}; // values of extra variables
 
         // take step
-        mdp::StepResult<int> step_result = mdp.step(action);
-
-        // append to history
-        mdp.history.append(state, action, step_result.reward, step_result.next_state, extra_vars);
-
+        auto step_result = mdp.step(action);
         if (step_result.done) break;
+
+        std::cout << "state = " << state << ", action = " << action << ", reward = " << step_result.reward 
+                  << ", next state = " <<   step_result.next_state << std::endl;
     }
-
-
-    // If we clear the history, nothing is printed, of course :) 
-    // mdp.history.clear();
-    // std::cout << "states size: " << mdp.history.states.size() << std::endl;
-    // std::cout << "actions size: " << mdp.history.actions.size() << std::endl;
-    // std::cout << "rewards size: " << mdp.history.rewards.size() << std::endl;
-    // std::cout << "next states size: " << mdp.history.next_states.size() << std::endl;
-
-    // print history
-    mdp.history.print(max_t);
-
-    // save history in csv file
-    mdp.history.to_csv("data/temp.csv");
-
     
     /* 
     
@@ -67,25 +45,18 @@ int main(void)
     
     
      */
+    env::MountainCar mountain_car;
+    std::cout << mountain_car.id << std::endl << std::endl;
 
-    mdp::MountainCar env;
-    std::cout << env.id << std::endl;
-
-    env.history.reserve_mem(max_t, 0);
-
-    std::vector<double> cstate = env.reset();
+    std::vector<double> cstate = mountain_car.reset();
     for(int i = 0; i < max_t; i++)
     {
-        cstate = env.state;
-        int action = env.action_space.sample();
-        mdp::StepResult<std::vector<double>> step_result = env.step(action);
-        env.history.append(cstate, action, step_result.reward, step_result.next_state);
+        cstate = mountain_car.state;
+        int action = mountain_car.action_space.sample();
+        auto step_result = mountain_car.step(action);
+        std::cout << "state = ";
+        utils::vec::printvec(cstate); 
     }
-
-
-    // print history
-    env.history.print(max_t);
-
     return 0;
 }
 

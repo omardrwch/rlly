@@ -1,2 +1,2 @@
 test/catch.hpp linguist-vendored
-single_header/acme.py linguist-vendored
+generate_header/acme.py linguist-vendored

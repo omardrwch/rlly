@@ -37,6 +37,7 @@ public:
 
     int n_nodes = 0;
     int n_edges = 0;
+    int time = 0;
     vec_2d x_values;  // shape (n_nodes, time)
     vec_2d y_values;  // shape (n_nodes, time)
     vec_2d edges;     // shape (n_edges, 2)
@@ -55,6 +56,10 @@ void TimeGraph2D::set_nodes(vec_2d _x_values, vec_2d _y_values)
     x_values = _x_values;
     y_values = _y_values;
     n_nodes = _x_values.size(); 
+    if (n_nodes > 0)
+    {
+        time = _x_values[0].size();
+    }
 }
 
 void TimeGraph2D::set_edges(vec_2d _edges)
@@ -87,6 +92,9 @@ private:
     // Graph to be rendered
     static TimeGraph2D time_graph_2d;
 
+    // Time counter 
+    static int time_count;
+
     // Callback function, handler for window re-paint
     static void display();
 
@@ -111,7 +119,6 @@ public:
     void set_graph(TimeGraph2D _time_graph_2d);
 };
 
-TimeGraph2D GraphRender::time_graph_2d;
 
 void GraphRender::set_graph(TimeGraph2D _time_graph_2d)
 {
@@ -145,13 +152,13 @@ void GraphRender::display()
     glClearColor(background_color[0], background_color[1], background_color[2], 1.0f); // Set background color to black and opaque
     glClear(GL_COLOR_BUFFER_BIT);         // Clear the color buffer (background)
  
-    // Draw a node
-    // draw_node(-0.25, 0.5);
-
     // Display graph
     if (time_graph_2d.n_nodes != 0 )
     {
-        int time = 0;        
+        int time = 0;
+        if (time_graph_2d.time > 0) time = time_count % time_graph_2d.time;
+
+        // std::cout << "timeeeee  " << time_graph_2d.time << " must be >= " << time_count % time_graph_2d.time << std::endl;
         // Edges
         if (time_graph_2d.n_edges != 0)
         {
@@ -173,7 +180,8 @@ void GraphRender::display()
         }
     }
    
-    glFlush();  // Render now
+    time_count += 1; // Increment time 
+    glFlush();       // Render now
 }
 
 int GraphRender::run_graphics()

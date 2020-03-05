@@ -29,31 +29,39 @@ public:
     typedef std::vector<std::vector<double>> vec_2d;
 
     TimeGraph2D(){};
-    TimeGraph2D(vec_2d x_values, vec_2d y_values);
+    TimeGraph2D(vec_2d x_values, vec_2d y_values, vec_2d _edges);
     ~TimeGraph2D(){};
 
-    void set_data(vec_2d x_values, vec_2d y_values);
+    void set_nodes(vec_2d _x_values, vec_2d _y_values);
+    void set_edges(vec_2d _edges);
 
     int n_nodes = 0;
+    int n_edges = 0;
     vec_2d x_values;  // shape (n_nodes, time)
     vec_2d y_values;  // shape (n_nodes, time)
+    vec_2d edges;     // shape (n_edges, 2)
 };
 
-TimeGraph2D::TimeGraph2D(vec_2d _x_values, vec_2d _y_values)
+TimeGraph2D::TimeGraph2D(vec_2d _x_values, vec_2d _y_values, vec_2d _edges)
 {
-    set_data(_x_values, _y_values);
+    set_nodes(_x_values, _y_values);
 }
 
-void TimeGraph2D::set_data(vec_2d _x_values, vec_2d _y_values)
+void TimeGraph2D::set_nodes(vec_2d _x_values, vec_2d _y_values)
 {
     /**
      * @todo throw exception if x_values.size() != y_values.size()
      */
-    n_nodes = x_values.size(); 
     x_values = _x_values;
     y_values = _y_values;
+    n_nodes = _x_values.size(); 
 }
 
+void TimeGraph2D::set_edges(vec_2d _edges)
+{
+    edges = _edges;
+    n_edges = _edges.size();
+}
 
 class GraphRender
 {
@@ -65,13 +73,16 @@ private:
     static const int window_size = 640;
 
     // Node size
-    static constexpr float node_size = 0.025f;
+    static constexpr float node_size = 0.02f;
 
     // Node color 
     static constexpr float node_color[3] = {0.0, 0.0, 0.0}; 
 
+    // Edge color
+    static constexpr float edge_color[3] = {0.75, 0.25, 0.25}; 
+
     // Background color
-    static constexpr float background_color[3] = {0.5, 0.5, 0.5}; 
+    static constexpr float background_color[3] = {0.75, 0.75, 0.75}; 
 
     // Graph to be rendered
     static TimeGraph2D time_graph_2d;
@@ -81,6 +92,9 @@ private:
 
     // Draw a node
     static void draw_node(float node_x, float node_y);
+
+    // Draw an edge
+    static void draw_edge(float x0, float y0, float x1, float y1);
 
 public:
     GraphRender(){};
@@ -104,6 +118,15 @@ void GraphRender::set_graph(TimeGraph2D _time_graph_2d)
     time_graph_2d = _time_graph_2d;
 }
 
+void GraphRender::draw_edge(float x0, float y0, float x1, float y1)
+{
+    glBegin(GL_LINES); 
+        glColor3f(edge_color[0], edge_color[1], edge_color[2]); 
+        glVertex2f( x0,  y0);
+        glVertex2f( x1,  y1);
+    glEnd();
+}
+
 void GraphRender::draw_node(float node_x, float node_y)
 {
     // Draw a square centered at origin
@@ -123,12 +146,31 @@ void GraphRender::display()
     glClear(GL_COLOR_BUFFER_BIT);         // Clear the color buffer (background)
  
     // Draw a node
-    draw_node(-0.25, 0.5);
+    // draw_node(-0.25, 0.5);
 
-    // Check if there is a graph to be shown
-    if (time_graph_2d.n_nodes == 0 )
+    // Display graph
+    if (time_graph_2d.n_nodes != 0 )
     {
-        std::cout << "No graph!" << std::endl;
+        int time = 0;        
+        // Edges
+        if (time_graph_2d.n_edges != 0)
+        {
+            for(int ee = 0; ee < time_graph_2d.n_edges; ee++)
+            {
+                float x0 = time_graph_2d.x_values[time_graph_2d.edges[ee][0]][time];
+                float y0 = time_graph_2d.y_values[time_graph_2d.edges[ee][0]][time];
+
+                float x1 = time_graph_2d.x_values[time_graph_2d.edges[ee][1]][time];
+                float y1 = time_graph_2d.y_values[time_graph_2d.edges[ee][1]][time];
+
+                draw_edge(x0, y0, x1, y1);
+            }
+        }
+        // Nodes
+        for(int nn = 0; nn < time_graph_2d.n_nodes; nn++)
+        {
+            draw_node( time_graph_2d.x_values[nn][time], time_graph_2d.y_values[nn][time]);
+        }
     }
    
     glFlush();  // Render now

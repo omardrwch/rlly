@@ -41,6 +41,9 @@ docs/
 single_header/__pycache__
 single_header/all_files
 
+# Development folder
+dev/
+
 # Other
 .vscode/ 
 examples/.ipynb_checkpoints/

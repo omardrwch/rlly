@@ -9,6 +9,7 @@ project(RLLY)
 
 # enable_testing()
 add_subdirectory(rlly)
+add_subdirectory(rlly_rendering)
 add_subdirectory(examples)
 add_subdirectory(test)
 

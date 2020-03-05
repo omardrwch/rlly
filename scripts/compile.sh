@@ -2,6 +2,6 @@
 TARGET=$1
 mkdir -p build
 cd build 
-cmake ..
+cmake .. 
 make $TARGET
 cd ..

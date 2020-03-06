@@ -10,7 +10,9 @@
 #include <GL/freeglut.h> 
 #include <iostream>
 #include <vector>
+#include <list>
 #include "timegraph2d.h"
+#include "polygon2d.h"
 
 namespace rlly
 {
@@ -21,7 +23,7 @@ class GraphRender
 {
 private:
     // Window refresh inteval (in milliseconds)
-    static const int refresh_interval = 100; 
+    static const int refresh_interval = 50; 
 
     // Window size (in pixels)
     static const int window_size = 640;
@@ -37,6 +39,9 @@ private:
 
     // Background color
     static constexpr float background_color[3] = {0.75, 0.75, 0.75}; 
+
+    // Backgroud image (represented by a list of 2D polygons)
+    static std::list<Polygon2D> background;
 
     // Graph to be rendered
     static TimeGraph2D time_graph_2d;
@@ -59,6 +64,9 @@ private:
     // Draw an edge
     static void draw_edge(float x0, float y0, float x1, float y1);
 
+    // Draw a polygon
+    static void draw_polygon(Polygon2D polygon);
+
 public:
     GraphRender(){};
     ~GraphRender(){};
@@ -72,6 +80,12 @@ public:
      * Set graph to be rendered
      */
     void set_graph(TimeGraph2D _time_graph_2d);
+
+    /**
+     * Set background
+     */
+    void set_background(std::list<Polygon2D> _background);
+
 };
 
 

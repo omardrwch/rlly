@@ -9,6 +9,7 @@
 #include <cmath>
 #include "rlly.hpp"
 #include "render.h"
+#include "polygon2d.h"
 
 
 int main()
@@ -39,6 +40,19 @@ int main()
     graph.set_nodes(x_values, y_values);
     graph.set_edges(edges);
     grender.set_graph(graph);
+
+    /**
+     * Define background
+    */ 
+    std::vector<std::vector<float>> vertices1 = {{0.5, 0.5}, 
+                                                 {0.5, -0.5},
+                                                 {0.0, 0.0}};
+    std::vector<float> color1 = {0.5, 0.75, 0.5};
+    Polygon2D polygon1 = {vertices1, color1};
+
+    std::list<Polygon2D> background = {polygon1};
+
+    grender.set_background(background);
 
     /**
      * Render graph

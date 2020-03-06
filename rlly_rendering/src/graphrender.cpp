@@ -1,12 +1,15 @@
 #include "graphrender.h"
 
-
 namespace rlly
 {
 namespace render
 {
 
 TimeGraph2D GraphRender::time_graph_2d;
+
+//
+
+std::list<Polygon2D> GraphRender::background;
 
 // 
 
@@ -19,7 +22,28 @@ void GraphRender::set_graph(TimeGraph2D _time_graph_2d)
     time_graph_2d = _time_graph_2d;
 }
 
+//
+
+void GraphRender::set_background(std::list<Polygon2D> _background)
+{
+    background = _background;
+}
+
 // 
+
+void GraphRender::draw_polygon(Polygon2D polygon)
+{
+    int n_vertices = polygon.vertices.size();
+    glBegin(GL_POLYGON);
+        glColor3f(polygon.color[0], polygon.color[1], polygon.color[2]);
+        for(int ii = 0; ii < n_vertices; ii++)
+        {
+            glVertex2f( polygon.vertices[ii][0], polygon.vertices[ii][1]);
+        }
+    glEnd();
+}
+
+//
 
 void GraphRender::draw_edge(float x0, float y0, float x1, float y1)
 {
@@ -66,6 +90,14 @@ void GraphRender::display()
     // Set background color (clear background)
     glClearColor(background_color[0], background_color[1], background_color[2], 1.0f); 
     glClear(GL_COLOR_BUFFER_BIT);    
+
+    // Draw background
+    for(auto p_polygon = background.begin(); 
+             p_polygon != background.end();
+             ++p_polygon)
+    {
+        draw_polygon(*p_polygon);
+    }
 
     // Display graph
     if (time_graph_2d.n_nodes != 0 )

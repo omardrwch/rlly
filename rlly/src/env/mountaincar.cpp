@@ -33,6 +33,10 @@ MountainCar::MountainCar()
     state.push_back(0);
 
     id = "MountainCar";
+
+    // Graph rendering is enabled for MountainCar
+    graph_rendering_n_nodes = 1;
+    graph_rendering_enabled = true;
 }
 
 std::vector<double> MountainCar::reset()
@@ -57,8 +61,10 @@ StepResult<std::vector<double>> MountainCar::step(int action)
     v = utils::clamp(v, lo[velocity], hi[velocity]);
     p += v;
     p = utils::clamp(p, lo[position], hi[position]);
-    if ((abs(p-lo[position])<1e-10) && (v<0)) v = 0;
-
+    if ((std::abs(p-lo[position])<1e-10) && (v<0))
+    { 
+        v = 0;
+    }
     bool done = is_terminal(state);
     double reward = 0.0;
     if (done) reward = 1.0;
@@ -74,6 +80,22 @@ bool MountainCar::is_terminal(std::vector<double> state)
 {
     return ((state[position] >= goal_position) && (state[velocity]>=goal_velocity));
 }
+
+
+std::vector<std::vector<float>> MountainCar::get_nodes_for_graph_render(std::vector<double> state_var)
+{
+    std::vector<std::vector<float>> nodes = {{0.0, 0.0}};
+    float y = std::sin(3*state_var[position])*0.45 + 0.55;
+    float x = state_var[position];
+    nodes[0][0] = (10.0/9.0)*x + 1.0/3.0 ;
+    nodes[0][1] = y;
+
+    // std::cout << "nodes_xy = " << x << ", " << y << std::endl;
+
+    return nodes;
+}
+
+
 
 }  // namespace env
 }  // namespace rlly

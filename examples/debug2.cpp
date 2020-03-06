@@ -1,6 +1,6 @@
 /*
 
-    There is nothing important in this file. I use this just to test a few things :)
+    bash scripts/compile.sh debug2 && ./build/examples/debug2
 
 */
 
@@ -8,7 +8,9 @@
 #include <random>
 #include <vector>
 #include <cmath>
-#include "rlly.hpp"
+#include "env.h"
+#include "utils.h"
+#include "space.h"
 
 using namespace std;
 using namespace rlly;

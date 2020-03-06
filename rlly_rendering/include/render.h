@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Classes for rendering the environments using freeglut.
+ * @brief Headers for rendering the environments using freeglut.
  * @details Based on the OpenGL tutorial at https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_Introduction.html 
  */
 
@@ -14,6 +14,7 @@
 #include "timegraph2d.h"
 #include "graphrender.h"
 #include "polygon2d.h"
+#include "renderenv.h"
 
 namespace rlly
 {

@@ -96,7 +96,35 @@ public:
         }
         
     }; 
+    
+    /*
 
+        Methods and attributes used for graph rendering
+
+    */
+
+    /**
+     * Set to true if the environment supports graph rendering.
+     * To support graph rendering, the derived class must:
+     *     - set graph_rendering_enabled to true
+     *     - define the number of nodes n_nodes
+     *     - implement the method get_nodes_for_graph_render()
+     *     - implement the method get_edges_for_graph_render()
+     */
+    bool graph_rendering_enabled = false;
+
+    /**
+     * Number of nodes for graph rendering.
+     * Set to -1 if not applicable
+     */
+    int graph_rendering_n_nodes = -1;
+    
+    /**
+     * Return [(x_1, y_1), ..., (x_n, y_n)] representation of the state, where x_i and y_i are in [0, 1]
+     * and n is the number of nodes representing the state
+     */
+    virtual std::vector<std::vector<float>> get_nodes_for_graph_render(S state_var) {return std::vector<std::vector<float>>();};
+    virtual std::vector<float> get_edges_for_graph_render(){return std::vector<float>();};
 }; 
 }  // namespace env
 }  // namespace rlly

@@ -31,6 +31,7 @@ namespace env
  */
 class MountainCar: public Env<std::vector<double>, int>
 {
+    
 public:
     /**
      * Indices of position and velocity in the state vector.
@@ -53,6 +54,17 @@ public:
     *  Action space
     */
     spaces::Discrete action_space;
+
+    /**
+     * Return (x, y) position of the car, normalized to [0, 1]
+     */
+    std::vector<std::vector<float>> get_nodes_for_graph_render(std::vector<double> state_var);
+
+    /**
+     * Returns empty vector
+     */ 
+    std::vector<float> get_edges_for_graph_render() {return std::vector<float>();}; 
+
 
 protected:
     /**

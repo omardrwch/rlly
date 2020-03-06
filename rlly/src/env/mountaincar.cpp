@@ -87,12 +87,54 @@ std::vector<std::vector<float>> MountainCar::get_nodes_for_graph_render(std::vec
     std::vector<std::vector<float>> nodes = {{0.0, 0.0}};
     float y = std::sin(3*state_var[position])*0.45 + 0.55;
     float x = state_var[position];
-    nodes[0][0] = (10.0/9.0)*x + 1.0/3.0 ;
-    nodes[0][1] = y;
+    nodes[0][0] = (10.0/9.0)*x + 1.0/3.0;
+    nodes[0][1] = y*0.75;
 
     // std::cout << "nodes_xy = " << x << ", " << y << std::endl;
 
     return nodes;
+}
+
+std::list<utils::render::Polygon2D> MountainCar::get_background_for_render()
+{
+    typedef utils::render::Polygon2D Polygon2D;
+    std::vector<std::vector<float>> vertices1 = {{-1.0, -1.0}};
+
+    // Mountain
+    int n_points = 100;
+    double range = observation_space.high[0] - observation_space.low[0];
+    double eps = range/(n_points-1.0);
+    for(int ii = 0; ii < n_points; ii++)
+    {
+        double x = observation_space.low[0] + ii*eps;
+        double y = std::sin(3*x)*0.45 + 0.55;
+        y *= 0.75;
+        x = (10.0/9.0)*x + 1.0/3.0 ;
+        std::vector<float> vertex;
+        vertex.push_back(x);
+        vertex.push_back(y);
+        vertices1.push_back(vertex);
+        // std::cout << x << ", " << y << std::endl;
+    }
+    std::vector<float> vertex = {1.0, -1.0};
+    vertices1.push_back(vertex);
+
+    // Flag
+    float goal_x = (10.0/9.0)*goal_position + 1.0/3.0;
+    float goal_y = std::sin(3*goal_position)*0.45 + 0.55;
+    goal_y *= 0.75;  
+    std::vector<std::vector<float>> vertices2 = {{goal_x, goal_y}, 
+                                                 {goal_x+0.025f, goal_y+0.075f},
+                                                 {goal_x-0.025f, goal_y+0.075f}}; 
+
+    std::vector<float> color1 = {0.6, 0.3, 0.0};
+    std::vector<float> color2 = {0.0, 0.5, 0.0};
+    Polygon2D polygon1 = {vertices1, color1};
+    Polygon2D polygon2 = {vertices2, color2};
+
+
+    std::list<Polygon2D> background = {polygon1, polygon2};
+    return background;
 }
 
 

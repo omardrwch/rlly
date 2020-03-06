@@ -5,7 +5,7 @@ namespace rlly
 namespace render
 {
 
-TimeGraph2D::TimeGraph2D(vec_2d _x_values, vec_2d _y_values, vec_2d _edges)
+TimeGraph2D::TimeGraph2D(vec_2d _x_values, vec_2d _y_values, ivec_2d _edges)
 {
     set_nodes(_x_values, _y_values);
 }
@@ -24,7 +24,7 @@ void TimeGraph2D::set_nodes(vec_2d _x_values, vec_2d _y_values)
     }
 }
 
-void TimeGraph2D::set_edges(vec_2d _edges)
+void TimeGraph2D::set_edges(ivec_2d _edges)
 {
     edges = _edges;
     n_edges = _edges.size();

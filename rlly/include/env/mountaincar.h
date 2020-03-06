@@ -56,14 +56,20 @@ public:
     spaces::Discrete action_space;
 
     /**
-     * Return (x, y) position of the car, normalized to [0, 1]
+     * Returns (x, y) position of the car, normalized to [0, 1]
      */
     std::vector<std::vector<float>> get_nodes_for_graph_render(std::vector<double> state_var);
 
     /**
+     * Returns background for rendering 
+     */
+    std::list<utils::render::Polygon2D> get_background_for_render();
+
+    /**
      * Returns empty vector
      */ 
-    std::vector<float> get_edges_for_graph_render() {return std::vector<float>();}; 
+    std::vector<std::vector<int>> get_edges_for_graph_render() {return std::vector<std::vector<int>>();}; 
+
 
 
 protected:

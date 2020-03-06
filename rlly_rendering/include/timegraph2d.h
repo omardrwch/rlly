@@ -23,9 +23,11 @@ private:
 public:
     // 2-dimensional vector of double
     typedef std::vector<std::vector<double>> vec_2d;
+    typedef std::vector<std::vector<int>> ivec_2d;
+
 
     TimeGraph2D(){};
-    TimeGraph2D(vec_2d x_values, vec_2d y_values, vec_2d _edges);
+    TimeGraph2D(vec_2d x_values, vec_2d y_values, ivec_2d _edges);
     ~TimeGraph2D(){};
     
     /**
@@ -34,7 +36,7 @@ public:
      * @param _y_values vector of double, size (n_nodes, time)
      */
     void set_nodes(vec_2d _x_values, vec_2d _y_values);
-    void set_edges(vec_2d _edges);
+    void set_edges(ivec_2d _edges);
 
     /**
      * Number of nodes in the graph
@@ -68,7 +70,7 @@ public:
      * 2d vector of dimension (n_edges, 2) such that edges[i][0] is a source 
      * node and edge[i][1] is the destination node.
      */
-    vec_2d edges;     // shape (n_edges, 2)
+    ivec_2d edges;     // shape (n_edges, 2)
 };
 
 } // namspace render

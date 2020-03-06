@@ -21,7 +21,7 @@
 int main()
 {
     rlly::env::MountainCar env;
-    int horizon = 20;
+    int horizon = 100;
     
     std::vector<std::vector<double>> states;
     env.set_seed(789);

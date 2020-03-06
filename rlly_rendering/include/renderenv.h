@@ -43,14 +43,17 @@ void render_env(std::vector<S> states, EnvType& env)
             }
         }
 
+        // Background
+        auto background = env.get_background_for_render();
+
         // Build graph
         rlly::render::TimeGraph2D graph;
         graph.set_nodes(states_x, states_y);
 
-
         // Render
         GraphRender renderer;
         renderer.set_graph(graph);
+        renderer.set_background(background);
         renderer.run_graphics();
         std::cout << "graph_rendering_enabled for " << env.id << std::endl;
     }

@@ -34,12 +34,13 @@ target_include_directories(debug2 PUBLIC ${RLLY_SOURCE_DIR}/rlly/include/env
                                          ${RLLY_SOURCE_DIR}/rlly/include/spaces
                                          ${RLLY_SOURCE_DIR}/rlly/include/utils)
 
-# #
-# add_executable(gridworld_example gridworld_example.cpp)
+#
+add_executable(gridworld_example gridworld_example.cpp)
+target_include_directories(gridworld_example PUBLIC ${RLLY_SOURCE_DIR})
 
-# #
-# add_executable(render_example render_example.cpp)
-# target_link_libraries(render_example rlly rlly_rendering ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES})
-# target_include_directories(render_example PUBLIC ${RLLY_SOURCE_DIR}/rlly/include/env
-#                                                  ${RLLY_SOURCE_DIR}/rlly/include/spaces
-#                                                  ${RLLY_SOURCE_DIR}/rlly/include/utils)
+#
+add_executable(render_example render_example.cpp)
+target_link_libraries(render_example rlly rlly_rendering ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES})
+target_include_directories(render_example PUBLIC ${RLLY_SOURCE_DIR}/rlly/include/env
+                                                 ${RLLY_SOURCE_DIR}/rlly/include/spaces
+                                                 ${RLLY_SOURCE_DIR}/rlly/include/utils)

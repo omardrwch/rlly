@@ -3,6 +3,15 @@
 
 #include <vector>
 
+namespace rlly
+{
+namespace utils
+{
+/**
+ * Rendering utils
+ */
+namespace render
+{
 struct Polygon2D
 {
     /**
@@ -17,5 +26,8 @@ struct Polygon2D
     std::vector<float> color;   
 };
 
+}
+}
+}
 
 #endif

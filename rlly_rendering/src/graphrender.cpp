@@ -9,7 +9,7 @@ TimeGraph2D GraphRender::time_graph_2d;
 
 //
 
-std::list<Polygon2D> GraphRender::background;
+std::list<utils::render::Polygon2D> GraphRender::background;
 
 // 
 
@@ -24,14 +24,14 @@ void GraphRender::set_graph(TimeGraph2D _time_graph_2d)
 
 //
 
-void GraphRender::set_background(std::list<Polygon2D> _background)
+void GraphRender::set_background(std::list<utils::render::Polygon2D> _background)
 {
     background = _background;
 }
 
 // 
 
-void GraphRender::draw_polygon(Polygon2D polygon)
+void GraphRender::draw_polygon(utils::render::Polygon2D polygon)
 {
     int n_vertices = polygon.vertices.size();
     glBegin(GL_POLYGON);

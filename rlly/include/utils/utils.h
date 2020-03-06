@@ -4,6 +4,7 @@
 #include "vector_op.h"
 #include "random.h"
 #include "misc.h"
+#include "polygon2d.h"
 
 
 /**

@@ -4,9 +4,12 @@
 #include <string>
 #include <random>
 #include <iostream>
+#include <vector>
+#include <list>
 #include "space.h"
 #include "stepresult.h"
 #include "utils.h"
+
 
 /**
  * @file
@@ -110,6 +113,7 @@ public:
      *     - define the number of nodes n_nodes
      *     - implement the method get_nodes_for_graph_render()
      *     - implement the method get_edges_for_graph_render()
+     *     - implement the method get_background_for_render()
      */
     bool graph_rendering_enabled = false;
 
@@ -124,7 +128,18 @@ public:
      * and n is the number of nodes representing the state
      */
     virtual std::vector<std::vector<float>> get_nodes_for_graph_render(S state_var) {return std::vector<std::vector<float>>();};
-    virtual std::vector<float> get_edges_for_graph_render(){return std::vector<float>();};
+
+    /**
+     * Returns edges in the form of [(source_1, destination_1), ... (source_m, destination_m)] where 
+     * source_i and destination_i are the indices of the source and destination nodes, respectively.
+     */ 
+    virtual std::vector<std::vector<int>> get_edges_for_graph_render(){return std::vector<std::vector<int>>();};
+
+    /**
+     * Retuns vector of Polygon2D representing the background
+     */
+    virtual std::list<utils::render::Polygon2D> get_background_for_render(){return std::list<utils::render::Polygon2D>();};
+
 }; 
 }  // namespace env
 }  // namespace rlly

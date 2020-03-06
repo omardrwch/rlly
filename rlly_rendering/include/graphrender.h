@@ -12,7 +12,7 @@
 #include <vector>
 #include <list>
 #include "timegraph2d.h"
-#include "polygon2d.h"
+#include "utils.h"
 
 namespace rlly
 {
@@ -38,10 +38,10 @@ private:
     static constexpr float edge_color[3] = {0.75, 0.25, 0.25}; 
 
     // Background color
-    static constexpr float background_color[3] = {0.75, 0.75, 0.75}; 
+    static constexpr float background_color[3] = {0.6, 0.75, 1.0}; 
 
     // Backgroud image (represented by a list of 2D polygons)
-    static std::list<Polygon2D> background;
+    static std::list<utils::render::Polygon2D> background;
 
     // Graph to be rendered
     static TimeGraph2D time_graph_2d;
@@ -65,7 +65,7 @@ private:
     static void draw_edge(float x0, float y0, float x1, float y1);
 
     // Draw a polygon
-    static void draw_polygon(Polygon2D polygon);
+    static void draw_polygon(utils::render::Polygon2D polygon);
 
 public:
     GraphRender(){};
@@ -84,7 +84,7 @@ public:
     /**
      * Set background
      */
-    void set_background(std::list<Polygon2D> _background);
+    void set_background(std::list<utils::render::Polygon2D> _background);
 
 };
 

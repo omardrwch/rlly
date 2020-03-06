@@ -19,8 +19,8 @@ int main()
     /**
      * Define graph
      */ 
-    int n_objects = 12;
-    int time = 4;
+    int n_objects = 5;
+    int time = 50;
     rlly::utils::vec::vec_2d x_values = rlly::utils::vec::get_zeros_2d(n_objects, time);
     rlly::utils::vec::vec_2d y_values = rlly::utils::vec::get_zeros_2d(n_objects, time);
     rlly::utils::vec::vec_2d edges = {{0, 1}, {1, 2}, {2, 3}, {3, 4}};
@@ -30,7 +30,7 @@ int main()
     {
         for(int ii = 0; ii < n_objects; ii++)
         {
-            float theta = 3.1415*ii/6.0 + tt;
+            float theta = 3.1415*ii/6.0 + tt/5.0;
             x_values[ii][tt] = 0.5*std::cos(theta); // (1.0*ii)/n_objects;
             y_values[ii][tt] = 0.5*std::sin(theta);//(1.0*ii)/n_objects;
         }
@@ -44,9 +44,6 @@ int main()
      * Render graph
      */
     grender.run_graphics();
-    grender.run_graphics();
-    grender.run_graphics();
-
 
     std::cout << "Back to execution!" << std::endl;
 

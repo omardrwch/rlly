@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Class for rendering the environments using freeglut.
- * @details Based on the OpenGL tutorial https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_Introduction.html 
+ * @details Based on the OpenGL tutorial at https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_Introduction.html 
  */
 
 
@@ -68,6 +68,7 @@ void TimeGraph2D::set_edges(vec_2d _edges)
     n_edges = _edges.size();
 }
 
+
 class GraphRender
 {
 private:
@@ -95,8 +96,14 @@ private:
     // Time counter 
     static int time_count;
 
+    // Initialize GL
+    static void initGL();
+
     // Callback function, handler for window re-paint
     static void display();
+
+    // Timer, to call display() periodically (period = refresh_interval)
+    static void timer(int value);
 
     // Draw a node
     static void draw_node(float node_x, float node_y);
@@ -146,19 +153,30 @@ void GraphRender::draw_node(float node_x, float node_y)
     glEnd();
 }
 
+
+void GraphRender::initGL()
+{
+    // Nothing implemented yet    
+}
+
+void GraphRender::timer(int value)
+{
+    glutPostRedisplay();
+    glutTimerFunc(refresh_interval, timer, 0);
+}
+
 void GraphRender::display()
 {
-    float sqr_size = 0.5;
-    glClearColor(background_color[0], background_color[1], background_color[2], 1.0f); // Set background color to black and opaque
-    glClear(GL_COLOR_BUFFER_BIT);         // Clear the color buffer (background)
- 
+    // Set background color (clear background)
+    glClearColor(background_color[0], background_color[1], background_color[2], 1.0f); 
+    glClear(GL_COLOR_BUFFER_BIT);    
+
     // Display graph
     if (time_graph_2d.n_nodes != 0 )
     {
         int time = 0;
         if (time_graph_2d.time > 0) time = time_count % time_graph_2d.time;
 
-        // std::cout << "timeeeee  " << time_graph_2d.time << " must be >= " << time_count % time_graph_2d.time << std::endl;
         // Edges
         if (time_graph_2d.n_edges != 0)
         {
@@ -199,6 +217,8 @@ int GraphRender::run_graphics()
 
     glutCreateWindow("Render"); // Create a window with the given title
     glutDisplayFunc(display); // Register display callback handler for window re-paint
+    glutTimerFunc(0, timer, 0);     // First timer call immediately
+    initGL();
     glutMainLoop();           // Enter the event-processing loop
     return 0;
 }

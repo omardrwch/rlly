@@ -15,6 +15,8 @@ utils::render::Scene Render2D::background;
 
 // 
 
+int Render2D::refresh_interval = 50;
+
 unsigned int Render2D::time_count = 0;
 
 std::string Render2D::window_name = "render";

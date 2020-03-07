@@ -22,9 +22,6 @@ namespace render
 class Render2D
 {
 private:
-    // Window refresh inteval (in milliseconds)
-    static const int refresh_interval = 50; 
-
     // Window size (in pixels)
     static const int window_size = 640;
 
@@ -73,6 +70,9 @@ public:
 
     // Window name
     static std::string window_name;
+
+    // Window refresh inteval (in milliseconds)
+    static int refresh_interval; 
 };
 
 

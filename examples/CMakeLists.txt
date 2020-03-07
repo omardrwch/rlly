@@ -44,3 +44,10 @@ target_link_libraries(render_example rlly rlly_rendering ${GLUT_LIBRARIES} ${OPE
 target_include_directories(render_example PUBLIC ${RLLY_SOURCE_DIR}/rlly/include/env
                                                  ${RLLY_SOURCE_DIR}/rlly/include/spaces
                                                  ${RLLY_SOURCE_DIR}/rlly/include/utils)
+#
+add_executable(mountaincar_example mountaincar_example.cpp)
+target_link_libraries(mountaincar_example rlly rlly_rendering ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES})
+target_include_directories(mountaincar_example PUBLIC ${RLLY_SOURCE_DIR}/rlly/include/env
+                                                      ${RLLY_SOURCE_DIR}/rlly/include/spaces
+                                                      ${RLLY_SOURCE_DIR}/rlly/include/utils)
+

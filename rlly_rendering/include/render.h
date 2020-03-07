@@ -11,8 +11,6 @@
 #include <GL/freeglut.h> 
 #include <iostream>
 #include <vector>
-#include "timegraph2d.h"
-#include "graphrender.h"
 #include "utils.h"
 #include "renderenv.h"
 #include "render2d.h"

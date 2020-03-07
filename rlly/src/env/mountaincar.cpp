@@ -34,9 +34,8 @@ MountainCar::MountainCar()
 
     id = "MountainCar";
 
-    // Graph rendering is enabled for MountainCar
-    graph_rendering_n_nodes = 1;
-    graph_rendering_enabled = true;
+    // 2D rendering is enabled for MountainCar
+    rendering2d_enabled = true;
 }
 
 std::vector<double> MountainCar::reset()
@@ -82,61 +81,71 @@ bool MountainCar::is_terminal(std::vector<double> state)
 }
 
 
-std::vector<std::vector<float>> MountainCar::get_nodes_for_graph_render(std::vector<double> state_var)
+utils::render::Scene MountainCar::get_scene_for_render2d(std::vector<double> state_var)
 {
-    std::vector<std::vector<float>> nodes = {{0.0, 0.0}};
     float y = std::sin(3*state_var[position])*0.45 + 0.55;
     float x = state_var[position];
-    nodes[0][0] = (10.0/9.0)*x + 1.0/3.0;
-    nodes[0][1] = y*0.75;
+    x = (10.0/9.0)*x + 1.0/3.0;  // mapping the state to [-1, 1]
+    y = y - 0.4;  // vertical translation
 
-    // std::cout << "nodes_xy = " << x << ", " << y << std::endl;
+    utils::render::Scene car_scene;
+    utils::render::Geometric2D car;
+    car.type = "GL_POLYGON";
+    car.set_color(0.0f, 0.0f, 0.0f);
+    
+    float size = 0.025;
+    car.add_vertex(x - size, y - size);
+    car.add_vertex(x + size, y - size);
+    car.add_vertex(x + size, y + size);
+    car.add_vertex(x - size, y + size);
 
-    return nodes;
+    car_scene.add_shape(car);
+    return car_scene;
 }
 
-std::list<utils::render::Polygon2D> MountainCar::get_background_for_render()
+utils::render::Scene MountainCar::get_background_for_render2d()
 {
-    typedef utils::render::Polygon2D Polygon2D;
+    utils::render::Scene background;
+    utils::render::Geometric2D mountain;
+    utils::render::Geometric2D flag;
+    mountain.type = "GL_TRIANGLE_FAN";
+    mountain.set_color(0.6, 0.3, 0.0);
+    flag.type     = "GL_TRIANGLES";
+    flag.set_color(0.0, 0.5, 0.0);
+
+
     std::vector<std::vector<float>> vertices1 = {{-1.0, -1.0}};
 
     // Mountain
+    mountain.add_vertex( 0.0f, -1.0f);
+    mountain.add_vertex( 1.0f, -1.0f);
+
     int n_points = 100;
     double range = observation_space.high[0] - observation_space.low[0];
     double eps = range/(n_points-1.0);
-    for(int ii = 0; ii < n_points; ii++)
+    // for(int ii = 0; ii < n_points; ii++)
+    for(int ii = n_points-1; ii >= 0; ii--)
     {
         double x = observation_space.low[0] + ii*eps;
         double y = std::sin(3*x)*0.45 + 0.55;
-        y *= 0.75;
+        y = y - 0.4;
         x = (10.0/9.0)*x + 1.0/3.0 ;
-        std::vector<float> vertex;
-        vertex.push_back(x);
-        vertex.push_back(y);
-        vertices1.push_back(vertex);
-        // std::cout << x << ", " << y << std::endl;
+        mountain.add_vertex(x, y);
     }
-    std::vector<float> vertex = {1.0, -1.0};
-    vertices1.push_back(vertex);
+    mountain.add_vertex(-1.0f, -1.0f);
 
     // Flag
     float goal_x = (10.0/9.0)*goal_position + 1.0/3.0;
     float goal_y = std::sin(3*goal_position)*0.45 + 0.55;
-    goal_y *= 0.75;  
-    std::vector<std::vector<float>> vertices2 = {{goal_x, goal_y}, 
-                                                 {goal_x+0.025f, goal_y+0.075f},
-                                                 {goal_x-0.025f, goal_y+0.075f}}; 
+    goal_y -= 0.4;  
+    flag.add_vertex(goal_x, goal_y);
+    flag.add_vertex(goal_x+0.025f, goal_y+0.075f);
+    flag.add_vertex(goal_x-0.025f, goal_y+0.075f);
 
-    std::vector<float> color1 = {0.6, 0.3, 0.0};
-    std::vector<float> color2 = {0.0, 0.5, 0.0};
-    Polygon2D polygon1 = {vertices1, color1};
-    Polygon2D polygon2 = {vertices2, color2};
-
-
-    std::list<Polygon2D> background = {polygon1, polygon2};
+    background.add_shape(mountain);
+    background.add_shape(flag);
     return background;
 }
-
 
 
 }  // namespace env

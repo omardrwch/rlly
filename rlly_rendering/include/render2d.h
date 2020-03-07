@@ -10,8 +10,8 @@
 #include <GL/freeglut.h> 
 #include <iostream>
 #include <vector>
+#include <string>
 #include <list>
-#include "timegraph2d.h"
 #include "utils.h"
 
 namespace rlly
@@ -71,6 +71,8 @@ public:
      */
     void set_background(utils::render::Scene _background);
 
+    // Window name
+    static std::string window_name;
 };
 
 

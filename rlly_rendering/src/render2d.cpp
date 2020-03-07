@@ -17,6 +17,8 @@ utils::render::Scene Render2D::background;
 
 unsigned int Render2D::time_count = 0;
 
+std::string Render2D::window_name = "render";
+
 //
 
 void Render2D::set_data(std::vector<utils::render::Scene> _data)
@@ -83,7 +85,7 @@ int Render2D::run_graphics()
     glutInitWindowSize(window_size, window_size);   // Set the window's initial width & height
     glutInitWindowPosition(50, 50); // Position the window's initial top-left corner
 
-    glutCreateWindow("Render"); // Create a window with the given title
+    glutCreateWindow(window_name.c_str()); // Create a window with the given title
     glutDisplayFunc(display); // Register display callback handler for window re-paint
     glutTimerFunc(0, timer, 0);     // First timer call immediately
     initGL();

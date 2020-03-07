@@ -20,50 +20,50 @@
 int main()
 {
 
-    rlly::render::Render2D render2D;
+    // rlly::render::Render2D render2D;
 
-    // Create a background
-    std::vector<rlly::utils::render::Scene> data;
-    rlly::utils::render::Scene scene1, scene2;
-    rlly::utils::render::Geometric2D geom1, geom2;
+    // // Create a background
+    // std::vector<rlly::utils::render::Scene> data;
+    // rlly::utils::render::Scene scene1, scene2;
+    // rlly::utils::render::Geometric2D geom1, geom2;
 
-    geom1.type = "GL_TRIANGLES";
-    geom1.add_vertex(0.0, 0.0);
-    geom1.add_vertex(1.0, 1.0);
-    geom1.add_vertex(1.0, 0.0);
-    scene1.add_shape(geom1);
+    // geom1.type = "GL_TRIANGLES";
+    // geom1.add_vertex(0.0, 0.0);
+    // geom1.add_vertex(1.0, 1.0);
+    // geom1.add_vertex(1.0, 0.0);
+    // scene1.add_shape(geom1);
 
-    geom2.type = "GL_TRIANGLES";
-    geom2.add_vertex(0.0, 0.0);
-    geom2.add_vertex(-1.0, -1.0);
-    geom2.add_vertex(-1.0, 0.0);
-    scene2.add_shape(geom2);
+    // geom2.type = "GL_TRIANGLES";
+    // geom2.add_vertex(0.0, 0.0);
+    // geom2.add_vertex(-1.0, -1.0);
+    // geom2.add_vertex(-1.0, 0.0);
+    // scene2.add_shape(geom2);
 
-    data.push_back(scene1);
-    data.push_back(scene2);
+    // data.push_back(scene1);
+    // data.push_back(scene2);
 
-    // Render
-    render2D.set_data(data);
-    render2D.run_graphics();
+    // // Render
+    // render2D.set_data(data);
+    // render2D.run_graphics();
 
 
     // =======================================================================
 
 
-    // rlly::env::MountainCar env;
-    // int horizon = 50;
+    rlly::env::MountainCar env;
+    int horizon = 50;
     
-    // std::vector<std::vector<double>> states;
-    // env.set_seed(76345);
-    // for(int hh = 1; hh < horizon; hh++)
-    // {
-    //     auto action = env.action_space.sample();
-    //     auto step_result = env.step(action);
-    //     std::cout << "action  " << action << ", angle = " << step_result.next_state[0] <<std::endl;
-    //     states.push_back(step_result.next_state);
-    // }
+    std::vector<std::vector<double>> states;
+    env.set_seed(76345);
+    for(int hh = 1; hh < horizon; hh++)
+    {
+        auto action = env.action_space.sample();
+        auto step_result = env.step(action);
+        std::cout << "action  " << action << ", angle = " << step_result.next_state[0] <<std::endl;
+        states.push_back(step_result.next_state);
+    }
 
-    // rlly::render::render_env(states, env);
+    rlly::render::render_env(states, env);
 
     // =======================================================================
 

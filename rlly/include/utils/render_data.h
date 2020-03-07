@@ -65,6 +65,14 @@ struct Geometric2D
         vertices.push_back(vertex); 
     }; 
 
+    /**
+     * Set color
+     */
+    void set_color(float r, float g, float b)
+    {
+        color[0] = r; color[1] = g; color[2] = b; 
+    };
+
 };
 
 /**

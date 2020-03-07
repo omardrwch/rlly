@@ -7,9 +7,10 @@
 #ifndef __RLLY_RENDER_ENV_H__
 #define __RLLY_RENDER_ENV_H__
 
+#include <iostream>
 #include <vector>
-#include "graphrender.h"
-#include "timegraph2d.h"
+#include "render2d.h"
+#include "utils.h"
 
 namespace rlly
 {
@@ -25,38 +26,32 @@ namespace render
 template <typename EnvType, typename S>
 void render_env(std::vector<S> states, EnvType& env)
 {
-    if (env.graph_rendering_enabled)
+    if (env.rendering2d_enabled)
     {
-        int n_data = states.size();
-        int n_nodes = env.graph_rendering_n_nodes;
-        std::vector<std::vector<double>> states_x(n_nodes);  // shape (n_nodes, n_data)
-        std::vector<std::vector<double>> states_y(n_nodes);  // shape (n_nodes, n_data)
-
-        // Get 2d representation of states
-        for(int nn = 0; nn < n_data; nn++)
-        {
-            std::vector<std::vector<float>> nodes_xy = env.get_nodes_for_graph_render(states[nn]); // shape (n_nodes, 2)
-            for(int node = 0; node < n_nodes; node++)
-            {
-                states_x[node].push_back(nodes_xy[node][0]);
-                states_y[node].push_back(nodes_xy[node][1]);
-            }
-        }
-
         // Background
-        auto background = env.get_background_for_render();
+        auto background = env.get_background_for_render2d();
 
-        // Build graph
-        rlly::render::TimeGraph2D graph;
-        graph.set_nodes(states_x, states_y);
+        // Data
+        std::vector<utils::render::Scene> data;    
+        int n_data = states.size();
+        for(int ii = 0; ii < n_data; ii++)
+        {
+            utils::render::Scene scene = env.get_scene_for_render2d(states[ii]);
+            data.push_back(scene);
+        }   
 
         // Render
-        GraphRender renderer;
-        renderer.set_graph(graph);
+        Render2D renderer;
+        renderer.window_name = env.id;
+        renderer.set_data(data);
         renderer.set_background(background);
         renderer.run_graphics();
-        std::cout << "graph_rendering_enabled for " << env.id << std::endl;
     }
+    else
+    {
+        std::cerr << "Error: environement " << env.id << " is not enabled for rendering (flag rendering2d_enabled is false)" << std::endl;
+    }
+    
 }
 
 

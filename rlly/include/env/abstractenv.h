@@ -107,38 +107,24 @@ public:
     */
 
     /**
-     * Set to true if the environment supports graph rendering.
-     * To support graph rendering, the derived class must:
-     *     - set graph_rendering_enabled to true
-     *     - define the number of nodes n_nodes
-     *     - implement the method get_nodes_for_graph_render()
-     *     - implement the method get_edges_for_graph_render()
+     * Set to true if the environment supports 2D rendering.
+     * To support 2D rendering, the derived class must:
+     *     - set rendering2d_enabled to true
+     *     - implement the method get_scene_for_render2d()
      *     - implement the method get_background_for_render()
      */
-    bool graph_rendering_enabled = false;
+    bool rendering2d_enabled = false;
 
     /**
-     * Number of nodes for graph rendering.
-     * Set to -1 if not applicable
+     * Retuns a scene (list of shapes) representing the state
+     * @param state_var
      */
-    int graph_rendering_n_nodes = -1;
+    virtual utils::render::Scene get_scene_for_render2d(S state_var) {return utils::render::Scene();};    
     
     /**
-     * Return [(x_1, y_1), ..., (x_n, y_n)] representation of the state, where x_i and y_i are in [0, 1]
-     * and n is the number of nodes representing the state
+     * Retuns a scene (list of shapes) representing the background
      */
-    virtual std::vector<std::vector<float>> get_nodes_for_graph_render(S state_var) {return std::vector<std::vector<float>>();};
-
-    /**
-     * Returns edges in the form of [(source_1, destination_1), ... (source_m, destination_m)] where 
-     * source_i and destination_i are the indices of the source and destination nodes, respectively.
-     */ 
-    virtual std::vector<std::vector<int>> get_edges_for_graph_render(){return std::vector<std::vector<int>>();};
-
-    /**
-     * Retuns vector of Polygon2D representing the background
-     */
-    virtual std::list<utils::render::Polygon2D> get_background_for_render(){return std::list<utils::render::Polygon2D>();};
+    virtual utils::render::Scene get_background_for_render2d(){return utils::render::Scene();};
 
 }; 
 }  // namespace env

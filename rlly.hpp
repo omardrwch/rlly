@@ -3,13 +3,14 @@
 #include <cmath>
 #include <iomanip>
 #include <iostream>
+#include <list>
 #include <map>
 #include <random>
 #include <stdlib.h>
 #include <string>
 #include <vector>
-#ifndef __RLLY_ENVS_H__
-#define __RLLY_ENVS_H__ 
+#ifndef __RLLY_ENVS_RENDERING_H__
+#define __RLLY_ENVS_RENDERING_H__ 
 #ifndef __RLLY_ABSTRACT_SPACE_H__
 #define __RLLY_ABSTRACT_SPACE_H__
 
@@ -543,6 +544,113 @@ namespace utils
 }  // namespace utils
 }  // namespace rlly
 #endif
+/**
+ * @file
+ * @brief Data structures used for rendering.
+ */
+
+#ifndef __RLLY_RENDER_DATA_H__
+#define __RLLY_RENDER_DATA_H__
+
+namespace rlly
+{
+namespace utils
+{
+/**
+ * Rendering utils
+ */
+namespace render
+{
+
+/**
+ * Data representing an OpenGL geometric primitive in 2D
+ */ 
+struct Geometric2D
+{
+    /**
+     * Primitive type (GL_LINE_LOOP by defaut)
+     * Possibilities:
+     *      GL_POINTS
+     *      GL_LINES
+     *      GL_LINE_STRIP
+     *      GL_LINE_LOOP
+     *      GL_POLYGON
+     *      GL_TRIANGLES
+     *      GL_TRIANGLE_STRIP
+     *      GL_TRIANGLE_FAN
+     *      GL_QUADS
+     *      GL_QUAD_STRIP
+     */
+    std::string type = "GL_LINE_LOOP";
+
+    /**
+     * vector with 3 elements, contaning the color of the shape
+     * gray by default
+     */
+    std::vector<float> color = {0.25f, 0.25f, 0.25f};   
+
+    /**
+     * 2d vector of shape (n_vertices, 2)
+     * vertices[i][j] = j-th cordinnate of vertex i
+     */
+    std::vector<std::vector<float>> vertices; 
+
+    /**
+     * Add vertex 
+     */ 
+    void add_vertex(std::vector<float> vertex) { vertices.push_back(vertex); }; 
+    void add_vertex(float x, float y) 
+    { 
+        std::vector<float> vertex;
+        vertex.push_back(x);
+        vertex.push_back(y);
+        vertices.push_back(vertex); 
+    }; 
+
+    /**
+     * Set color
+     */
+    void set_color(float r, float g, float b)
+    {
+        color[0] = r; color[1] = g; color[2] = b; 
+    };
+
+};
+
+/**
+ * Data representing a scene, which is a vector of Geometric2D objects
+ */
+struct Scene
+{
+    /**
+     * Vector of 2D shapes represeting the scene
+     */
+    std::vector<Geometric2D> shapes;
+
+    /**
+     * Include new shape
+     */
+    void add_shape(Geometric2D shape){ shapes.push_back(shape);};
+};
+
+struct Polygon2D
+{
+    /**
+     * 2d vector of shape (n_vertices, 2)
+     * vertices[i][j] = j-th cordinnate of vertex i
+     */
+    std::vector<std::vector<float>> vertices; 
+    /**
+     * vector with 3 elements, contaning the color of the polygon
+     */
+    std::vector<float> color;   
+};
+
+}
+}
+}
+
+#endif
 #ifndef __RLLY_UTILS_H__
 #define __RLLY_UTILS_H__
 
@@ -658,27 +766,25 @@ public:
     */
 
     /**
-     * Set to true if the environment supports graph rendering.
-     * To support graph rendering, the derived class must:
-     *     - set graph_rendering_enabled to true
-     *     - define the number of nodes n_nodes
-     *     - implement the method get_nodes_for_graph_render()
-     *     - implement the method get_edges_for_graph_render()
+     * Set to true if the environment supports 2D rendering.
+     * To support 2D rendering, the derived class must:
+     *     - set rendering2d_enabled to true
+     *     - implement the method get_scene_for_render2d()
+     *     - implement the method get_background_for_render()
      */
-    bool graph_rendering_enabled = false;
+    bool rendering2d_enabled = false;
 
     /**
-     * Number of nodes for graph rendering.
-     * Set to -1 if not applicable
+     * Retuns a scene (list of shapes) representing the state
+     * @param state_var
      */
-    int graph_rendering_n_nodes = -1;
+    virtual utils::render::Scene get_scene_for_render2d(S state_var) {return utils::render::Scene();};    
     
     /**
-     * Return [(x_1, y_1), ..., (x_n, y_n)] representation of the state, where x_i and y_i are in [0, 1]
-     * and n is the number of nodes representing the state
+     * Retuns a scene (list of shapes) representing the background
      */
-    virtual std::vector<std::vector<float>> get_nodes_for_graph_render(S state_var) {return std::vector<std::vector<float>>();};
-    virtual std::vector<float> get_edges_for_graph_render(){return std::vector<float>();};
+    virtual utils::render::Scene get_background_for_render2d(){return utils::render::Scene();};
+
 }; 
 }  // namespace env
 }  // namespace rlly
@@ -978,14 +1084,14 @@ public:
     spaces::Discrete action_space;
 
     /**
-     * Return (x, y) position of the car, normalized to [0, 1]
+     * Get scene representing a given state
      */
-    std::vector<std::vector<float>> get_nodes_for_graph_render(std::vector<double> state_var);
+    utils::render::Scene get_scene_for_render2d(std::vector<double> state_var);
 
     /**
-     * Returns empty vector
-     */ 
-    std::vector<float> get_edges_for_graph_render() {return std::vector<float>();}; 
+     * Returns background for rendering 
+     */
+    utils::render::Scene get_background_for_render2d();
 
 protected:
     /**
@@ -1121,6 +1227,153 @@ namespace rlly
  */
 namespace env{}
 }
+
+#endif
+/**
+ * @file
+ * @brief Contains class for rendering lists of Geometric2D objects
+ */
+
+#ifndef __RLLY_RENDER_2D_H__
+#define __RLLY_RENDER_2D_H__
+
+#include <GL/freeglut.h>
+
+namespace rlly
+{
+namespace render
+{
+
+class Render2D
+{
+private:
+    // Window size (in pixels)
+    static const int window_size = 640;
+
+    // Background color
+    static constexpr float background_color[3] = {0.6, 0.75, 1.0}; 
+
+    // Backgroud image 
+    static utils::render::Scene background;
+
+    // Data to be rendered (represented by a vector of scenes)
+    static std::vector<utils::render::Scene> data;
+
+    // Time counter 
+    static unsigned int time_count;
+
+    // Initialize GL
+    static void initGL();
+
+    // Callback function, handler for window re-paint
+    static void display();
+
+    // Timer, to call display() periodically (period = refresh_interval)
+    static void timer(int value);
+
+    // Draw a 2D shape
+    static void draw_geometric2d(utils::render::Geometric2D geom);
+
+public:
+    Render2D(){};
+    ~Render2D(){};
+    
+    /**
+     * Main function, set up the window and enter the event-processing loop
+     */ 
+    int run_graphics();
+
+    /**
+     * Set scene to be rendered
+     */
+    void set_data(std::vector<utils::render::Scene> _data);
+
+    /**
+     * Set background
+     */
+    void set_background(utils::render::Scene _background);
+
+    // Window name
+    static std::string window_name;
+
+    // Window refresh inteval (in milliseconds)
+    static int refresh_interval; 
+};
+
+} // namspace render
+} // namespace rlly
+
+#endif
+/**
+ * @file
+ * @brief Contains class for rendering environments
+ */
+
+#ifndef __RLLY_RENDER_ENV_H__
+#define __RLLY_RENDER_ENV_H__
+
+namespace rlly
+{
+namespace render
+{
+
+/**
+ * @param states list of states to render
+ * @param env    environment
+ * @tparam EnvType represents Env<S, A> (see abstractenv.h)
+ * @tparam S type of state space
+ */
+template <typename EnvType, typename S>
+void render_env(std::vector<S> states, EnvType& env)
+{
+    if (env.rendering2d_enabled)
+    {
+        // Background
+        auto background = env.get_background_for_render2d();
+
+        // Data
+        std::vector<utils::render::Scene> data;    
+        int n_data = states.size();
+        for(int ii = 0; ii < n_data; ii++)
+        {
+            utils::render::Scene scene = env.get_scene_for_render2d(states[ii]);
+            data.push_back(scene);
+        }   
+
+        // Render
+        Render2D renderer;
+        renderer.window_name = env.id;
+        renderer.set_data(data);
+        renderer.set_background(background);
+        renderer.run_graphics();
+    }
+    else
+    {
+        std::cerr << "Error: environement " << env.id << " is not enabled for rendering (flag rendering2d_enabled is false)" << std::endl;
+    }
+    
+}
+
+} // namspace render
+} // namespace rlly
+
+#endif
+/**
+ * @file
+ * @brief Headers for rendering the environments using freeglut.
+ * @details Based on the OpenGL tutorial at https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_Introduction.html 
+ */
+
+#ifndef __RLLY_RENDER_H__
+#define __RLLY_RENDER_H__
+
+namespace rlly
+{
+namespace render
+{
+
+} // namspace render
+} // namespace rlly
 
 #endif
 namespace rlly
@@ -1485,9 +1738,8 @@ MountainCar::MountainCar()
 
     id = "MountainCar";
 
-    // Graph rendering is enabled for MountainCar
-    graph_rendering_n_nodes = 1;
-    graph_rendering_enabled = true;
+    // 2D rendering is enabled for MountainCar
+    rendering2d_enabled = true;
 }
 
 std::vector<double> MountainCar::reset()
@@ -1511,12 +1763,10 @@ StepResult<std::vector<double>> MountainCar::step(int action)
     v = utils::clamp(v, lo[velocity], hi[velocity]);
     p += v;
     p = utils::clamp(p, lo[position], hi[position]);
-    if ((abs(p-lo[position])<1e-10) && (v<0))
+    if ((std::abs(p-lo[position])<1e-10) && (v<0))
     { 
         v = 0;
-        std::cout << "HEEEEEEERE" << std::endl;
     }
-
     bool done = is_terminal(state);
     double reward = 0.0;
     if (done) reward = 1.0;
@@ -1533,17 +1783,69 @@ bool MountainCar::is_terminal(std::vector<double> state)
     return ((state[position] >= goal_position) && (state[velocity]>=goal_velocity));
 }
 
-std::vector<std::vector<float>> MountainCar::get_nodes_for_graph_render(std::vector<double> state_var)
+utils::render::Scene MountainCar::get_scene_for_render2d(std::vector<double> state_var)
 {
-    std::vector<std::vector<float>> nodes = {{0.0, 0.0}};
     float y = std::sin(3*state_var[position])*0.45 + 0.55;
     float x = state_var[position];
-    nodes[0][0] = (10.0/9.0)*x + 1.0/3.0 ;
-    nodes[0][1] = y;
+    x = (10.0/9.0)*x + 1.0/3.0;  // mapping the state to [-1, 1]
+    y = y - 0.4;  // vertical translation
 
-    // std::cout << "nodes_xy = " << x << ", " << y << std::endl;
+    utils::render::Scene car_scene;
+    utils::render::Geometric2D car;
+    car.type = "GL_POLYGON";
+    car.set_color(0.0f, 0.0f, 0.0f);
+    
+    float size = 0.025;
+    car.add_vertex(x - size, y - size);
+    car.add_vertex(x + size, y - size);
+    car.add_vertex(x + size, y + size);
+    car.add_vertex(x - size, y + size);
 
-    return nodes;
+    car_scene.add_shape(car);
+    return car_scene;
+}
+
+utils::render::Scene MountainCar::get_background_for_render2d()
+{
+    utils::render::Scene background;
+    utils::render::Geometric2D mountain;
+    utils::render::Geometric2D flag;
+    mountain.type = "GL_TRIANGLE_FAN";
+    mountain.set_color(0.6, 0.3, 0.0);
+    flag.type     = "GL_TRIANGLES";
+    flag.set_color(0.0, 0.5, 0.0);
+
+    std::vector<std::vector<float>> vertices1 = {{-1.0, -1.0}};
+
+    // Mountain
+    mountain.add_vertex( 0.0f, -1.0f);
+    mountain.add_vertex( 1.0f, -1.0f);
+
+    int n_points = 100;
+    double range = observation_space.high[0] - observation_space.low[0];
+    double eps = range/(n_points-1.0);
+    // for(int ii = 0; ii < n_points; ii++)
+    for(int ii = n_points-1; ii >= 0; ii--)
+    {
+        double x = observation_space.low[0] + ii*eps;
+        double y = std::sin(3*x)*0.45 + 0.55;
+        y = y - 0.4;
+        x = (10.0/9.0)*x + 1.0/3.0 ;
+        mountain.add_vertex(x, y);
+    }
+    mountain.add_vertex(-1.0f, -1.0f);
+
+    // Flag
+    float goal_x = (10.0/9.0)*goal_position + 1.0/3.0;
+    float goal_y = std::sin(3*goal_position)*0.45 + 0.55;
+    goal_y -= 0.4;  
+    flag.add_vertex(goal_x, goal_y);
+    flag.add_vertex(goal_x+0.025f, goal_y+0.075f);
+    flag.add_vertex(goal_x-0.025f, goal_y+0.075f);
+
+    background.add_shape(mountain);
+    background.add_shape(flag);
+    return background;
 }
 
 }  // namespace env
@@ -1730,6 +2032,132 @@ double DiscreteReward::sample(int state, int action, int next_state, utils::rand
 }  // namespace env
 }  // namespace rlly
 namespace rlly
+{
+namespace render
+{
+
+std::vector<utils::render::Scene> Render2D::data;
+
+//
+
+utils::render::Scene Render2D::background;
+
+// 
+
+int Render2D::refresh_interval = 50;
+
+unsigned int Render2D::time_count = 0;
+
+std::string Render2D::window_name = "render";
+
+//
+
+void Render2D::set_data(std::vector<utils::render::Scene> _data)
+{
+    data = _data;
+}
+
+void Render2D::set_background(utils::render::Scene _background)
+{
+    background = _background;
+}
+
+//
+
+void Render2D::initGL()
+{
+    // Nothing implemented yet    
+}
+
+//
+
+void Render2D::timer(int value)
+{
+    glutPostRedisplay();
+    glutTimerFunc(refresh_interval, timer, 0);
+}
+
+// 
+
+void Render2D::display()
+{
+    // Set background color (clear background)
+    glClearColor(background_color[0], background_color[1], background_color[2], 1.0f); 
+    glClear(GL_COLOR_BUFFER_BIT);    
+
+    // Display background
+    for(auto p_shape = background.shapes.begin(); p_shape != background.shapes.end(); ++p_shape)
+        draw_geometric2d(*p_shape);
+    
+    // Display objects
+    if (data.size() > 0)
+    {
+        int idx = time_count % data.size();
+        for(auto p_shape = data[idx].shapes.begin(); p_shape != data[idx].shapes.end(); ++ p_shape)
+            draw_geometric2d(*p_shape);
+    }
+    time_count += 1; // Increment time 
+    glFlush();       // Render now
+}
+
+// 
+
+int Render2D::run_graphics()
+{
+    int argc = 0;
+    char **argv;
+    glutInit(&argc, argv);                 // Initialize GLUT
+
+    // Continue execution after window is closed
+    glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE,
+                  GLUT_ACTION_GLUTMAINLOOP_RETURNS);
+
+    glutInitWindowSize(window_size, window_size);   // Set the window's initial width & height
+    glutInitWindowPosition(50, 50); // Position the window's initial top-left corner
+
+    glutCreateWindow(window_name.c_str()); // Create a window with the given title
+    glutDisplayFunc(display); // Register display callback handler for window re-paint
+    glutTimerFunc(0, timer, 0);     // First timer call immediately
+    initGL();
+    glutMainLoop();           // Enter the event-processing loop
+    return 0;
+}
+
+//
+
+void Render2D::draw_geometric2d(utils::render::Geometric2D geom)
+{
+    // Begin according to geometric primitive
+    if      (geom.type == "GL_POINTS")         glBegin(GL_POINTS);
+    else if (geom.type == "GL_LINES")          glBegin(GL_LINES);
+    else if (geom.type == "GL_LINE_STRIP")     glBegin(GL_LINE_STRIP);
+    else if (geom.type == "GL_LINE_LOOP")      glBegin(GL_LINE_LOOP);
+    else if (geom.type == "GL_POLYGON")        glBegin(GL_POLYGON);
+    else if (geom.type == "GL_TRIANGLES")      glBegin(GL_TRIANGLES);
+    else if (geom.type == "GL_TRIANGLE_STRIP") glBegin(GL_TRIANGLE_STRIP);
+    else if (geom.type == "GL_TRIANGLE_FAN")   glBegin(GL_TRIANGLE_FAN);
+    else if (geom.type == "GL_QUADS")          glBegin(GL_QUADS);
+    else if (geom.type == "GL_QUAD_STRIP")     glBegin(GL_QUAD_STRIP);
+    else std::cerr << "Error in Render2D::draw_geometric2d: invatid primitive type!" << std::endl;
+    
+    // Set color
+    glColor3f(geom.color[0], geom.color[1], geom.color[2]); 
+    
+    // Create vertices
+    int n_vertices = geom.vertices.size();
+    for(int ii = 0; ii < n_vertices; ii++)
+    {
+        float x = geom.vertices[ii][0];
+        float y = geom.vertices[ii][1];
+        glVertex2f(x, y);
+    }
+
+    //
+    glEnd();
+}
+
+}
+}namespace rlly
 {
 namespace spaces
 {

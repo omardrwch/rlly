@@ -26,7 +26,7 @@ namespace render
 struct Geometric2D
 {
     /**
-     * Primitive type (GL_LINE_STRIP by defaut)
+     * Primitive type (GL_LINE_LOOP by defaut)
      * Possibilities:
      *      GL_POINTS
      *      GL_LINES
@@ -39,7 +39,7 @@ struct Geometric2D
      *      GL_QUADS
      *      GL_QUAD_STRIP
      */
-    std::string type = "GL_LINE_STRIP";
+    std::string type = "GL_LINE_LOOP";
 
     /**
      * vector with 3 elements, contaning the color of the shape
@@ -57,6 +57,14 @@ struct Geometric2D
      * Add vertex 
      */ 
     void add_vertex(std::vector<float> vertex) { vertices.push_back(vertex); }; 
+    void add_vertex(float x, float y) 
+    { 
+        std::vector<float> vertex;
+        vertex.push_back(x);
+        vertex.push_back(y);
+        vertices.push_back(vertex); 
+    }; 
+
 };
 
 /**
@@ -68,6 +76,11 @@ struct Scene
      * Vector of 2D shapes represeting the scene
      */
     std::vector<Geometric2D> shapes;
+
+    /**
+     * Include new shape
+     */
+    void add_shape(Geometric2D shape){ shapes.push_back(shape);};
 };
 
 

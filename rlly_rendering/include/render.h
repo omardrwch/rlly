@@ -15,6 +15,7 @@
 #include "graphrender.h"
 #include "utils.h"
 #include "renderenv.h"
+#include "render2d.h"
 
 namespace rlly
 {

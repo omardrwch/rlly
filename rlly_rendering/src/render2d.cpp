@@ -7,7 +7,7 @@ namespace rlly
 namespace render
 {
 
-std::list<utils::render::Scene> Render2D::data;
+std::vector<utils::render::Scene> Render2D::data;
 
 //
 
@@ -18,6 +18,11 @@ utils::render::Scene Render2D::background;
 unsigned int Render2D::time_count = 0;
 
 //
+
+void Render2D::set_data(std::vector<utils::render::Scene> _data)
+{
+    data = _data;
+}
 
 void Render2D::set_background(utils::render::Scene _background)
 {
@@ -48,6 +53,17 @@ void Render2D::display()
     glClearColor(background_color[0], background_color[1], background_color[2], 1.0f); 
     glClear(GL_COLOR_BUFFER_BIT);    
 
+    // Display background
+    for(auto p_shape = background.shapes.begin(); p_shape != background.shapes.end(); ++p_shape)
+        draw_geometric2d(*p_shape);
+    
+    // Display objects
+    if (data.size() > 0)
+    {
+        int idx = time_count % data.size();
+        for(auto p_shape = data[idx].shapes.begin(); p_shape != data[idx].shapes.end(); ++ p_shape)
+            draw_geometric2d(*p_shape);
+    }
     time_count += 1; // Increment time 
     glFlush();       // Render now
 }
@@ -103,7 +119,7 @@ void Render2D::draw_geometric2d(utils::render::Geometric2D geom)
         float y = geom.vertices[ii][1];
         glVertex2f(x, y);
     }
-    
+
     //
     glEnd();
 }

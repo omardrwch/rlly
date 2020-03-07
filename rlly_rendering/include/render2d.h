@@ -34,8 +34,8 @@ private:
     // Backgroud image 
     static utils::render::Scene background;
 
-    // Data to be rendered (represented by a list of scenes)
-    static std::list<utils::render::Scene> data;
+    // Data to be rendered (represented by a vector of scenes)
+    static std::vector<utils::render::Scene> data;
 
     // Time counter 
     static unsigned int time_count;
@@ -64,7 +64,7 @@ public:
     /**
      * Set scene to be rendered
      */
-    void set_data(std::list<utils::render::Scene> _data);
+    void set_data(std::vector<utils::render::Scene> _data);
 
     /**
      * Set background

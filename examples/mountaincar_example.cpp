@@ -3,32 +3,22 @@
     $ bash scripts/compile.sh mountaincar_example && ./build/examples/mountaincar_example
 */
 
-#include <iostream>
 #include <vector>
-#include <string>
-#include <cmath>
-
-#include "env.h"
-#include "space.h"
-#include "utils.h"
-
-// #include "rlly.hpp"
-
-#include "render.h"
+// the header needs to be generated with -rendering option
+#include "rlly.hpp"
 
 
 int main()
 {
     rlly::env::MountainCar env;
-    int horizon = 200;
-    
-    std::vector<std::vector<double>> states;
     env.set_seed(123);
-    for(int hh = 1; hh < horizon; hh++)
+
+    int horizon = 200;
+    rlly::utils::vec::vec_2d states; // or std::vector<std::vector<double>> states;
+    for(int hh = 0; hh < horizon; hh++)
     {
         auto action = env.action_space.sample();
         auto step_result = env.step(action);
-        // std::cout << "action  " << action << ", angle = " << step_result.next_state[0] <<std::endl;
         states.push_back(step_result.next_state);
     }
 

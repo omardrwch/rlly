@@ -15,19 +15,18 @@
 // #include "rlly.hpp"
 
 #include "render.h"
-#include "polygon2d.h"
 
 
 int main()
 {
     rlly::env::MountainCar env;
-    int horizon = 100;
+    int horizon = 50;
     
     std::vector<std::vector<double>> states;
-    env.set_seed(789);
+    env.set_seed(76345);
     for(int hh = 1; hh < horizon; hh++)
     {
-        auto action = env.action_space.sample(); 
+        auto action = env.action_space.sample();
         auto step_result = env.step(action);
         std::cout << "action  " << action << ", angle = " << step_result.next_state[0] <<std::endl;
         states.push_back(step_result.next_state);

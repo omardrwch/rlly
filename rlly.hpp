@@ -1927,6 +1927,10 @@ MountainCar::MountainCar()
 
     // 2D rendering is enabled for MountainCar
     rendering2d_enabled = true;
+    clipping_area_for_render2d[0] = -1.2;
+    clipping_area_for_render2d[1] =  0.6;
+    clipping_area_for_render2d[2] = -0.2;
+    clipping_area_for_render2d[3] =  1.1;
 }
 
 std::vector<double> MountainCar::reset()
@@ -1974,8 +1978,8 @@ utils::render::Scene MountainCar::get_scene_for_render2d(std::vector<double> sta
 {
     float y = std::sin(3*state_var[position])*0.45 + 0.55;
     float x = state_var[position];
-    x = (10.0/9.0)*x + 1.0/3.0;  // mapping the state to [-1, 1]
-    y = y - 0.4;  // vertical translation
+    // x = (10.0/9.0)*x + 1.0/3.0;  // mapping the state to [-1, 1]
+    // y = y - 0.4;  // vertical translation
 
     utils::render::Scene car_scene;
     utils::render::Geometric2D car;
@@ -2005,8 +2009,8 @@ utils::render::Scene MountainCar::get_background_for_render2d()
     std::vector<std::vector<float>> vertices1 = {{-1.0, -1.0}};
 
     // Mountain
-    mountain.add_vertex( 0.0f, -1.0f);
-    mountain.add_vertex( 1.0f, -1.0f);
+    mountain.add_vertex( -0.3f, -1.0f);
+    mountain.add_vertex(  0.6f, -1.0f);
 
     int n_points = 100;
     double range = observation_space.high[0] - observation_space.low[0];
@@ -2016,16 +2020,15 @@ utils::render::Scene MountainCar::get_background_for_render2d()
     {
         double x = observation_space.low[0] + ii*eps;
         double y = std::sin(3*x)*0.45 + 0.55;
-        y = y - 0.4;
-        x = (10.0/9.0)*x + 1.0/3.0 ;
+        // y = y - 0.4;
+        // x = (10.0/9.0)*x + 1.0/3.0 ;
         mountain.add_vertex(x, y);
     }
-    mountain.add_vertex(-1.0f, -1.0f);
+    mountain.add_vertex(-1.2f, -1.0f);
 
     // Flag
-    float goal_x = (10.0/9.0)*goal_position + 1.0/3.0;
+    float goal_x = goal_position;
     float goal_y = std::sin(3*goal_position)*0.45 + 0.55;
-    goal_y -= 0.4;  
     flag.add_vertex(goal_x, goal_y);
     flag.add_vertex(goal_x+0.025f, goal_y+0.075f);
     flag.add_vertex(goal_x-0.025f, goal_y+0.075f);
@@ -2184,34 +2187,19 @@ utils::render::Scene CartPole::get_scene_for_render2d(std::vector<double> state_
     u_vec[0] /= norm;
     u_vec[1] /= norm;
 
-    // map to [-1, 1]
-    // cart_x = cart_x/x_threshold;  // mapping the state to [-1, 1]
-    // pole_x0 /= x_threshold;
-    // pole_x1 /= x_threshold;
-    // pole_y0 = utils::linear_map(pole_y0, cart_y, cart_y+x_threshold, cart_y, 1.0 + cart_y);
-    // pole_y1 = utils::linear_map(pole_y1, cart_y, cart_y+x_threshold, cart_y, 1.0 + cart_y);
-
-    u_vec[0] /= 100.0;
-    u_vec[1] /= 100.0;
+    u_vec[0] /= 50.0;
+    u_vec[1] /= 50.0;
 
     utils::render::Scene cartpole_scene;
     utils::render::Geometric2D cart, pole;
     cart.type = "GL_QUADS";
     cart.set_color(0.0f, 0.0f, 0.0f);
     
-    float size = 0.025;
+    float size = 0.075;
     cart.add_vertex(cart_x - size, cart_y - size);
     cart.add_vertex(cart_x + size, cart_y - size);
     cart.add_vertex(cart_x + size, cart_y + size);
     cart.add_vertex(cart_x - size, cart_y + size);
-
-    // pole.type = "GL_LINES";
-    // pole.add_vertex(pole_x0, pole_y0);
-    // pole.add_vertex(pole_x1, pole_y1);
-    // pole.set_color(0.4f, 0.0f, 0.0f);
-
-    // std::cout << "==============  " <<
-    //  (pole_y1-pole_y0)*(pole_y1-pole_y0) +  (pole_x1-pole_x0)*(pole_x1-pole_x0) << std::endl;
 
     pole.type = "GL_QUADS";
     pole.add_vertex(pole_x0 + u_vec[0], pole_y0 + u_vec[1]);
@@ -2234,10 +2222,10 @@ utils::render::Scene CartPole::get_background_for_render2d()
     
     float y = 0;
     float size = 0.0125;
-    base.add_vertex(-1.0, y - size);
-    base.add_vertex(-1.0, y + size);
-    base.add_vertex( 1.0, y + size);
-    base.add_vertex( 1.0, y - size);
+    base.add_vertex(-2.4, y - size);
+    base.add_vertex(-2.4, y + size);
+    base.add_vertex( 2.4, y + size);
+    base.add_vertex( 2.4, y - size);
 
     background.add_shape(base);
     return background;

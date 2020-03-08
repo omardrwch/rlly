@@ -112,6 +112,7 @@ public:
      *     - set rendering2d_enabled to true
      *     - implement the method get_scene_for_render2d()
      *     - implement the method get_background_for_render()
+     *     - optionally, change the value of refresh_interval_for_render2d 
      */
     bool rendering2d_enabled = false;
 
@@ -125,6 +126,11 @@ public:
      * Retuns a scene (list of shapes) representing the background
      */
     virtual utils::render::Scene get_background_for_render2d(){return utils::render::Scene();};
+
+    /**
+     *  Refresh interval of rendering (in milliseconds)
+     */
+    int refresh_interval_for_render2d = 50;
 
 }; 
 }  // namespace env

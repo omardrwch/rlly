@@ -25,10 +25,12 @@ find_package(OpenGL REQUIRED)
 
 #
 add_executable(debug debug.cpp)
+target_link_libraries(debug ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES})
 target_include_directories(debug PUBLIC ${RLLY_SOURCE_DIR})
 
 #
 add_executable(gridworld_example gridworld_example.cpp)
+target_link_libraries(gridworld_example ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES})
 target_include_directories(gridworld_example PUBLIC ${RLLY_SOURCE_DIR})
 
 #

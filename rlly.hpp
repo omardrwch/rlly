@@ -771,6 +771,7 @@ public:
      *     - set rendering2d_enabled to true
      *     - implement the method get_scene_for_render2d()
      *     - implement the method get_background_for_render()
+     *     - optionally, change the value of refresh_interval_for_render2d 
      */
     bool rendering2d_enabled = false;
 
@@ -784,6 +785,11 @@ public:
      * Retuns a scene (list of shapes) representing the background
      */
     virtual utils::render::Scene get_background_for_render2d(){return utils::render::Scene();};
+
+    /**
+     *  Refresh interval of rendering (in milliseconds)
+     */
+    int refresh_interval_for_render2d = 50;
 
 }; 
 }  // namespace env
@@ -1188,6 +1194,16 @@ public:
      */
     void render_values(std::vector<double> values);
 
+    /**
+     * Generate 2D representation (Scene) of a given state.
+     */
+    utils::render::Scene get_scene_for_render2d(int state_var);
+
+    /**
+     * Background for rendering
+     */
+    utils::render::Scene get_background_for_render2d();
+
 private:
     /* data */
 
@@ -1343,6 +1359,7 @@ void render_env(std::vector<S> states, EnvType& env)
         // Render
         Render2D renderer;
         renderer.window_name = env.id;
+        renderer.refresh_interval = env.refresh_interval_for_render2d;
         renderer.set_data(data);
         renderer.set_background(background);
         renderer.run_graphics();
@@ -1482,6 +1499,10 @@ GridWorld::GridWorld(int _nrows, int _ncols, double fail_p /* = 0 */, double rew
     }
         
     id = "GridWorld";
+
+    // 2D rendering is enabled for GridWorld
+    rendering2d_enabled = true;
+    refresh_interval_for_render2d = 1000; // 1 second between frames
 }
 
 std::vector<int> GridWorld::get_neighbor(std::vector<int> state_coord, int action)
@@ -1557,6 +1578,74 @@ void GridWorld::render_values(std::vector<double> values)
     }
     for(int ii = 0; ii < ncols; ii ++) std::cout<<"------";
     std::cout << std::endl;       
+}
+
+utils::render::Scene GridWorld::get_scene_for_render2d(int state_var)
+{
+    utils::render::Scene scene; 
+    utils::render::Geometric2D agent_shape;
+    agent_shape.type = "GL_QUADS";
+    agent_shape.set_color(0.0, 0.0, 0.5);
+    std::vector<int>& state_coord = index2coord[state_var];
+    
+    // Getting (x, y) representation of the state
+    float x_delta = 1.0/ncols;
+    float y_delta = 1.0/nrows;
+
+    float x = state_coord[1]*x_delta;  // in [0, 1]
+    float y = state_coord[0]*y_delta;  // in [0, 1]
+    x = x + x_delta/2.0;  // centering
+    y = y + y_delta/2.0;  // centering
+
+    x = 2.0*x - 1.0;  // in [-1, 1]
+    y = 2.0*y - 1.0;  // in [-1, 1]
+
+    // 
+    float x_size = x_delta/3.0;
+    float y_size = y_delta/3.0;
+
+    agent_shape.add_vertex( x - x_size, y - y_size );
+    agent_shape.add_vertex( x + x_size, y - y_size );
+    agent_shape.add_vertex( x + x_size, y + y_size );
+    agent_shape.add_vertex( x - x_size, y + y_size );
+
+    scene.add_shape(agent_shape);
+    return scene;
+}
+
+utils::render::Scene GridWorld::get_background_for_render2d()
+{
+    utils::render::Scene scene; 
+
+    // Getting (x, y) representation of the state
+    float x_delta = 1.0/ncols;
+    float y_delta = 1.0/nrows;
+    float x_size = 2*x_delta;
+    float y_size = 2*y_delta;
+
+    bool color = true;
+    for(int cc = 0; cc < ncols; cc++)
+    {
+        for(int rr = 0; rr < nrows; rr++)
+        {
+            utils::render::Geometric2D shape;
+            shape.type = "GL_QUADS";
+            if ((rr+color) % 2 == 0) shape.set_color(0.35, 0.35, 0.35);
+            else shape.set_color(0.5, 0.5, 0.5);
+            if ( rr == nrows - 1  && cc == ncols - 1 ) shape.set_color(0.0, 0.5, 0.0);
+            float x = cc*x_delta;
+            float y = rr*y_delta;
+            x = 2.0*x - 1.0;  // in [-1, 1]
+            y = 2.0*y - 1.0;  // in [-1, 1]
+            shape.add_vertex(x, y);
+            shape.add_vertex(x+x_size, y);
+            shape.add_vertex(x+x_size, y+y_size);
+            shape.add_vertex(x, y+y_size);
+            scene.add_shape(shape);
+        }
+        color = !color;
+    }
+    return scene;
 }
 
 } // namespace env 

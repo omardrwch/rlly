@@ -69,6 +69,17 @@ public:
      */
     void render_values(std::vector<double> values);
 
+
+    /**
+     * Generate 2D representation (Scene) of a given state.
+     */
+    utils::render::Scene get_scene_for_render2d(int state_var);
+
+    /**
+     * Background for rendering
+     */
+    utils::render::Scene get_background_for_render2d();
+
 private:
     /* data */
 

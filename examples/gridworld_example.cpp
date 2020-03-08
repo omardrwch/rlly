@@ -24,7 +24,7 @@ int main(void)
     double fail_prob = 0.0;  // failure probability
     double reward_smoothness = 0.0;      // reward = exp( - dist(next_state, goal_state)^2 / reward_smoothness^2)
     double sigma = 0.1;  // reward noise (Gaussian)
-    env::GridWorld mdp(2, 2, fail_prob, reward_smoothness, sigma);
+    env::GridWorld mdp(5, 5, fail_prob, reward_smoothness, sigma);
 
     cout << endl << mdp.id << endl;
     cout << endl << mdp.reward_function.noise_type << endl;
@@ -68,6 +68,22 @@ int main(void)
     mdp.render_values(mdp.transitions[state][2]);
     std::cout << "Transitions at state " << state << ", action down: " << std::endl;
     mdp.render_values(mdp.transitions[state][3]);
+
+    /*
+
+        Graphic rendering
+
+    */
+    state = mdp.reset();
+    std::vector<int> states;
+    int horizon = 50;
+    for(int hh = 0; hh < horizon; hh++)
+    {
+        int action = mdp.action_space.sample();
+        auto step_result = mdp.step(action);
+        states.push_back(step_result.next_state);
+    }
+    render::render_env(states, mdp);
 
     return 0;
 }

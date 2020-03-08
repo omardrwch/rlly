@@ -39,6 +39,11 @@ $ bash generate_header/run.sh -rendering
 
 ## Examples
 
+The examples below show how to interact with some __rlly__ envinroments and how to visualize them. For more examples, see folder `examples/`.
+
+
+### MountainCar 
+
 ```cpp
 #include <vector>
 // the header needs to be generated with -rendering option
@@ -66,7 +71,41 @@ int main()
 ![alt text](https://github.com/omardrwch/rlly/blob/master/figures/MountainCar.png "MountainCar rendering")
 
 
-For more examples, see folder `examples/`.
+### GridWorld
+
+```cpp
+#include <iostream>
+#include <vector>
+#include "rlly.hpp"
+
+int main(void)
+{
+    double fail_prob = 0.0;          // failure probability
+    double reward_smoothness = 0.0;  // reward = exp( - distance(next_state, goal_state)^2 / reward_smoothness^2)
+    double sigma = 0.1;              // reward noise (Gaussian)
+    rlly::env::GridWorld env(5, 5, fail_prob, reward_smoothness, sigma);
+    env.set_seed(123);
+
+     // Rendering (graphic)
+    int state = env.reset();
+    std::vector<int> states;
+    int horizon = 50;
+    for(int hh = 0; hh < horizon; hh++)
+    {
+        int action = env.action_space.sample();
+        auto step_result = env.step(action);
+        states.push_back(step_result.next_state);
+    }
+    rlly::render::render_env(states, env);
+
+    // Rendering (text)
+    env.render();
+    return 0;
+}
+```
+
+![alt text](https://github.com/omardrwch/rlly/blob/master/figures/GridWorld.png "GridWorld rendering")
+
 
 
 ## Documentation

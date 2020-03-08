@@ -1,6 +1,7 @@
 #ifndef __RLLY_MISC_H__
 #define __RLLY_MISC_H__
 
+#include <iostream>
 
 /**
  * @file 
@@ -26,6 +27,11 @@ namespace utils
         assert( !(hi < lo) );
         return (v < lo) ? lo : (hi < v) ? hi : v;
     }
+
+    /**
+     *  Map a value x in [x0, x1] linearly to the range [y1, y2]
+     */
+    double linear_map(double x, double x1, double x2, double y1, double y2);
 }
 }  
 

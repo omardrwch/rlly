@@ -29,6 +29,8 @@ void Box::set_bounds(std::vector<double> _low, std::vector<double> _high)
 {
     low = _low; 
     high = _high;
+    size = _low.size();
+    assert(size == _high.size() && "The size of _low and _high must be the same.");
 }
 
 bool Box::contains(std::vector<double> x)

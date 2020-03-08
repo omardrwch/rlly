@@ -119,6 +119,10 @@ GridWorld::GridWorld(int _nrows, int _ncols, double fail_p /* = 0 */, double rew
     // 2D rendering is enabled for GridWorld
     rendering2d_enabled = true;
     refresh_interval_for_render2d = 1000; // 1 second between frames
+    clipping_area_for_render2d[0] = 0.0;
+    clipping_area_for_render2d[1] = 1.0*ncols;
+    clipping_area_for_render2d[2] = 0.0;
+    clipping_area_for_render2d[3] = 1.0*nrows;
 }
 
 std::vector<int> GridWorld::get_neighbor(std::vector<int> state_coord, int action)
@@ -205,21 +209,17 @@ utils::render::Scene GridWorld::get_scene_for_render2d(int state_var)
     std::vector<int>& state_coord = index2coord[state_var];
     
     // Getting (x, y) representation of the state
-    float x_delta = 1.0/ncols;
-    float y_delta = 1.0/nrows;
+    float x_delta = 1.0;
+    float y_delta = 1.0;
 
-    float x = state_coord[1]*x_delta;  // in [0, 1]
-    float y = state_coord[0]*y_delta;  // in [0, 1]
+    float x = state_coord[1]*1.0;  
+    float y = state_coord[0]*1.0;  
     x = x + x_delta/2.0;  // centering
     y = y + y_delta/2.0;  // centering
 
-    x = 2.0*x - 1.0;  // in [-1, 1]
-    y = 2.0*y - 1.0;  // in [-1, 1]
-
-
     // 
-    float x_size = x_delta/3.0;
-    float y_size = y_delta/3.0;
+    float x_size = x_delta/4.0;
+    float y_size = y_delta/4.0;
 
     agent_shape.add_vertex( x - x_size, y - y_size );
     agent_shape.add_vertex( x + x_size, y - y_size );
@@ -235,10 +235,8 @@ utils::render::Scene GridWorld::get_background_for_render2d()
     utils::render::Scene scene; 
 
     // Getting (x, y) representation of the state
-    float x_delta = 1.0/ncols;
-    float y_delta = 1.0/nrows;
-    float x_size = 2*x_delta;
-    float y_size = 2*y_delta;
+    float x_size = 1.0;
+    float y_size = 1.0;
 
     bool color = true;
     for(int cc = 0; cc < ncols; cc++)
@@ -250,10 +248,8 @@ utils::render::Scene GridWorld::get_background_for_render2d()
             if ((rr+color) % 2 == 0) shape.set_color(0.35, 0.35, 0.35);
             else shape.set_color(0.5, 0.5, 0.5);
             if ( rr == nrows - 1  && cc == ncols - 1 ) shape.set_color(0.0, 0.5, 0.0);
-            float x = cc*x_delta;
-            float y = rr*y_delta;
-            x = 2.0*x - 1.0;  // in [-1, 1]
-            y = 2.0*y - 1.0;  // in [-1, 1]
+            float x = 1.0*cc;
+            float y = 1.0*rr;
             shape.add_vertex(x, y);
             shape.add_vertex(x+x_size, y);
             shape.add_vertex(x+x_size, y+y_size);

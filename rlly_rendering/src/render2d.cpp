@@ -1,6 +1,8 @@
 #include <iostream>
+#include <cmath>
 #include "render2d.h"
 #include "utils.h"
+
 
 namespace rlly
 {
@@ -16,12 +18,50 @@ utils::render::Scene Render2D::background;
 // 
 
 int Render2D::refresh_interval = 50;
-
 unsigned int Render2D::time_count = 0;
-
 std::string Render2D::window_name = "render";
+std::vector<float> Render2D::clipping_area;
+int Render2D::window_width = 640;
+int Render2D::window_height = 640;
+
 
 //
+
+Render2D::Render2D()
+{
+    // setting some defaults
+    clipping_area.push_back(-1.0);
+    clipping_area.push_back( 1.0);
+    clipping_area.push_back(-1.0);
+    clipping_area.push_back( 1.0);
+}
+
+
+//
+
+void Render2D::set_window_name(std::string name)
+{
+    window_name = name;
+}
+
+void Render2D::set_refresh_interval(int interval)
+{
+    refresh_interval = interval;
+}
+
+void Render2D::set_clipping_area(std::vector<float> area)
+{
+    clipping_area = area; 
+    int base_size = std::max(window_width, window_height);
+    float width_range  = area[1] - area[0];
+    float height_range = area[3] - area[2];
+    float base_range   = std::max(width_range, height_range);
+    width_range /= base_range;
+    height_range /= base_range;
+    // update window width and height
+    window_width  = (int) (base_size*width_range);
+    window_height = (int) (base_size*height_range);
+}
 
 void Render2D::set_data(std::vector<utils::render::Scene> _data)
 {
@@ -38,7 +78,10 @@ void Render2D::set_background(utils::render::Scene _background)
 
 void Render2D::initGL()
 {
-    // Nothing implemented yet    
+    // set clipping area
+    glMatrixMode(GL_PROJECTION);  // To operate on the Projection matrix
+    glLoadIdentity();  
+    gluOrtho2D(clipping_area[0], clipping_area[1], clipping_area[2], clipping_area[3]); 
 }
 
 //
@@ -84,7 +127,7 @@ int Render2D::run_graphics()
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE,
                   GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 
-    glutInitWindowSize(window_size, window_size);   // Set the window's initial width & height
+    glutInitWindowSize(window_width, window_height);   // Set the window's initial width & height
     glutInitWindowPosition(50, 50); // Position the window's initial top-left corner
 
     glutCreateWindow(window_name.c_str()); // Create a window with the given title

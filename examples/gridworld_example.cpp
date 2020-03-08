@@ -12,7 +12,7 @@ int main(void)
     double fail_prob = 0.0;          // failure probability
     double reward_smoothness = 0.0;  // reward = exp( - distance(next_state, goal_state)^2 / reward_smoothness^2)
     double sigma = 0.1;              // reward noise (Gaussian)
-    rlly::env::GridWorld env(5, 5, fail_prob, reward_smoothness, sigma);
+    rlly::env::GridWorld env(5, 10, fail_prob, reward_smoothness, sigma);
     env.set_seed(123);
 
      // Rendering (graphic)

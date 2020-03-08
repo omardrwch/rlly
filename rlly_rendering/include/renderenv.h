@@ -42,8 +42,9 @@ void render_env(std::vector<S> states, EnvType& env)
 
         // Render
         Render2D renderer;
-        renderer.window_name = env.id;
-        renderer.refresh_interval = env.refresh_interval_for_render2d;
+        renderer.set_window_name(env.id);
+        renderer.set_refresh_interval(env.refresh_interval_for_render2d);
+        renderer.set_clipping_area(env.clipping_area_for_render2d);
         renderer.set_data(data);
         renderer.set_background(background);
         renderer.run_graphics();

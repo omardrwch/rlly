@@ -778,6 +778,7 @@ public:
      *     - implement the method get_scene_for_render2d()
      *     - implement the method get_background_for_render()
      *     - optionally, change the value of refresh_interval_for_render2d 
+     *     - optionally, define clipping_area_for_render2d;
      */
     bool rendering2d_enabled = false;
 
@@ -796,6 +797,11 @@ public:
      *  Refresh interval of rendering (in milliseconds)
      */
     int refresh_interval_for_render2d = 50;
+
+    /**
+     * Clipping are for rendering (left, right, bottom, top). Default = {-1.0, 1.0, -1.0, 1.0}
+     */
+    std::vector<float> clipping_area_for_render2d = {-1.0, 1.0, -1.0, 1.0};
 
 }; 
 }  // namespace env
@@ -1333,8 +1339,11 @@ namespace render
 class Render2D
 {
 private:
-    // Window size (in pixels)
-    static const int window_size = 640;
+    // Window width (in pixels)
+    static int window_width;
+
+     // Window height (in pixels)
+    static int window_height;
 
     // Background color
     static constexpr float background_color[3] = {0.6, 0.75, 1.0}; 
@@ -1360,8 +1369,18 @@ private:
     // Draw a 2D shape
     static void draw_geometric2d(utils::render::Geometric2D geom);
 
+    // Clipping area. Vector with elements {left, right, bottom, top}
+    // Default = {-1.0, 1.0, -1.0, 1.0}
+    static std::vector<float> clipping_area;
+
+    // Window name
+    static std::string window_name;
+
+    // Window refresh inteval (in milliseconds)
+    static int refresh_interval; 
+
 public:
-    Render2D(){};
+    Render2D();
     ~Render2D(){};
     
     /**
@@ -1379,11 +1398,22 @@ public:
      */
     void set_background(utils::render::Scene _background);
 
-    // Window name
-    static std::string window_name;
+    /**
+     * Set window name
+     */
+    void set_window_name(std::string name);
 
-    // Window refresh inteval (in milliseconds)
-    static int refresh_interval; 
+    /**
+     * Set refresh interval (in milliseconds)
+     */
+    void set_refresh_interval(int interval);
+
+    /**
+     * Set clipping area. window_width and window_height are adapted 
+     * to respect the proportions of the clipping_area
+     * @param area vector with elements {left, right, bottom, top}
+     */ 
+    void set_clipping_area(std::vector<float> area);
 };
 
 } // namspace render
@@ -1428,8 +1458,9 @@ void render_env(std::vector<S> states, EnvType& env)
 
         // Render
         Render2D renderer;
-        renderer.window_name = env.id;
-        renderer.refresh_interval = env.refresh_interval_for_render2d;
+        renderer.set_window_name(env.id);
+        renderer.set_refresh_interval(env.refresh_interval_for_render2d);
+        renderer.set_clipping_area(env.clipping_area_for_render2d);
         renderer.set_data(data);
         renderer.set_background(background);
         renderer.run_graphics();
@@ -1573,6 +1604,10 @@ GridWorld::GridWorld(int _nrows, int _ncols, double fail_p /* = 0 */, double rew
     // 2D rendering is enabled for GridWorld
     rendering2d_enabled = true;
     refresh_interval_for_render2d = 1000; // 1 second between frames
+    clipping_area_for_render2d[0] = 0.0;
+    clipping_area_for_render2d[1] = 1.0*ncols;
+    clipping_area_for_render2d[2] = 0.0;
+    clipping_area_for_render2d[3] = 1.0*nrows;
 }
 
 std::vector<int> GridWorld::get_neighbor(std::vector<int> state_coord, int action)
@@ -1659,20 +1694,17 @@ utils::render::Scene GridWorld::get_scene_for_render2d(int state_var)
     std::vector<int>& state_coord = index2coord[state_var];
     
     // Getting (x, y) representation of the state
-    float x_delta = 1.0/ncols;
-    float y_delta = 1.0/nrows;
+    float x_delta = 1.0;
+    float y_delta = 1.0;
 
-    float x = state_coord[1]*x_delta;  // in [0, 1]
-    float y = state_coord[0]*y_delta;  // in [0, 1]
+    float x = state_coord[1]*1.0;  
+    float y = state_coord[0]*1.0;  
     x = x + x_delta/2.0;  // centering
     y = y + y_delta/2.0;  // centering
 
-    x = 2.0*x - 1.0;  // in [-1, 1]
-    y = 2.0*y - 1.0;  // in [-1, 1]
-
     // 
-    float x_size = x_delta/3.0;
-    float y_size = y_delta/3.0;
+    float x_size = x_delta/4.0;
+    float y_size = y_delta/4.0;
 
     agent_shape.add_vertex( x - x_size, y - y_size );
     agent_shape.add_vertex( x + x_size, y - y_size );
@@ -1688,10 +1720,8 @@ utils::render::Scene GridWorld::get_background_for_render2d()
     utils::render::Scene scene; 
 
     // Getting (x, y) representation of the state
-    float x_delta = 1.0/ncols;
-    float y_delta = 1.0/nrows;
-    float x_size = 2*x_delta;
-    float y_size = 2*y_delta;
+    float x_size = 1.0;
+    float y_size = 1.0;
 
     bool color = true;
     for(int cc = 0; cc < ncols; cc++)
@@ -1703,10 +1733,8 @@ utils::render::Scene GridWorld::get_background_for_render2d()
             if ((rr+color) % 2 == 0) shape.set_color(0.35, 0.35, 0.35);
             else shape.set_color(0.5, 0.5, 0.5);
             if ( rr == nrows - 1  && cc == ncols - 1 ) shape.set_color(0.0, 0.5, 0.0);
-            float x = cc*x_delta;
-            float y = rr*y_delta;
-            x = 2.0*x - 1.0;  // in [-1, 1]
-            y = 2.0*y - 1.0;  // in [-1, 1]
+            float x = 1.0*cc;
+            float y = 1.0*rr;
             shape.add_vertex(x, y);
             shape.add_vertex(x+x_size, y);
             shape.add_vertex(x+x_size, y+y_size);
@@ -2407,12 +2435,48 @@ utils::render::Scene Render2D::background;
 // 
 
 int Render2D::refresh_interval = 50;
-
 unsigned int Render2D::time_count = 0;
-
 std::string Render2D::window_name = "render";
+std::vector<float> Render2D::clipping_area;
+int Render2D::window_width = 640;
+int Render2D::window_height = 640;
 
 //
+
+Render2D::Render2D()
+{
+    // setting some defaults
+    clipping_area.push_back(-1.0);
+    clipping_area.push_back( 1.0);
+    clipping_area.push_back(-1.0);
+    clipping_area.push_back( 1.0);
+}
+
+//
+
+void Render2D::set_window_name(std::string name)
+{
+    window_name = name;
+}
+
+void Render2D::set_refresh_interval(int interval)
+{
+    refresh_interval = interval;
+}
+
+void Render2D::set_clipping_area(std::vector<float> area)
+{
+    clipping_area = area; 
+    int base_size = std::max(window_width, window_height);
+    float width_range  = area[1] - area[0];
+    float height_range = area[3] - area[2];
+    float base_range   = std::max(width_range, height_range);
+    width_range /= base_range;
+    height_range /= base_range;
+    // update window width and height
+    window_width  = (int) (base_size*width_range);
+    window_height = (int) (base_size*height_range);
+}
 
 void Render2D::set_data(std::vector<utils::render::Scene> _data)
 {
@@ -2428,7 +2492,10 @@ void Render2D::set_background(utils::render::Scene _background)
 
 void Render2D::initGL()
 {
-    // Nothing implemented yet    
+    // set clipping area
+    glMatrixMode(GL_PROJECTION);  // To operate on the Projection matrix
+    glLoadIdentity();  
+    gluOrtho2D(clipping_area[0], clipping_area[1], clipping_area[2], clipping_area[3]); 
 }
 
 //
@@ -2474,7 +2541,7 @@ int Render2D::run_graphics()
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE,
                   GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 
-    glutInitWindowSize(window_size, window_size);   // Set the window's initial width & height
+    glutInitWindowSize(window_width, window_height);   // Set the window's initial width & height
     glutInitWindowPosition(50, 50); // Position the window's initial top-left corner
 
     glutCreateWindow(window_name.c_str()); // Create a window with the given title

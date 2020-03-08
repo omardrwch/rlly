@@ -113,6 +113,7 @@ public:
      *     - implement the method get_scene_for_render2d()
      *     - implement the method get_background_for_render()
      *     - optionally, change the value of refresh_interval_for_render2d 
+     *     - optionally, define clipping_area_for_render2d;
      */
     bool rendering2d_enabled = false;
 
@@ -131,6 +132,11 @@ public:
      *  Refresh interval of rendering (in milliseconds)
      */
     int refresh_interval_for_render2d = 50;
+
+    /**
+     * Clipping are for rendering (left, right, bottom, top). Default = {-1.0, 1.0, -1.0, 1.0}
+     */
+    std::vector<float> clipping_area_for_render2d = {-1.0, 1.0, -1.0, 1.0};
 
 }; 
 }  // namespace env

@@ -33,6 +33,11 @@ CartPole::CartPole()
     // 2D rendering is enabled for CartPole
     rendering2d_enabled = true;
 
+    clipping_area_for_render2d[0] = -2.4;
+    clipping_area_for_render2d[1] =  2.4;
+    clipping_area_for_render2d[2] = -0.5;
+    clipping_area_for_render2d[3] =  1.5;
+
     // // printing for debug
     // std::cout << "pi " << pi  << std::endl;
     // std::cout << "total mass " << total_mass  << std::endl;
@@ -120,7 +125,7 @@ utils::render::Scene CartPole::get_scene_for_render2d(std::vector<double> state_
     // Compute cart and pole positions
     float pole_length = 2.0*half_pole_length; 
     float theta = state_var[2];
-    float cart_y = -0.25;
+    float cart_y = 0;
     float cart_x = state_var[0];
 
     float pole_x0 = cart_x;
@@ -145,16 +150,8 @@ utils::render::Scene CartPole::get_scene_for_render2d(std::vector<double> state_
     u_vec[0] /= norm;
     u_vec[1] /= norm;
 
-
-    // map to [-1, 1]
-    cart_x = cart_x/x_threshold;  // mapping the state to [-1, 1]
-    pole_x0 /= x_threshold;
-    pole_x1 /= x_threshold;
-    pole_y0 = utils::linear_map(pole_y0, cart_y, cart_y+x_threshold, cart_y, 1.0 + cart_y);
-    pole_y1 = utils::linear_map(pole_y1, cart_y, cart_y+x_threshold, cart_y, 1.0 + cart_y);
-
-    u_vec[0] /= 100.0;
-    u_vec[1] /= 100.0;
+    u_vec[0] /= 50.0;
+    u_vec[1] /= 50.0;
 
 
 
@@ -163,20 +160,11 @@ utils::render::Scene CartPole::get_scene_for_render2d(std::vector<double> state_
     cart.type = "GL_QUADS";
     cart.set_color(0.0f, 0.0f, 0.0f);
     
-    float size = 0.025;
+    float size = 0.075;
     cart.add_vertex(cart_x - size, cart_y - size);
     cart.add_vertex(cart_x + size, cart_y - size);
     cart.add_vertex(cart_x + size, cart_y + size);
     cart.add_vertex(cart_x - size, cart_y + size);
-
-    // pole.type = "GL_LINES";
-    // pole.add_vertex(pole_x0, pole_y0);
-    // pole.add_vertex(pole_x1, pole_y1);
-    // pole.set_color(0.4f, 0.0f, 0.0f);
-
-    // std::cout << "==============  " <<
-    //  (pole_y1-pole_y0)*(pole_y1-pole_y0) +  (pole_x1-pole_x0)*(pole_x1-pole_x0) << std::endl;
-
 
     pole.type = "GL_QUADS";
     pole.add_vertex(pole_x0 + u_vec[0], pole_y0 + u_vec[1]);
@@ -198,12 +186,12 @@ utils::render::Scene CartPole::get_background_for_render2d()
     base.type = "GL_QUADS";
     base.set_color(0.6, 0.3, 0.0);
     
-    float y = -0.25;
+    float y = 0;
     float size = 0.0125;
-    base.add_vertex(-1.0, y - size);
-    base.add_vertex(-1.0, y + size);
-    base.add_vertex( 1.0, y + size);
-    base.add_vertex( 1.0, y - size);
+    base.add_vertex(-2.4, y - size);
+    base.add_vertex(-2.4, y + size);
+    base.add_vertex( 2.4, y + size);
+    base.add_vertex( 2.4, y - size);
 
     background.add_shape(base);
     return background;

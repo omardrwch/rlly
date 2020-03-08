@@ -71,6 +71,37 @@ int main()
 ![alt text](https://github.com/omardrwch/rlly/blob/master/figures/MountainCar.png "MountainCar rendering")
 
 
+### CartPole
+
+```cpp
+#include <iostream>
+#include <vector>
+#include "rlly.hpp"
+
+int main()
+{
+    rlly::env::CartPole env;
+
+    std::vector<double> state = env.reset();
+    rlly::utils::vec::vec_2d states;
+
+    int horizon = 200;
+    for(int ii = 0; ii < horizon; ii++)
+    {
+        auto action = env.action_space.sample();
+        auto step_result = env.step(action);
+        states.push_back(step_result.next_state);
+        if (step_result.done) break;
+    }
+
+    rlly::render::render_env(states, env);
+    return 0;
+}
+```
+
+![alt text](https://github.com/omardrwch/rlly/blob/master/figures/CartPole.png "CartPole rendering")
+
+
 ### GridWorld
 
 ```cpp

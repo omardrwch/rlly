@@ -21,6 +21,8 @@ The goal of __rlly__ is to implement simple environments for reinforcement learn
     * Jupyter notebook `conda install -c anaconda jupyter`
     * [xeus-cling](https://xeus-cling.readthedocs.io/en/latest/)  `conda install -c conda-forge xeus-cling`
 
+* For test coverage (to run `scripts/run_tests_with_coverage.sh`):
+    * lcov ``sudo apt install lcov``
 
 ## How to use the library
 

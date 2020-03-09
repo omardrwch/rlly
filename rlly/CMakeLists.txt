@@ -9,7 +9,7 @@ include_directories("include"
 # Adding sources manually
 # set(SOURCES src/mainapp.cpp src/student.cpp)
 
-# Addint all .cpp files as source
+# Adding all .cpp files as source
 file(GLOB SOURCES "src/*.cpp")  # if there are no subfolders
 file(GLOB SOURCES "src/*/*.cpp")
 

@@ -6,6 +6,7 @@
 #include <limits>
 #include <list>
 #include <map>
+#include <memory>
 #include <random>
 #include <stdlib.h>
 #include <string>
@@ -117,11 +118,6 @@ public:
     // Methods of base class
     std::vector<double> sample();
     bool contains(std::vector<double> x);
-
-    /**
-     * Name of the space
-     */
-    spc_name name = box;
 
     // Attributes
 
@@ -739,6 +735,11 @@ public:
     utils::rand::Random randgen;
 
     /**
+     * Function to clone the environment
+     */
+    virtual std::unique_ptr<Env<S, A>> clone() const = 0;
+
+    /**
      * Set the seed of randgen and seed of action space and observation space
      * The seed of randgen is set to _seed, the seed of action space is set to _seed+123
      * and the seed of observation space is set to _seed+456
@@ -1045,6 +1046,11 @@ public:
      */
     Chain(int N, double fail_p=0);
     ~Chain(){};
+
+    /**
+     * Clone
+     */
+    std::unique_ptr<Env<int, int>> clone() const override;
 };
 
 } // namespace env
@@ -1112,6 +1118,11 @@ public:
      * Returns background for rendering 
      */
     utils::render::Scene get_background_for_render2d() override;
+
+    /**
+     * Clone 
+     */
+    std::unique_ptr<Env<std::vector<double>, int>> clone() const override;
 
 protected:
     /**
@@ -1209,6 +1220,11 @@ public:
     void render_values(std::vector<double> values);
 
     /**
+     * Clone 
+     */
+    std::unique_ptr<Env<int, int>> clone() const override;
+
+    /**
      * Generate 2D representation (Scene) of a given state.
      */
     utils::render::Scene get_scene_for_render2d(int state_var) override;
@@ -1290,6 +1306,11 @@ public:
     *  Action space
     */
     spaces::Discrete action_space;
+
+    /**
+     *  Clone the object
+     */
+    std::unique_ptr<Env<std::vector<double>, int>> clone() const override;
 
     /**
      * Get scene representing a given state
@@ -1687,6 +1708,11 @@ void GridWorld::render_values(std::vector<double> values)
     std::cout << std::endl;       
 }
 
+std::unique_ptr<Env<int, int>> GridWorld::clone() const
+{
+    return std::make_unique<GridWorld>(*this);
+}
+
 utils::render::Scene GridWorld::get_scene_for_render2d(int state_var)
 {
     utils::render::Scene scene; 
@@ -1788,6 +1814,11 @@ Chain::Chain(int N, double fail_p)
 
     set_params(_rewards, _transitions, _terminal_states);
     id = "Chain";
+}
+
+std::unique_ptr<Env<int, int>> Chain::clone() const
+{
+    return std::make_unique<Chain>(*this);
 }
 
 }  // namespace env
@@ -1976,12 +2007,15 @@ bool MountainCar::is_terminal(std::vector<double> state)
     return ((state[position] >= goal_position) && (state[velocity]>=goal_velocity));
 }
 
+std::unique_ptr<Env<std::vector<double>, int>> MountainCar::clone() const
+{
+    return std::make_unique<MountainCar>(*this);
+}
+
 utils::render::Scene MountainCar::get_scene_for_render2d(std::vector<double> state_var)
 {
     float y = std::sin(3*state_var[position])*0.45 + 0.55;
     float x = state_var[position];
-    // x = (10.0/9.0)*x + 1.0/3.0;  // mapping the state to [-1, 1]
-    // y = y - 0.4;  // vertical translation
 
     utils::render::Scene car_scene;
     utils::render::Geometric2D car;
@@ -2017,13 +2051,10 @@ utils::render::Scene MountainCar::get_background_for_render2d()
     int n_points = 100;
     double range = observation_space.high[0] - observation_space.low[0];
     double eps = range/(n_points-1.0);
-    // for(int ii = 0; ii < n_points; ii++)
     for(int ii = n_points-1; ii >= 0; ii--)
     {
         double x = observation_space.low[0] + ii*eps;
         double y = std::sin(3*x)*0.45 + 0.55;
-        // y = y - 0.4;
-        // x = (10.0/9.0)*x + 1.0/3.0 ;
         mountain.add_vertex(x, y);
     }
     mountain.add_vertex(-1.2f, -1.0f);
@@ -2078,17 +2109,6 @@ CartPole::CartPole()
     clipping_area_for_render2d[1] =  2.4;
     clipping_area_for_render2d[2] = -0.5;
     clipping_area_for_render2d[3] =  1.5;
-
-    // // printing for debug
-    // std::cout << "pi " << pi  << std::endl;
-    // std::cout << "total mass " << total_mass  << std::endl;
-    // std::cout << "theta_threshold_radians " << theta_threshold_radians  << std::endl;
-    // std::cout << "pole_mass_times_length " << pole_mass_times_length  << std::endl;
-    // std::cout << "sample from state space ";
-    // utils::vec::printvec(observation_space.sample());
-    // std::cout << "Initial state: "; 
-    // utils::vec::printvec(reset());
-
 }
 
 StepResult<std::vector<double>> CartPole::step(int action)
@@ -2157,6 +2177,11 @@ std::vector<double> CartPole::reset()
         state[ii] = randgen.sample_real_uniform(-0.05, 0.05);
     }
     return state; 
+}
+
+std::unique_ptr<Env<std::vector<double>, int>> CartPole::clone() const
+{
+    return std::make_unique<CartPole>(*this);
 }
 
 utils::render::Scene CartPole::get_scene_for_render2d(std::vector<double> state_var)
@@ -2592,6 +2617,7 @@ Members of Box
 Box::Box()
 {
     // Do nothing. low and high are empty vectors.
+    name = box;
 }
 
 Box::Box(std::vector<double> _low, std::vector<double> _high, unsigned _seed /* = 42 */)
@@ -2601,6 +2627,7 @@ Box::Box(std::vector<double> _low, std::vector<double> _high, unsigned _seed /* 
     size = _low.size();
     generator.seed(_seed);
     assert(size == _high.size() && "The size of _low and _high must be the same.");
+    name = box;
 }    
 
 void Box::set_bounds(std::vector<double> _low, std::vector<double> _high)
@@ -2609,6 +2636,8 @@ void Box::set_bounds(std::vector<double> _low, std::vector<double> _high)
     high = _high;
     size = _low.size();
     assert(size == _high.size() && "The size of _low and _high must be the same.");
+    name = box;
+
 }
 
 bool Box::contains(std::vector<double> x)

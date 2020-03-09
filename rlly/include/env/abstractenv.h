@@ -6,6 +6,7 @@
 #include <iostream>
 #include <vector>
 #include <list>
+#include <memory>
 #include "space.h"
 #include "stepresult.h"
 #include "utils.h"
@@ -70,6 +71,12 @@ public:
     * For random number generation
     */
     utils::rand::Random randgen;
+
+    /**
+     * Function to clone the environment
+     */
+    virtual std::unique_ptr<Env<S, A>> clone() const = 0;
+
 
     /**
      * Set the seed of randgen and seed of action space and observation space

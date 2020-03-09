@@ -29,6 +29,11 @@ public:
      */
     Chain(int N, double fail_p=0);
     ~Chain(){};
+
+    /**
+     * Clone
+     */
+    std::unique_ptr<Env<int, int>> clone() const override;
 };
 
 } // namespace env

@@ -43,5 +43,11 @@ Chain::Chain(int N, double fail_p)
     id = "Chain";
 }
 
+std::unique_ptr<Env<int, int>> Chain::clone() const
+{
+    return std::make_unique<Chain>(*this);
+}
+
+
 }  // namespace env
 }  // namespace rlly

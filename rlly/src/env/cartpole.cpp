@@ -37,17 +37,6 @@ CartPole::CartPole()
     clipping_area_for_render2d[1] =  2.4;
     clipping_area_for_render2d[2] = -0.5;
     clipping_area_for_render2d[3] =  1.5;
-
-    // // printing for debug
-    // std::cout << "pi " << pi  << std::endl;
-    // std::cout << "total mass " << total_mass  << std::endl;
-    // std::cout << "theta_threshold_radians " << theta_threshold_radians  << std::endl;
-    // std::cout << "pole_mass_times_length " << pole_mass_times_length  << std::endl;
-    // std::cout << "sample from state space ";
-    // utils::vec::printvec(observation_space.sample());
-    // std::cout << "Initial state: "; 
-    // utils::vec::printvec(reset());
-
 }
 
 
@@ -119,6 +108,10 @@ std::vector<double> CartPole::reset()
     return state; 
 }
 
+std::unique_ptr<Env<std::vector<double>, int>> CartPole::clone() const
+{
+    return std::make_unique<CartPole>(*this);
+}
 
 utils::render::Scene CartPole::get_scene_for_render2d(std::vector<double> state_var)
 {

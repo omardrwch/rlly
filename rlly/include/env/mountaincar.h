@@ -65,6 +65,10 @@ public:
      */
     utils::render::Scene get_background_for_render2d() override;
 
+    /**
+     * Clone 
+     */
+    std::unique_ptr<Env<std::vector<double>, int>> clone() const override;
 
 protected:
     /**
@@ -79,6 +83,7 @@ protected:
      * Velocity at the terminal state
      */
     double goal_velocity;
+
 
 private:
     /**

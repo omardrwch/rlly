@@ -58,6 +58,11 @@ public:
     spaces::Discrete action_space;
 
     /**
+     *  Clone the object
+     */
+    std::unique_ptr<Env<std::vector<double>, int>> clone() const override;
+
+    /**
      * Get scene representing a given state
      */
     utils::render::Scene get_scene_for_render2d(std::vector<double> state_var) override;

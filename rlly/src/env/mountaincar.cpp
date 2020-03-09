@@ -85,12 +85,18 @@ bool MountainCar::is_terminal(std::vector<double> state)
 }
 
 
+std::unique_ptr<Env<std::vector<double>, int>> MountainCar::clone() const
+{
+    return std::make_unique<MountainCar>(*this);
+}
+
+
+
 utils::render::Scene MountainCar::get_scene_for_render2d(std::vector<double> state_var)
 {
     float y = std::sin(3*state_var[position])*0.45 + 0.55;
     float x = state_var[position];
-    // x = (10.0/9.0)*x + 1.0/3.0;  // mapping the state to [-1, 1]
-    // y = y - 0.4;  // vertical translation
+
 
     utils::render::Scene car_scene;
     utils::render::Geometric2D car;
@@ -127,13 +133,10 @@ utils::render::Scene MountainCar::get_background_for_render2d()
     int n_points = 100;
     double range = observation_space.high[0] - observation_space.low[0];
     double eps = range/(n_points-1.0);
-    // for(int ii = 0; ii < n_points; ii++)
     for(int ii = n_points-1; ii >= 0; ii--)
     {
         double x = observation_space.low[0] + ii*eps;
         double y = std::sin(3*x)*0.45 + 0.55;
-        // y = y - 0.4;
-        // x = (10.0/9.0)*x + 1.0/3.0 ;
         mountain.add_vertex(x, y);
     }
     mountain.add_vertex(-1.2f, -1.0f);

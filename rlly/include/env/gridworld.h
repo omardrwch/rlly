@@ -71,6 +71,12 @@ public:
 
 
     /**
+     * Clone 
+     */
+    std::unique_ptr<Env<int, int>> clone() const override;
+
+
+    /**
      * Generate 2D representation (Scene) of a given state.
      */
     utils::render::Scene get_scene_for_render2d(int state_var) override;

@@ -13,7 +13,5 @@ jobs:
     
     steps:
     - uses: actions/checkout@v2
-    - name: install_glut
-      run: sudo apt-get install freeglut3-dev
     - name: tests
       run: bash scripts/run_tests.sh 

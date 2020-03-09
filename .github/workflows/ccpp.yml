@@ -13,5 +13,7 @@ jobs:
     
     steps:
     - uses: actions/checkout@v2
+    - name: install_lcov
+      run: sudo apt-get install -y lcov
     - name: tests
       run: bash scripts/run_tests.sh 

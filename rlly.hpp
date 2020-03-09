@@ -43,7 +43,9 @@ public:
     /**
      * @brief Sample a value of the space with a uniform distribution
      */
-    virtual T sample() {T foo; return foo;};
+    virtual T sample() = 0;
+    
+    // virtual T sample() {T foo; return foo;};
 
     /**
      * @brief Returns true if x belongs to the space, and false otherwise.
@@ -126,7 +128,7 @@ public:
     /**
      * Size of the fox
      */
-    int size; 
+    unsigned int size; 
 
     /**
      * lower bounds of the box
@@ -1853,12 +1855,12 @@ void FiniteMDP::check()
     assert(reward_function.mean_rewards[0].size() == transitions[0].size());
 
     // Check transition probabilities
-    for(int i = 0; i < transitions.size(); i++)
+    for(unsigned int i = 0; i < transitions.size(); i++)
     {
-        for(int a = 0; a < transitions[0].size(); a++)
+        for(unsigned int a = 0; a < transitions[0].size(); a++)
         {
             double sum = 0;
-            for(int j = 0; j < transitions[0][0].size(); j++)
+            for(unsigned int j = 0; j < transitions[0][0].size(); j++)
             {
                 assert(transitions[i][a][j] >= 0.0);
                 sum += transitions[i][a][j];
@@ -2267,11 +2269,11 @@ double stdev(std::vector<double> vec)
 
 double inner_prod(std::vector<double> vec1, std::vector<double> vec2)
 {
-    int n = vec1.size();
+    unsigned int n = vec1.size();
     assert( n == vec2.size() && "vec1 and vec2 must have the same size.");
     if (n == 0) {std::cerr << "Warning: calling inner_prod() on empty vectors." <<std::endl;}
     double result = 0.0;
-    for(int i = 0; i < n; i++)
+    for(unsigned int i = 0; i < n; i++)
     {
         result += vec1[i]*vec2[i];
     }
@@ -2527,7 +2529,7 @@ void Render2D::display()
 int Render2D::run_graphics()
 {
     int argc = 0;
-    char **argv;
+    char **argv = nullptr;
     glutInit(&argc, argv);                 // Initialize GLUT
 
     // Continue execution after window is closed
@@ -2616,7 +2618,7 @@ bool Box::contains(std::vector<double> x)
     {
         contains = false;
     }
-    for(int i = 0; i < x.size(); i++)
+    for(unsigned int i = 0; i < x.size(); i++)
     {
         contains = contains && (x[i] >= low[i] && x[i] <= high[i]);
     }
@@ -2629,7 +2631,7 @@ std::vector<double> Box::sample()
     std::uniform_real_distribution<double> distribution(0.0,1.0);
 
     std::vector<double> sampled_state(size);
-    for(int i = 0; i < size; i++)
+    for(unsigned int i = 0; i < size; i++)
     {
         double a;
         double b;
@@ -2721,7 +2723,6 @@ int Random::choice(std::vector<double>& prob, double u /* = -1 */)
     if (u == -1){ unif_sample = real_unif_dist(generator); }
     else {unif_sample = u;}
 
-    int sample = 0;
     for(int i = 0; i < n; i++)
     {
         if (unif_sample <= cumul[i])

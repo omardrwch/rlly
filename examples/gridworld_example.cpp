@@ -16,7 +16,6 @@ int main(void)
     env.set_seed(123);
 
      // Rendering (graphic)
-    int state = env.reset();
     std::vector<int> states;
     int horizon = 50;
     for(int hh = 0; hh < horizon; hh++)

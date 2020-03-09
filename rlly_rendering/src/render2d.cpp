@@ -120,7 +120,7 @@ void Render2D::display()
 int Render2D::run_graphics()
 {
     int argc = 0;
-    char **argv;
+    char **argv = nullptr;
     glutInit(&argc, argv);                 // Initialize GLUT
 
     // Continue execution after window is closed

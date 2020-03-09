@@ -42,7 +42,6 @@ int Random::choice(std::vector<double>& prob, double u /* = -1 */)
     if (u == -1){ unif_sample = real_unif_dist(generator); }
     else {unif_sample = u;}
 
-    int sample = 0;
     for(int i = 0; i < n; i++)
     {
         if (unif_sample <= cumul[i])

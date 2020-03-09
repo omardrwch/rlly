@@ -40,7 +40,7 @@ bool Box::contains(std::vector<double> x)
     {
         contains = false;
     }
-    for(int i = 0; i < x.size(); i++)
+    for(unsigned int i = 0; i < x.size(); i++)
     {
         contains = contains && (x[i] >= low[i] && x[i] <= high[i]);
     }
@@ -53,7 +53,7 @@ std::vector<double> Box::sample()
     std::uniform_real_distribution<double> distribution(0.0,1.0);
 
     std::vector<double> sampled_state(size);
-    for(int i = 0; i < size; i++)
+    for(unsigned int i = 0; i < size; i++)
     {
         double a;
         double b;

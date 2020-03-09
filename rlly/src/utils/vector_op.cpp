@@ -38,11 +38,11 @@ double stdev(std::vector<double> vec)
 
 double inner_prod(std::vector<double> vec1, std::vector<double> vec2)
 {
-    int n = vec1.size();
+    unsigned int n = vec1.size();
     assert( n == vec2.size() && "vec1 and vec2 must have the same size.");
     if (n == 0) {std::cerr << "Warning: calling inner_prod() on empty vectors." <<std::endl;}
     double result = 0.0;
-    for(int i = 0; i < n; i++)
+    for(unsigned int i = 0; i < n; i++)
     {
         result += vec1[i]*vec2[i];
     }

@@ -17,3 +17,5 @@ jobs:
       run: sudo apt-get install freeglut3-dev
     - name: tests
       run: bash scripts/run_tests.sh 
+    - name: Doxygen Action
+      uses: mattnotmitt/doxygen-action@v1

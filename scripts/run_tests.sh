@@ -1,7 +1,9 @@
 #!/bin/bash
+cd test
 mkdir -p build
 cd build 
 cmake ..
 make unit_tests
 cd ..
-./build/test/unit_tests
+cd ..
+./test/build/unit_tests

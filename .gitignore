@@ -31,8 +31,9 @@
 *.out
 *.app
 
-# Build folder
+# Build folders
 build/
+test/build
 
 # Documentation folder
 docs/

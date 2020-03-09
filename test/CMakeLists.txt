@@ -1,10 +1,25 @@
-link_directories(${RLLY_SOURCE_DIR}/rlly/src/env
-                 ${RLLY_SOURCE_DIR}/rlly/src/spaces
-                 ${RLLY_SOURCE_DIR}/rlly/src/utils)
+cmake_minimum_required(VERSION 3.0)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+project(RLLY_TEST)
 
-include_directories(${RLLY_SOURCE_DIR}/rlly/include/env
-                    ${RLLY_SOURCE_DIR}/rlly/include/spaces
-                    ${RLLY_SOURCE_DIR}/rlly/include/utils)
+link_directories(../rlly/src/env
+                 ../rlly/src/spaces
+                 ../rlly/src/utils)
+
+include_directories(../rlly/include/env
+                    ../rlly/include/spaces
+                    ../rlly/include/utils)
+
+
+# build library
+# Addint all .cpp files as source
+file(GLOB SOURCES "../rlly/src/*.cpp")  # if there are no subfolders
+file(GLOB SOURCES "../rlly/src/*/*.cpp")
+
+# Generate shared library from the code
+add_library(rlly SHARED ${SOURCES})
+
 # testing files
 add_executable(unit_tests main.cpp
                           space_test.cpp

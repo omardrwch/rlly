@@ -11,6 +11,5 @@ add_compile_options(-Wall)
 add_subdirectory(rlly)
 add_subdirectory(rlly_rendering)
 add_subdirectory(examples)
-add_subdirectory(test)
 
 # Useful link: https://stackoverflow.com/questions/8304190/cmake-with-include-and-source-paths-basic-setup

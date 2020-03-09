@@ -14,7 +14,7 @@ int main()
 {
     // render object
     rlly::render::Render2D render2D;
-    render2D.refresh_interval = 2000; // in milliseconds
+    render2D.set_refresh_interval(2000); // in milliseconds
 
     // Create a background
     std::vector<rlly::utils::render::Scene> data;

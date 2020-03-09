@@ -1277,7 +1277,7 @@ public:
     ~CartPole(){};
 
     std::vector<double> reset();
-    StepResult<std::vector<double>> step(int action);
+    StepResult<std::vector<double>> step(int action) override;
 
     /**
     * State (observation) space
@@ -1292,12 +1292,12 @@ public:
     /**
      * Get scene representing a given state
      */
-    utils::render::Scene get_scene_for_render2d(std::vector<double> state_var);
+    utils::render::Scene get_scene_for_render2d(std::vector<double> state_var) override;
 
     /**
      * Returns background for rendering 
      */
-    utils::render::Scene get_background_for_render2d();
+    utils::render::Scene get_background_for_render2d() override;
 };
 
 } // namespace env

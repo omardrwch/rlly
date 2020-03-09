@@ -29,6 +29,8 @@ TEST_CASE( "Testing chain", "[chain]" )
     step_result = chain.step(0);
     step_result = chain.step(0);
     REQUIRE( (chain.state == 2 && step_result.reward == 1.0) );
+
+    REQUIRE( chain.observation_space.contains(step_result.next_state) );
 }
 
 TEST_CASE( "Testing GridWorld", "[gridworld]" )
@@ -66,6 +68,9 @@ TEST_CASE( "Testing GridWorld", "[gridworld]" )
     // Up action must decrement row
     env.step(2);
     REQUIRE( (env.index2coord[env.state][0] == 0 &&  env.index2coord[env.state][1] == 1) );
+
+    auto step_result = env.step(env.action_space.sample());
+    REQUIRE( env.observation_space.contains(step_result.next_state) );
 }
 
 
@@ -92,6 +97,9 @@ TEST_CASE( "Testing MountainCar", "[mountaincar]" )
     REQUIRE( (*(*unique_p_env).p_action_space).n == 3 );
     REQUIRE( (*(*unique_p_env).p_observation_space).n == -1 );
     REQUIRE( (*(*unique_p_env).p_observation_space).contains(env.reset()) );
+
+    auto step_result = env.step(env.action_space.sample());
+    REQUIRE( env.observation_space.contains(step_result.next_state) );
 }
 
 TEST_CASE( "Testing CartPole", "[cartpole]" )
@@ -104,6 +112,9 @@ TEST_CASE( "Testing CartPole", "[cartpole]" )
     REQUIRE(env.observation_space.name == rlly::spaces::box);
     REQUIRE(env.action_space.name == rlly::spaces::discrete);
 
+    auto step_result = env.step(env.action_space.sample());
+    REQUIRE( env.observation_space.contains(step_result.next_state) );
+
     REQUIRE( p_env.id.compare("CartPole") == 0);
     REQUIRE( (*p_env.p_observation_space).name == rlly::spaces::box);
     REQUIRE( (*p_env.p_action_space).name == rlly::spaces::discrete);
@@ -115,6 +126,35 @@ TEST_CASE( "Testing CartPole", "[cartpole]" )
     REQUIRE( (*(*unique_p_env).p_observation_space).name == rlly::spaces::box);
     REQUIRE( (*(*unique_p_env).p_action_space).name == rlly::spaces::discrete);
     REQUIRE( (*(*unique_p_env).p_action_space).n == 2 );
+    REQUIRE( (*(*unique_p_env).p_observation_space).n == -1 );
+    REQUIRE( (*(*unique_p_env).p_observation_space).contains(env.reset()) ); 
+}
+
+TEST_CASE( "Testing SquareWorld", "[squareworld]" )
+{   
+    rlly::env::SquareWorld env;
+    rlly::env::Env<std::vector<double>, int>& p_env = env;
+    auto unique_p_env = env.clone();
+
+    REQUIRE( env.id.compare("SquareWorld") == 0);
+    REQUIRE(env.observation_space.name == rlly::spaces::box);
+    REQUIRE(env.action_space.name == rlly::spaces::discrete);
+
+    auto step_result = env.step(env.action_space.sample());
+    REQUIRE( env.observation_space.contains(step_result.next_state) );
+
+
+    REQUIRE( p_env.id.compare("SquareWorld") == 0);
+    REQUIRE( (*p_env.p_observation_space).name == rlly::spaces::box);
+    REQUIRE( (*p_env.p_action_space).name == rlly::spaces::discrete);
+    REQUIRE( (*p_env.p_action_space).n == 4 );
+    REQUIRE( (*p_env.p_observation_space).n == -1 );
+    REQUIRE( (*p_env.p_observation_space).contains(env.reset()) ); 
+
+    REQUIRE( (*unique_p_env).id.compare("SquareWorld") == 0);
+    REQUIRE( (*(*unique_p_env).p_observation_space).name == rlly::spaces::box);
+    REQUIRE( (*(*unique_p_env).p_action_space).name == rlly::spaces::discrete);
+    REQUIRE( (*(*unique_p_env).p_action_space).n == 4 );
     REQUIRE( (*(*unique_p_env).p_observation_space).n == -1 );
     REQUIRE( (*(*unique_p_env).p_observation_space).contains(env.reset()) ); 
 }

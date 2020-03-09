@@ -10,7 +10,7 @@
 #include "mountaincar.h"
 #include "gridworld.h"
 #include "cartpole.h"
-
+#include "squareworld.h"
 
 
 /**

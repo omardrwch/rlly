@@ -1,8 +1,10 @@
 #include <cmath>
 #include <vector>
+#include <iostream>
 
 #include "catch.hpp"
 #include "env.h"
+#include "utils.h"
 
 TEST_CASE( "Testing chain", "[chain]" )
 {
@@ -83,5 +85,5 @@ TEST_CASE( "Testing CartPole", "[cartpole]" )
     REQUIRE( p_env.id.compare("CartPole") == 0);
     REQUIRE( (*p_env.p_action_space).n == 2 );
     REQUIRE( (*p_env.p_observation_space).n == -1 );
-    // REQUIRE( (*p_env.p_observation_space).contains(env.reset()) );  
+    REQUIRE( (*p_env.p_observation_space).contains(env.reset()) );  
 }

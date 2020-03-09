@@ -57,7 +57,7 @@ public:
     /**
      * Size of the fox
      */
-    int size; 
+    unsigned int size; 
 
     /**
      * lower bounds of the box

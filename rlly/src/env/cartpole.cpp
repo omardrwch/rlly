@@ -21,7 +21,7 @@ CartPole::CartPole()
     // observation and action spaces
     double inf = std::numeric_limits<double>::infinity();
     double angle_lim_rad = 2.0*theta_threshold_radians;
-    std::vector<double> _low = {-4.8, -inf, angle_lim_rad, -inf};
+    std::vector<double> _low = {-4.8, -inf, -angle_lim_rad, -inf};
     std::vector<double> _high = {4.8,  inf, angle_lim_rad,  inf};
     observation_space.set_bounds(_low, _high);
     action_space.set_n(2);

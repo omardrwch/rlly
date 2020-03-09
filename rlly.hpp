@@ -928,7 +928,7 @@ public:
      * @param action action to take
      * @return StepResult object, contaning next state, reward and 'done' flag
      */
-    StepResult<int> step(int action);
+    StepResult<int> step(int action) override;
 
     /**
      * @brief Check if _state is terminal
@@ -1089,7 +1089,7 @@ public:
 
     MountainCar();
     std::vector<double> reset();
-    StepResult<std::vector<double>> step(int action);
+    StepResult<std::vector<double>> step(int action) override;
 
     /**
     * State (observation) space
@@ -1104,12 +1104,12 @@ public:
     /**
      * Get scene representing a given state
      */
-    utils::render::Scene get_scene_for_render2d(std::vector<double> state_var);
+    utils::render::Scene get_scene_for_render2d(std::vector<double> state_var) override;
 
     /**
      * Returns background for rendering 
      */
-    utils::render::Scene get_background_for_render2d();
+    utils::render::Scene get_background_for_render2d() override;
 
 protected:
     /**
@@ -1209,12 +1209,12 @@ public:
     /**
      * Generate 2D representation (Scene) of a given state.
      */
-    utils::render::Scene get_scene_for_render2d(int state_var);
+    utils::render::Scene get_scene_for_render2d(int state_var) override;
 
     /**
      * Background for rendering
      */
-    utils::render::Scene get_background_for_render2d();
+    utils::render::Scene get_background_for_render2d() override;
 
 private:
     /* data */
@@ -2061,7 +2061,7 @@ CartPole::CartPole()
     // observation and action spaces
     double inf = std::numeric_limits<double>::infinity();
     double angle_lim_rad = 2.0*theta_threshold_radians;
-    std::vector<double> _low = {-4.8, -inf, angle_lim_rad, -inf};
+    std::vector<double> _low = {-4.8, -inf, -angle_lim_rad, -inf};
     std::vector<double> _high = {4.8,  inf, angle_lim_rad,  inf};
     observation_space.set_bounds(_low, _high);
     action_space.set_n(2);

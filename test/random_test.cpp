@@ -32,7 +32,7 @@ TEST_CASE( "Testing Random::choice", "[choice]" )
 
     // Verify that calls to choice do not change the vector prob
     bool prob_unchanged = true;
-    for(int i = 0; i < prob.size(); i++)
+    for(unsigned int i = 0; i < prob.size(); i++)
     {
         prob_unchanged = prob_unchanged && (prob[i] == prob_backup[i]);
     }

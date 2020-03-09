@@ -5,7 +5,7 @@ project(RLLY)
 
 # enable warnings
 # (see https://cmake.org/cmake/help/latest/command/add_compile_options.html)
-# add_compile_options(-Wall)
+add_compile_options(-Wall)
 
 # enable_testing()
 add_subdirectory(rlly)

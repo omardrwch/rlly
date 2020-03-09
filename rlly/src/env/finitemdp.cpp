@@ -67,12 +67,12 @@ void FiniteMDP::check()
     assert(reward_function.mean_rewards[0].size() == transitions[0].size());
 
     // Check transition probabilities
-    for(int i = 0; i < transitions.size(); i++)
+    for(unsigned int i = 0; i < transitions.size(); i++)
     {
-        for(int a = 0; a < transitions[0].size(); a++)
+        for(unsigned int a = 0; a < transitions[0].size(); a++)
         {
             double sum = 0;
-            for(int j = 0; j < transitions[0][0].size(); j++)
+            for(unsigned int j = 0; j < transitions[0][0].size(); j++)
             {
                 assert(transitions[i][a][j] >= 0.0);
                 sum += transitions[i][a][j];

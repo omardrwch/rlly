@@ -10,13 +10,13 @@
 int main()
 {
     rlly::env::CartPole env;
-
     std::vector<double> state = env.reset();
     rlly::utils::vec::vec_2d states;
 
     int horizon = 200;
     for(int ii = 0; ii < horizon; ii++)
     {
+        // auto action = env.action_space.sample();
         auto action = env.action_space.sample();
         auto step_result = env.step(action);
         states.push_back(step_result.next_state);

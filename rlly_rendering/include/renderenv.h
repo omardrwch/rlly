@@ -20,7 +20,7 @@ namespace render
 /**
  * @param states list of states to render
  * @param env    environment
- * @tparam EnvType represents Env<S, A> (see abstractenv.h)
+ * @tparam EnvType represents Env<S, A> (see abstractenv.h) OR a wrapper (see basewrapper.h)
  * @tparam S type of state space
  */
 template <typename EnvType, typename S>

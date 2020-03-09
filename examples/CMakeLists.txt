@@ -43,3 +43,12 @@ target_link_libraries(squareworld_example rlly rlly_rendering)
 target_include_directories(squareworld_example PUBLIC ${RLLY_SOURCE_DIR}/rlly/include/env
                                                    ${RLLY_SOURCE_DIR}/rlly/include/spaces
                                                    ${RLLY_SOURCE_DIR}/rlly/include/utils)
+                                                
+        
+#
+add_executable(wrapper_example wrapper_example.cpp)
+target_link_libraries(wrapper_example rlly rlly_rendering)
+target_include_directories(wrapper_example PUBLIC  ${RLLY_SOURCE_DIR}/rlly/include/env
+                                                   ${RLLY_SOURCE_DIR}/rlly/include/spaces
+                                                   ${RLLY_SOURCE_DIR}/rlly/include/utils
+                                                   ${RLLY_SOURCE_DIR}/rlly/include/wrappers)

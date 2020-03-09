@@ -14,7 +14,7 @@ int main()
     std::vector<double> state = env.reset();
     rlly::utils::vec::vec_2d states;
 
-    int horizon = 200;
+    int horizon = 50;
     for(int ii = 0; ii < horizon; ii++)
     {
         auto action = env.action_space.sample();

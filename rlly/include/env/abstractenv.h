@@ -141,7 +141,7 @@ public:
     int refresh_interval_for_render2d = 50;
 
     /**
-     * Clipping are for rendering (left, right, bottom, top). Default = {-1.0, 1.0, -1.0, 1.0}
+     * Clipping area for rendering (left, right, bottom, top). Default = {-1.0, 1.0, -1.0, 1.0}
      */
     std::vector<float> clipping_area_for_render2d = {-1.0, 1.0, -1.0, 1.0};
 

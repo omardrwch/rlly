@@ -8,9 +8,6 @@ SET(CMAKE_SHARED_LINKER_FLAGS_COVERAGE "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} --cov
 
 project(RLLY_TEST)
 
-link_directories(../rlly/src/env
-                 ../rlly/src/spaces
-                 ../rlly/src/utils)
 
 include_directories(../rlly/include/env
                     ../rlly/include/spaces

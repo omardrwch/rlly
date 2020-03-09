@@ -4,7 +4,8 @@ set(DEFAULT_BUILD_TYPE Debug)  # Debug or Release. Used for libraries
 include_directories("include"
                     "include/env"
                     "include/spaces"
-                    "include/utils")
+                    "include/utils"
+                    "include/wrappers")
 
 # Adding sources manually
 # set(SOURCES src/mainapp.cpp src/student.cpp)

@@ -1,6 +1,6 @@
 # rlly - A C++ library for reinforcement learning environments (under development)
 
-![C/C++ CI](https://github.com/omardrwch/rlly/workflows/C/C++%20CI/badge.svg)
+![build](https://github.com/omardrwch/rlly/workflows/build/badge.svg)
 ![docs](https://github.com/omardrwch/rlly/workflows/docs/badge.svg)
 
 The goal of __rlly__ is to implement simple environments for reinforcement learning algorithms in C++, with an interface similar to the [OpenAI gym](https://gym.openai.com/) library for Python.

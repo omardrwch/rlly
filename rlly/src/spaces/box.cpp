@@ -14,6 +14,7 @@ Members of Box
 Box::Box()
 {
     // Do nothing. low and high are empty vectors.
+    name = box;
 }
 
 Box::Box(std::vector<double> _low, std::vector<double> _high, unsigned _seed /* = 42 */)
@@ -23,6 +24,7 @@ Box::Box(std::vector<double> _low, std::vector<double> _high, unsigned _seed /* 
     size = _low.size();
     generator.seed(_seed);
     assert(size == _high.size() && "The size of _low and _high must be the same.");
+    name = box;
 }    
 
 void Box::set_bounds(std::vector<double> _low, std::vector<double> _high)
@@ -31,6 +33,8 @@ void Box::set_bounds(std::vector<double> _low, std::vector<double> _high)
     high = _high;
     size = _low.size();
     assert(size == _high.size() && "The size of _low and _high must be the same.");
+    name = box;
+
 }
 
 bool Box::contains(std::vector<double> x)

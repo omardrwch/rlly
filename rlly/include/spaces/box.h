@@ -47,10 +47,6 @@ public:
     std::vector<double> sample();
     bool contains(std::vector<double> x);
 
-    /**
-     * Name of the space
-     */
-    spc_name name = box;
 
     // Attributes
 

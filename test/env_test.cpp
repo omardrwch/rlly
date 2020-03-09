@@ -13,6 +13,8 @@ TEST_CASE( "Testing chain", "[chain]" )
 
     REQUIRE( chain.id.compare("Chain") == 0);  
     REQUIRE( p_env.id.compare("Chain") == 0);  
+    REQUIRE(chain.observation_space.name == rlly::spaces::discrete);
+    REQUIRE(chain.action_space.name == rlly::spaces::discrete);
     REQUIRE( chain.state == 0);
 
     rlly::env::StepResult<int> step_result; 
@@ -38,6 +40,8 @@ TEST_CASE( "Testing GridWorld", "[gridworld]" )
 
     REQUIRE( env.id.compare("GridWorld") == 0); 
     REQUIRE( p_env.id.compare("GridWorld") == 0);
+    REQUIRE(env.observation_space.name == rlly::spaces::discrete);
+    REQUIRE(env.action_space.name == rlly::spaces::discrete);
     REQUIRE( (*p_env.p_action_space).n == 4 );
     REQUIRE( (*p_env.p_observation_space).n == 50 );  
 
@@ -71,6 +75,10 @@ TEST_CASE( "Testing MountainCar", "[mountaincar]" )
 
     REQUIRE( env.id.compare("MountainCar") == 0);
     REQUIRE( p_env.id.compare("MountainCar") == 0);
+    REQUIRE(env.observation_space.name == rlly::spaces::box);
+    REQUIRE(env.action_space.name == rlly::spaces::discrete);
+    REQUIRE( (*p_env.p_observation_space).name == rlly::spaces::box);
+    REQUIRE( (*p_env.p_action_space).name == rlly::spaces::discrete);
     REQUIRE( (*p_env.p_action_space).n == 3 );
     REQUIRE( (*p_env.p_observation_space).n == -1 );
     REQUIRE( (*p_env.p_observation_space).contains(env.reset()) );  
@@ -83,6 +91,10 @@ TEST_CASE( "Testing CartPole", "[cartpole]" )
 
     REQUIRE( env.id.compare("CartPole") == 0);
     REQUIRE( p_env.id.compare("CartPole") == 0);
+    REQUIRE(env.observation_space.name == rlly::spaces::box);
+    REQUIRE(env.action_space.name == rlly::spaces::discrete);
+    REQUIRE( (*p_env.p_observation_space).name == rlly::spaces::box);
+    REQUIRE( (*p_env.p_action_space).name == rlly::spaces::discrete);
     REQUIRE( (*p_env.p_action_space).n == 2 );
     REQUIRE( (*p_env.p_observation_space).n == -1 );
     REQUIRE( (*p_env.p_observation_space).contains(env.reset()) );  

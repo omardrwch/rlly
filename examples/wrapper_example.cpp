@@ -41,6 +41,7 @@ rlly::env::StepResult<std::vector<double>> WrapperExample::step(int action)
 int main()
 {
     rlly::env::CartPole cartpole;
+    cartpole.enable_rendering();
 
     // Wrapper
     WrapperExample env(cartpole);
@@ -59,8 +60,8 @@ int main()
         std::cout << "reward = " << step_result.reward << std::endl;
         if (step_result.done) break;
     }
-
-    // rlly::render::render_env(states, env);
+    // For now, wrapped environments can't be rendered
+    // rlly::render::render_env(cartpole);
 
     return 0;
 }

@@ -31,7 +31,6 @@ MountainCar::MountainCar()
     id = "MountainCar";
 
     // 2D rendering is enabled for MountainCar
-    rendering_enabled = true;
     clipping_area_for_render2d[0] = -1.2;
     clipping_area_for_render2d[1] =  0.6;
     clipping_area_for_render2d[2] = -0.2;
@@ -49,6 +48,10 @@ StepResult<std::vector<double>> MountainCar::step(int action)
 {
     assert(action_space.contains(action));
 
+    // for rendering
+    if (rendering_enabled) append_state_for_rendering(state);
+    //
+    
     std::vector<double>& lo = observation_space.low;
     std::vector<double>& hi = observation_space.high;
 

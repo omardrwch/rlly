@@ -69,12 +69,15 @@ public:
      */
     void render_values(std::vector<double> values);
 
+    /**
+     * Step function (overriden for storing states for rendering)
+     */ 
+    StepResult<int> step(int action) override;
 
     /**
      * Clone 
      */
     std::unique_ptr<FiniteEnv> clone() const override;
-
 
     /**
      * Generate 2D representation (Scene) of a given state.

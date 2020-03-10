@@ -23,7 +23,6 @@ SquareWorld::SquareWorld(/* args */)
     set_seed(_seed);
 
     // SquareWorld supports 2d rendering
-    rendering_enabled = true;
     refresh_interval_for_render2d = 500;
     clipping_area_for_render2d[0] = 0.0;
     clipping_area_for_render2d[1] = 1.0;
@@ -34,6 +33,10 @@ SquareWorld::SquareWorld(/* args */)
 
 env::StepResult<std::vector<double>> SquareWorld::step(int action)
 {
+    // for rendering
+    if (rendering_enabled) append_state_for_rendering(state);
+
+    //
     bool done = false; 
     double reward = std::exp( -0.5*(std::pow(state[0]-goal_x, 2) + std::pow(state[1]-goal_y, 2))/(std::pow(reward_smoothness, 2)));
     reward += randgen.sample_gaussian(0, reward_noise_stdev);

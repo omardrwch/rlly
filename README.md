@@ -56,19 +56,19 @@ The examples below show how to interact with some __rlly__ envinroments and how 
 
 int main()
 {
+    // create environment, set seed and enable rendering
     rlly::env::MountainCar env;
     env.set_seed(123);
-
+    env.enable_rendering();
+    // run
     int horizon = 200;
-    rlly::utils::vec::vec_2d states; // or std::vector<std::vector<double>> states;
     for(int hh = 0; hh < horizon; hh++)
     {
         auto action = env.action_space.sample();
         auto step_result = env.step(action);
-        states.push_back(step_result.next_state);
     }
-
-    rlly::render::render_env(states, env);
+    // render
+    rlly::render::render_env(env);
     return 0;
 }
 ```
@@ -85,21 +85,21 @@ int main()
 
 int main()
 {
+    // create environment and enable rendering
     rlly::env::CartPole env;
-
-    std::vector<double> state = env.reset();
-    rlly::utils::vec::vec_2d states;
-
+    env.enable_rendering();
+    // run
     int horizon = 200;
     for(int ii = 0; ii < horizon; ii++)
     {
         auto action = env.action_space.sample();
         auto step_result = env.step(action);
-        states.push_back(step_result.next_state);
+        std::cout << "state = "; rlly::utils::vec::printvec(step_result.next_state);
+        std::cout << "reward = " << step_result.reward << std::endl;
         if (step_result.done) break;
     }
-
-    rlly::render::render_env(states, env);
+    // render
+    rlly::render::render_env(env);
     return 0;
 }
 ```
@@ -116,25 +116,23 @@ int main()
 
 int main(void)
 {
+    // create environment, set seed and enable rendering
     double fail_prob = 0.0;          // failure probability
     double reward_smoothness = 0.0;  // reward = exp( - distance(next_state, goal_state)^2 / reward_smoothness^2)
     double sigma = 0.1;              // reward noise (Gaussian)
     rlly::env::GridWorld env(5, 10, fail_prob, reward_smoothness, sigma);
     env.set_seed(123);
-
-     // Rendering (graphic)
-    int state = env.reset();
-    std::vector<int> states;
+    env.enable_rendering();
+     // run
     int horizon = 50;
     for(int hh = 0; hh < horizon; hh++)
     {
         int action = env.action_space.sample();
         auto step_result = env.step(action);
-        states.push_back(step_result.next_state);
     }
-    rlly::render::render_env(states, env);
-
-    // Rendering (text)
+    // render (graphic)
+    rlly::render::render_env(env);
+    // render (text)
     env.render();
     return 0;
 }
@@ -154,24 +152,21 @@ It is a continuous-state version of a GridWorld.
 
 int main()
 {
+    // create environment and enable rendering
     rlly::env::SquareWorld env;
-
-    std::vector<double> state = env.reset();
-    rlly::utils::vec::vec_2d states;
-
+    env.enable_rendering();
+    // run
     int horizon = 50;
     for(int ii = 0; ii < horizon; ii++)
     {
         auto action = env.action_space.sample();
         auto step_result = env.step(action);
-        states.push_back(step_result.next_state);
         std::cout << "state = "; rlly::utils::vec::printvec(step_result.next_state);
         std::cout << "reward = " << step_result.reward << std::endl;
         if (step_result.done) break;
     }
-
-    rlly::render::render_env(states, env);
-
+    // render
+    rlly::render::render_env(env);
     return 0;
 }
 ```

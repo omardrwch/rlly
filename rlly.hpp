@@ -45,14 +45,12 @@ public:
      * @brief Sample a value of the space with a uniform distribution
      */
     virtual T sample() = 0;
-    
-    // virtual T sample() {T foo; return foo;};
 
     /**
      * @brief Returns true if x belongs to the space, and false otherwise.
      * @param x 
      */
-    virtual bool contains(T x) {return false;};
+    virtual bool contains(T x) = 0;
 
     /**
      * Name of the space (discrete, box, etc.)
@@ -190,44 +188,8 @@ public:
 }
 
 #endif
-#ifndef __RLLY_MISC_H__
-#define __RLLY_MISC_H__
-
-/**
- * @file 
- * Other utils.
- */
-
-namespace rlly
-{
-namespace utils
-{
-
-    // this should be defined in C++17
-    /**
-     * @brief Clamp a value between an upper and lower bound. Requires C++17.
-     * @param v value to be clampled
-     * @param lo lower bound
-     * @param hi upper bound
-     * @tparam T type of v, lo and hi
-     */
-    template<class T>
-    constexpr const T& clamp( const T& v, const T& lo, const T& hi )
-    {
-        assert( !(hi < lo) );
-        return (v < lo) ? lo : (hi < v) ? hi : v;
-    }
-
-    /**
-     *  Map a value x in [x0, x1] linearly to the range [y1, y2]
-     */
-    double linear_map(double x, double x1, double x2, double y1, double y2);
-}
-}  
-
-#endif
-#ifndef __SPACE_H__
-#define __SPACE_H__
+#ifndef __RLLY_SPACE_H__
+#define __RLLY_SPACE_H__
 
 /**
  * @file 
@@ -543,10 +505,63 @@ namespace utils
              * @return sample
              */
             double sample_gaussian(double mu, double sigma);
+
+            /**
+             * @brief returns seed value
+             */
+            int get_seed();
         };     
     }
 }  // namespace utils
 }  // namespace rlly
+#endif
+#ifndef __RLLY_MISC_H__
+#define __RLLY_MISC_H__
+
+/**
+ * @file 
+ * Other utils.
+ */
+
+namespace rlly
+{
+namespace utils
+{
+
+    // this should be defined in C++17
+    /**
+     * @brief Clamp a value between an upper and lower bound. Requires C++17.
+     * @param v value to be clampled
+     * @param lo lower bound
+     * @param hi upper bound
+     * @tparam T type of v, lo and hi
+     */
+    template<class T>
+    constexpr const T& clamp( const T& v, const T& lo, const T& hi )
+    {
+        assert( !(hi < lo) );
+        return (v < lo) ? lo : (hi < v) ? hi : v;
+    }
+
+    /**
+     *  Map a value x in [x0, x1] linearly to the range [y1, y2]
+     */
+    double linear_map(double x, double x1, double x2, double y1, double y2);
+
+    /**
+     * @brief Binary search in a sorted vector with increasing values.
+     * @details if vec = {x_0, x_1, ..., x_n}, with x_0 <= x_1 <= ... <= x_n,
+     * returns the value i such that vec[i] <= val < vec[i+1]. If there is no
+     * such value, returns -1.
+     * @param val value to be searched
+     * @param vec vector in which to search the interval where val is.
+     * @param l   index where to start the search (default = 0)
+     * @param r   index where to end the search (default = -1). If -1, it is set to vec.size()-1
+     */
+    int binary_search(double val, std::vector<double> vec, int l = 0, int r = -1);
+}
+}  
+
 #endif
 /**
  * @file
@@ -624,7 +639,7 @@ struct Geometric2D
 /**
  * Data representing a scene, which is a vector of Geometric2D objects
  */
-struct Scene
+struct Scene2D
 {
     /**
      * Vector of 2D shapes represeting the scene
@@ -653,6 +668,93 @@ struct Polygon2D
 }
 }
 }
+
+#endif
+#ifndef __RLLY_RENDER_INTERFACE_H__
+#define __RLLY_RENDER_INTERFACE_H__
+
+namespace rlly
+{
+namespace utils
+{
+namespace render
+{
+
+template <typename S>
+class RenderInterface2D
+{
+private:
+    /* data */
+public:
+    RenderInterface2D(){};
+    ~RenderInterface2D(){};
+
+    /*
+
+        Methods and attributes used for graph rendering
+
+    */
+
+    /**
+     * Flag to say that rendering is enabled
+     */
+    bool rendering_enabled = false;
+
+    /**
+     * Rendering type
+     */ 
+    const std::string rendering_type = "2d";
+
+    /**
+     * Enable rendering
+     */
+    void enable_rendering() {rendering_enabled = true; };
+
+    /**
+     * Disable rendering
+     */
+    void disable_rendering() {rendering_enabled = false; };
+
+    /**
+     * Retuns a scene (list of shapes) representing the state
+     * @param state_var
+     */
+    virtual utils::render::Scene2D get_scene_for_render2d(S state_var)=0;    
+    
+    /**
+     * Retuns a scene (list of shapes) representing the background
+     */
+    virtual utils::render::Scene2D get_background_for_render2d(){return utils::render::Scene2D();};
+
+    /**
+     * List of states to be rendered
+     */
+    std::vector<S> state_history_for_rendering;
+
+    /**
+     * Clear rendering buffer 
+     */
+    void clear_render_buffer() { state_history_for_rendering.clear(); };
+
+    /**
+     * Add state to rendering buffer
+     */ 
+    void append_state_for_rendering(S state) {state_history_for_rendering.push_back(state); };
+
+    /**
+     *  Refresh interval of rendering (in milliseconds)
+     */
+    int refresh_interval_for_render2d = 50;
+
+    /**
+     * Clipping area for rendering (left, right, bottom, top). Default = {-1.0, 1.0, -1.0, 1.0}
+     */
+    std::vector<float> clipping_area_for_render2d = {-1.0, 1.0, -1.0, 1.0};
+};
+
+} // namespace render
+} // namespace utils
+} // namespace rlly
 
 #endif
 #ifndef __RLLY_UTILS_H__
@@ -687,12 +789,22 @@ namespace env
 
 /**
  * @brief Abstract class for reinforcement learning environments
+ * @tparam S type of state variables  (e.g. int, std::vector<double>)
+ * @tparam A type of action variables (e.g. int, std::vector<double>)
+ * @tparam S_space type of state space  (e.g. spaces::Box, spaces::Discrete)
+ * @tparam A_space type of action space (e.g. spaces::Box, spaces::Discrete)
  */
-template <typename S, typename A>
+template <typename S, typename A, typename S_space, typename A_space>
 class Env
 {
+protected:
+    /**
+     * Current state
+     */
+    S state;
+
 public:
-    Env(/* args */) {};
+    Env() {};
     ~Env() {};
 
     /**
@@ -710,11 +822,6 @@ public:
     virtual StepResult<S> step(A action)=0;
 
     /**
-     * Current state
-     */
-    S state;
-
-    /**
      *  Environment identifier
      */
     std::string id;
@@ -722,12 +829,12 @@ public:
     /**
      * Pointer to observation space
      */
-    spaces::Space<S>* p_observation_space;
+    S_space observation_space;
 
     /**
      * Pointer to action space
      */   
-    spaces::Space<A>* p_action_space;
+    A_space action_space;
 
     /**
     * For random number generation
@@ -737,7 +844,7 @@ public:
     /**
      * Function to clone the environment
      */
-    virtual std::unique_ptr<Env<S, A>> clone() const = 0;
+    virtual std::unique_ptr<Env<S, A, S_space, A_space>> clone() const = 0;
 
     /**
      * Set the seed of randgen and seed of action space and observation space
@@ -746,67 +853,120 @@ public:
      * Note: If _seed < 1,  we set _seed = std::rand()
      * @param _seed
      */
-    void set_seed(int _seed)
-    {
-        if (_seed < 1) 
-        {
-            _seed = std::rand();
-            // std::cout << _seed << std::endl;
-        }
-
-        randgen.set_seed(_seed);
-        // seeds for spaces
-        if ( p_observation_space != nullptr && p_action_space != nullptr) 
-        { 
-            (*p_observation_space).generator.seed(_seed+123);
-            (*p_action_space).generator.seed(_seed+456);
-        }
-        else
-        {
-            std::cerr << "Warning (rlly::Env), trying to set seed of not initialized observation or action space." << std::endl;
-        }
-        
-    }; 
-    
-    /*
-
-        Methods and attributes used for graph rendering
-
-    */
-
-    /**
-     * Set to true if the environment supports 2D rendering.
-     * To support 2D rendering, the derived class must:
-     *     - set rendering2d_enabled to true
-     *     - implement the method get_scene_for_render2d()
-     *     - implement the method get_background_for_render()
-     *     - optionally, change the value of refresh_interval_for_render2d 
-     *     - optionally, define clipping_area_for_render2d;
-     */
-    bool rendering2d_enabled = false;
-
-    /**
-     * Retuns a scene (list of shapes) representing the state
-     * @param state_var
-     */
-    virtual utils::render::Scene get_scene_for_render2d(S state_var) {return utils::render::Scene();};    
-    
-    /**
-     * Retuns a scene (list of shapes) representing the background
-     */
-    virtual utils::render::Scene get_background_for_render2d(){return utils::render::Scene();};
-
-    /**
-     *  Refresh interval of rendering (in milliseconds)
-     */
-    int refresh_interval_for_render2d = 50;
-
-    /**
-     * Clipping are for rendering (left, right, bottom, top). Default = {-1.0, 1.0, -1.0, 1.0}
-     */
-    std::vector<float> clipping_area_for_render2d = {-1.0, 1.0, -1.0, 1.0};
-
+    virtual void set_seed(int _seed);
 }; 
+
+template <typename S, typename A, typename S_space, typename A_space>
+void Env<S, A, S_space, A_space>::set_seed(int _seed)
+{
+    if (_seed < 1) 
+    {
+        _seed = std::rand();
+    }
+    randgen.set_seed(_seed);
+    observation_space.generator.seed(_seed+123);
+    action_space.generator.seed(_seed+456);
+}; 
+
+}  // namespace env
+}  // namespace rlly
+
+#endif
+#ifndef __RLLY_ENV_TYPEDEFS_H__
+#define __RLLY_ENV_TYPEDEFS_H__
+
+/**
+ * @file
+ * @brief Useful type definitions
+ */
+
+namespace rlly
+{
+namespace env
+{
+
+/**
+ * @brief Base class for environments with finite states and finite actions.
+ */
+typedef Env<int, int, spaces::Discrete, spaces::Discrete> FiniteEnv;
+
+/**
+ * @brief Base class for continuous-state environments with finite actions.
+ */
+typedef Env<std::vector<double>, int, spaces::Box, spaces::Discrete> ContinuousStateEnv;
+
+/**
+ * @brief Base class for continuous-state environments with continuous actions.
+ */
+typedef Env<std::vector<double>, std::vector<double>, spaces::Box, spaces::Box> ContinuousEnv;
+
+/**
+ * @brief Base class for discrete-state environments with continuous actions.
+ */
+typedef Env<int, std::vector<double>, spaces::Discrete, spaces::Box> ContinuousActionEnv;
+
+}  // namespace env
+}  // namespace rlly
+
+#endif
+#ifndef __RLLY_SQUAREWORLD_H__
+#define __RLLY_SQUAREWORLD_H__
+
+/**
+ * @file 
+ * @brief Contains a class for the SquareWorld environment.
+ */
+
+namespace rlly
+{
+namespace env
+{
+
+/**
+ * @brief SquareWorld environment with states in [0, 1]^2 and 4 actions 
+ * @details 
+ *      The agent starts at (start_x, start_y) and, in each state, it can take for actions (0 to 3) representing a
+ *      displacement of (-d, 0), (d, 0), (0, -d) and (0, d), respectively.
+ *          
+ *      The immediate reward received in each state s = (s_x, s_y) is, for any action a,
+ *          r(s, a) = exp( - ((s_x-goal_x)^2 + (s_y-goal_y)^2)/(2*reward_smoothness^2)  )
+ */
+class SquareWorld: public ContinuousStateEnv, public rlly::utils::render::RenderInterface2D<std::vector<double>>
+{
+private:
+    // Coordinates of start position
+    double start_x = 0.1;
+    double start_y = 0.1;
+
+    // Coordinates of goal position (where reward is max)
+    double goal_x = 0.75;
+    double goal_y = 0.75;
+
+    // Action displacement
+    double displacement = 0.1;
+
+    // Reward smoothness
+    double reward_smoothness = 0.1;
+
+    // Standard dev of reward noise (gaussian)
+    double reward_noise_stdev = 0.01;
+
+    // Standard dev of transition noise (gaussian) 
+    double transition_noise_stdev = 0.01;
+
+public:
+    SquareWorld();
+    ~SquareWorld(){};
+
+    std::unique_ptr<ContinuousStateEnv> clone() const override;
+    std::vector<double> reset() override;
+    env::StepResult<std::vector<double>> step(int action) override;
+
+    utils::render::Scene2D get_scene_for_render2d(std::vector<double> state_var) override;    
+    utils::render::Scene2D get_background_for_render2d();
+
+};
+
 }  // namespace env
 }  // namespace rlly
 
@@ -895,9 +1055,9 @@ namespace rlly
 namespace env
 {
 /**
- * Base class for Finite Markov Decision Processes.
+ * Base class for Finite Markov Decision Processes with __known__ transitions and rewards.
  */ 
-class FiniteMDP: public Env<int, int>
+class FiniteMDP: public FiniteEnv
 {
 
 public:
@@ -931,7 +1091,7 @@ public:
      * @param action action to take
      * @return StepResult object, contaning next state, reward and 'done' flag
      */
-    StepResult<int> step(int action) override;
+    virtual StepResult<int> step(int action) override;
 
     /**
      * @brief Check if _state is terminal
@@ -1001,18 +1161,6 @@ public:
      */
     std::vector<int> terminal_states;
 
-    /**
-     * State (observation) space
-     */
-    spaces::Discrete observation_space;
-
-    /**
-     *  Action space
-     */
-    spaces::Discrete action_space;
-
-    // Members of base class
-
 };
 } // namespace env
 } // namespace rlly
@@ -1050,7 +1198,7 @@ public:
     /**
      * Clone
      */
-    std::unique_ptr<Env<int, int>> clone() const override;
+    std::unique_ptr<FiniteEnv> clone() const override;
 };
 
 } // namespace env
@@ -1083,7 +1231,7 @@ namespace env
  * 
  *   A reward of 0 is obtained everywhere, except for the terminal state, where the reward is 1.
  */
-class MountainCar: public Env<std::vector<double>, int>
+class MountainCar: public ContinuousStateEnv, public rlly::utils::render::RenderInterface2D<std::vector<double>>
 {
     
 public:
@@ -1100,29 +1248,19 @@ public:
     StepResult<std::vector<double>> step(int action) override;
 
     /**
-    * State (observation) space
-    */
-    spaces::Box observation_space;
-
-    /**
-    *  Action space
-    */
-    spaces::Discrete action_space;
-
-    /**
      * Get scene representing a given state
      */
-    utils::render::Scene get_scene_for_render2d(std::vector<double> state_var) override;
+    utils::render::Scene2D get_scene_for_render2d(std::vector<double> state_var) override;
 
     /**
      * Returns background for rendering 
      */
-    utils::render::Scene get_background_for_render2d() override;
+    utils::render::Scene2D get_background_for_render2d() override;
 
     /**
      * Clone 
      */
-    std::unique_ptr<Env<std::vector<double>, int>> clone() const override;
+    std::unique_ptr<ContinuousStateEnv> clone() const override;
 
 protected:
     /**
@@ -1181,7 +1319,7 @@ namespace env
  *      With probability fail_p, a random action will be taken instead of the chosen action. Note that, even in
  *      the case of failure, the chosen action can be chosen by chance.
  */
-class GridWorld: public FiniteMDP
+class GridWorld: public FiniteMDP, public rlly::utils::render::RenderInterface2D<int>
 {
 public:
     /**
@@ -1220,19 +1358,24 @@ public:
     void render_values(std::vector<double> values);
 
     /**
+     * Step function (overriden for storing states for rendering)
+     */ 
+    StepResult<int> step(int action) override;
+
+    /**
      * Clone 
      */
-    std::unique_ptr<Env<int, int>> clone() const override;
+    std::unique_ptr<FiniteEnv> clone() const override;
 
     /**
      * Generate 2D representation (Scene) of a given state.
      */
-    utils::render::Scene get_scene_for_render2d(int state_var) override;
+    utils::render::Scene2D get_scene_for_render2d(int state_var) override;
 
     /**
      * Background for rendering
      */
-    utils::render::Scene get_background_for_render2d() override;
+    utils::render::Scene2D get_background_for_render2d() override;
 
 private:
     /* data */
@@ -1269,7 +1412,7 @@ namespace env
 /**
  * CartPole environment, as in https://github.com/openai/gym/blob/master/gym/envs/classic_control/cartpole.py
  */
-class CartPole: public Env<std::vector<double>, int>
+class CartPole: public ContinuousStateEnv, public rlly::utils::render::RenderInterface2D<std::vector<double>>
 {
 private:
     
@@ -1298,29 +1441,19 @@ public:
     StepResult<std::vector<double>> step(int action) override;
 
     /**
-    * State (observation) space
-    */
-    spaces::Box observation_space;
-
-    /**
-    *  Action space
-    */
-    spaces::Discrete action_space;
-
-    /**
      *  Clone the object
      */
-    std::unique_ptr<Env<std::vector<double>, int>> clone() const override;
+    std::unique_ptr<ContinuousStateEnv> clone() const override;
 
     /**
      * Get scene representing a given state
      */
-    utils::render::Scene get_scene_for_render2d(std::vector<double> state_var) override;
+    utils::render::Scene2D get_scene_for_render2d(std::vector<double> state_var) override;
 
     /**
      * Returns background for rendering 
      */
-    utils::render::Scene get_background_for_render2d() override;
+    utils::render::Scene2D get_background_for_render2d() override;
 };
 
 } // namespace env
@@ -1343,6 +1476,85 @@ namespace rlly
 namespace env{}
 }
 
+#endif
+#ifndef __RLLY_ISOMORPHIC_WRAPPER_H__
+#define __RLLY_ISOMORPHIC_WRAPPER_H__
+
+namespace rlly
+{
+namespace wrappers
+{
+
+/**
+ * @brief Wrapper such that the observation and action spaces of the wrapper environment are the
+ * same as the original environment. 
+ * @details Useful to define wrappers like time limit.
+ */
+template <typename S, typename A, typename S_space, typename A_space>
+class IsomorphicWrapper: public env::Env<S, A, S_space, A_space>
+{
+public:
+    IsomorphicWrapper(env::Env<S, A, S_space, A_space>& env);
+    ~IsomorphicWrapper(){};
+
+    /**
+     *  Pointer to the wrapped environment.
+     */
+    std::unique_ptr<env::Env<S, A, S_space, A_space>> p_env;
+
+    // reset 
+    virtual S reset() override;
+
+    // step
+    virtual env::StepResult<S> step(A action) override;
+
+    /**
+     * @brief Returns a null pointer. Prevents the wrapper from being cloned.
+     */
+    virtual std::unique_ptr<env::Env<S, A, S_space, A_space>> clone() const override;
+
+    // Set seed
+    void set_seed(int _seed);
+};
+
+template <typename S, typename A, typename S_space, typename A_space>
+IsomorphicWrapper<S, A, S_space, A_space>::IsomorphicWrapper(env::Env<S, A, S_space, A_space>& env)
+{
+    p_env               = env.clone();
+    this->id            = (*p_env).id + "IsomorphicWrapper";
+    this->observation_space = (*p_env).observation_space;
+    this->action_space      = (*p_env).action_space;
+}
+
+template <typename S, typename A, typename S_space, typename A_space>
+S IsomorphicWrapper<S, A, S_space, A_space>::reset()
+{
+    return (*p_env).reset();
+}
+
+template <typename S, typename A, typename S_space, typename A_space>
+env::StepResult<S> IsomorphicWrapper<S, A, S_space, A_space>::step(A action)
+{
+    return (*p_env).step(action);
+}
+
+template <typename S, typename A, typename S_space, typename A_space>
+std::unique_ptr<env::Env<S, A, S_space, A_space>> IsomorphicWrapper<S, A, S_space, A_space>::clone() const
+{
+    return nullptr;
+}
+
+template <typename S, typename A, typename S_space, typename A_space>
+void IsomorphicWrapper<S, A, S_space, A_space>::set_seed(int _seed)
+{
+    (*p_env).set_seed(_seed);
+    int seed = (*p_env).randgen.get_seed();
+    this->observation_space.generator.seed(seed+123);
+    this->action_space.generator.seed(seed+456);
+}
+
+} // namespace wrappers
+} // namespace rlly
 #endif
 /**
  * @file
@@ -1372,10 +1584,10 @@ private:
     static constexpr float background_color[3] = {0.6, 0.75, 1.0}; 
 
     // Backgroud image 
-    static utils::render::Scene background;
+    static utils::render::Scene2D background;
 
     // Data to be rendered (represented by a vector of scenes)
-    static std::vector<utils::render::Scene> data;
+    static std::vector<utils::render::Scene2D> data;
 
     // Time counter 
     static unsigned int time_count;
@@ -1414,12 +1626,12 @@ public:
     /**
      * Set scene to be rendered
      */
-    void set_data(std::vector<utils::render::Scene> _data);
+    void set_data(std::vector<utils::render::Scene2D> _data);
 
     /**
      * Set background
      */
-    void set_background(utils::render::Scene _background);
+    void set_background(utils::render::Scene2D _background);
 
     /**
      * Set window name
@@ -1457,25 +1669,24 @@ namespace render
 {
 
 /**
- * @param states list of states to render
- * @param env    environment
- * @tparam EnvType represents Env<S, A> (see abstractenv.h)
+ * @param env  Environment
+ * @tparam EnvType an enviroment that implements a rendering interface
  * @tparam S type of state space
  */
-template <typename EnvType, typename S>
-void render_env(std::vector<S> states, EnvType& env)
+template <typename EnvType>
+void render_env(EnvType& env)
 {
-    if (env.rendering2d_enabled)
+    if (env.rendering_enabled && env.rendering_type == "2d")
     {
         // Background
         auto background = env.get_background_for_render2d();
 
         // Data
-        std::vector<utils::render::Scene> data;    
-        int n_data = states.size();
+        std::vector<utils::render::Scene2D> data;    
+        int n_data = env.state_history_for_rendering.size();
         for(int ii = 0; ii < n_data; ii++)
         {
-            utils::render::Scene scene = env.get_scene_for_render2d(states[ii]);
+            utils::render::Scene2D scene = env.get_scene_for_render2d(env.state_history_for_rendering[ii]);
             data.push_back(scene);
         }   
 
@@ -1490,13 +1701,90 @@ void render_env(std::vector<S> states, EnvType& env)
     }
     else
     {
-        std::cerr << "Error: environement " << env.id << " is not enabled for rendering (flag rendering2d_enabled is false)" << std::endl;
+        std::cerr << "Error: environement " << env.id << " is not enabled for rendering. Try calling env.enable_rendering()." << std::endl;
     }
     
 }
 
 } // namspace render
 } // namespace rlly
+
+#endif
+// #ifndef __RLLY_DISCRETIZE_STATE_WRAPPER_H___
+// #define __RLLY_DISCRETIZE_STATE_WRAPPER_H___
+
+// #include <vector>
+// #include <iostream>
+// #include "basic_wrapper.h"
+// #include "utils.h"
+// #include "space.h"
+// #include "env.h"
+
+// namespace rlly
+// {
+// namespace wrappers
+// {
+
+// class DiscretizeStateWrapper: public ContinuousStateEnvWrapper
+// {
+// public:
+//     /**
+//      * @param env
+//      * @param n_bins number of intervals in the discretization of each dimension of the state space
+//      */
+//     DiscretizeStateWrapper(env::ContinuousStateEnv& env, int n_bins);
+//     /**
+//      * @param env
+//      * @param vec_n_bins vec_n_bins[i] is the number of intervals in the discretization of the i-th each dimension of the state space
+//      */
+//     DiscretizeStateWrapper(env::ContinuousStateEnv& env, std::vector<int> vec_n_bins);
+//     ~DiscretizeStateWrapper(){};
+
+//     /**
+//      * all_bins[i] = {x_1, ..., x_n } the points corresponding to the discretization of the i-th dimension of the state space
+//      */  
+//     utils::vec::vec_2d all_bins;
+// };
+
+// } // namespace wrappers
+// } // namespace rlly
+
+// #endif
+#ifndef __RLLY_WRAPPER_TYPEDEFS_H__
+#define __RLLY_WRAPPER_TYPEDEFS_H__
+
+/**
+ * @file
+ * @brief Useful type definitions for wrappers
+ */
+
+namespace rlly
+{
+namespace wrappers
+{
+
+/**
+ * @brief FiniteEnv -> FiniteEnv wrapper
+ */
+typedef IsomorphicWrapper<int, int, spaces::Discrete, spaces::Discrete> FiniteEnvWrapper;
+
+/**
+ * @brief ContinuousStateEnv -> ContinuousStateEnv wrapper
+ */
+typedef IsomorphicWrapper<std::vector<double>, int, spaces::Box, spaces::Discrete> ContinuousStateEnvWrapper;
+
+/**
+ * @brief ContinuousEnv -> ContinuousEnv wrapper
+ */
+typedef IsomorphicWrapper<std::vector<double>, std::vector<double>, spaces::Box, spaces::Box> ContinuousEnvWrapper;
+
+/**
+ * @brief ContinuousActionEnv -> ContinuousActionEnv wrapper
+ */
+typedef IsomorphicWrapper<int, std::vector<double>, spaces::Discrete, spaces::Box> ContinuousActionEnvWrapper;
+
+}  // namespace env
+}  // namespace rlly
 
 #endif
 /**
@@ -1516,6 +1804,76 @@ namespace render
 } // namspace render
 } // namespace rlly
 
+#endif
+#ifndef __RLLY_BASIC_WRAPPER_H__
+#define __RLLY_BASIC_WRAPPER_H__
+
+namespace rlly
+{
+namespace wrappers
+{
+
+/**
+ * @brief Wrapper such that the observation and action spaces of the wrapper environment are not 
+ * necessarily the same as in the original environment.
+ * @tparam EnvType type of the original environment
+ * @tparam S type of state variables of the wrapper  (e.g. int, std::vector<double>)
+ * @tparam A type of action variables of the wrapper (e.g. int, std::vector<double>)
+ * @tparam S_space type of state space of the wrapper (e.g. spaces::Box, spaces::Discrete)
+ * @tparam A_space type of action space of the wrapper (e.g. spaces::Box, spaces::Discrete)
+ */
+template <typename EnvType, typename S, typename A, typename S_space, typename A_space>
+class BasicWrapper: rlly::env::Env<S, A, S_space, A_space>
+{
+public:
+    BasicWrapper(EnvType& env)
+    {
+        p_env = env.clone();
+        this->id  = (*p_env).id + "Wrapper";
+    };
+    ~BasicWrapper(){};
+
+    /**
+     *  Pointer to the wrapped environment.
+     */
+    std::unique_ptr<EnvType> p_env;
+
+    /**
+     * @brief Returns a null pointer. Prevents the wrapper from being cloned.
+     */
+    virtual std::unique_ptr<env::Env<S, A, S_space, A_space>> clone() const override { return nullptr;};
+
+    /**
+     * Set seed
+     */
+    void set_seed(int _seed)
+    {
+        this->set_seed(_seed+123);
+        p_env->set_seed(_seed);
+    };
+};
+
+} // namespace wrappers
+} // namespace rlly
+
+#endif
+#ifndef __RLLY_WRAPPERS_H__
+#define __RLLY_WRAPPERS_H__
+
+/**
+ * @file 
+ * All headers for wrappers.
+ */
+
+namespace rlly
+{
+
+/**
+ * @brief Wrappers for the environments
+ */
+namespace wrappers{}
+
+}
 #endif
 namespace rlly
 {
@@ -1624,8 +1982,7 @@ GridWorld::GridWorld(int _nrows, int _ncols, double fail_p /* = 0 */, double rew
         
     id = "GridWorld";
 
-    // 2D rendering is enabled for GridWorld
-    rendering2d_enabled = true;
+    // 2D rendering parameters
     refresh_interval_for_render2d = 1000; // 1 second between frames
     clipping_area_for_render2d[0] = 0.0;
     clipping_area_for_render2d[1] = 1.0*ncols;
@@ -1708,14 +2065,28 @@ void GridWorld::render_values(std::vector<double> values)
     std::cout << std::endl;       
 }
 
-std::unique_ptr<Env<int, int>> GridWorld::clone() const
+StepResult<int> GridWorld::step(int action)
+{
+    // for rendering
+    if (rendering_enabled) append_state_for_rendering(state);
+    
+    // Sample next state
+    int next_state = randgen.choice(transitions[state][action]);
+    double reward = reward_function.sample(state, action, next_state, randgen); 
+    bool done = is_terminal(next_state);
+    StepResult<int> step_result(next_state, reward, done);
+    state = step_result.next_state;
+    return step_result;
+}
+
+std::unique_ptr<FiniteEnv> GridWorld::clone() const
 {
     return std::make_unique<GridWorld>(*this);
 }
 
-utils::render::Scene GridWorld::get_scene_for_render2d(int state_var)
+utils::render::Scene2D GridWorld::get_scene_for_render2d(int state_var)
 {
-    utils::render::Scene scene; 
+    utils::render::Scene2D scene; 
     utils::render::Geometric2D agent_shape;
     agent_shape.type = "GL_QUADS";
     agent_shape.set_color(0.0, 0.0, 0.5);
@@ -1743,9 +2114,9 @@ utils::render::Scene GridWorld::get_scene_for_render2d(int state_var)
     return scene;
 }
 
-utils::render::Scene GridWorld::get_background_for_render2d()
+utils::render::Scene2D GridWorld::get_background_for_render2d()
 {
-    utils::render::Scene scene; 
+    utils::render::Scene2D scene; 
 
     // Getting (x, y) representation of the state
     float x_size = 1.0;
@@ -1816,7 +2187,7 @@ Chain::Chain(int N, double fail_p)
     id = "Chain";
 }
 
-std::unique_ptr<Env<int, int>> Chain::clone() const
+std::unique_ptr<FiniteEnv> Chain::clone() const
 {
     return std::make_unique<Chain>(*this);
 }
@@ -1852,10 +2223,6 @@ void FiniteMDP::set_params(DiscreteReward _reward_function, utils::vec::vec_3d _
     // observation and action spaces
     observation_space.set_n(ns);
     action_space.set_n(na);
-
-    // initialize pointers of base class
-    p_observation_space = &observation_space;
-    p_action_space      = &action_space;
     set_seed(_seed);
     
     reset();
@@ -1936,10 +2303,6 @@ namespace env
 
 MountainCar::MountainCar()
 {
-    // Initialize pointers in the base class
-    p_action_space = &action_space;
-    p_observation_space = &observation_space;
-
     // Set seed
     int _seed = std::rand();
     set_seed(_seed);
@@ -1959,7 +2322,6 @@ MountainCar::MountainCar()
     id = "MountainCar";
 
     // 2D rendering is enabled for MountainCar
-    rendering2d_enabled = true;
     clipping_area_for_render2d[0] = -1.2;
     clipping_area_for_render2d[1] =  0.6;
     clipping_area_for_render2d[2] = -0.2;
@@ -1977,6 +2339,10 @@ StepResult<std::vector<double>> MountainCar::step(int action)
 {
     assert(action_space.contains(action));
 
+    // for rendering
+    if (rendering_enabled) append_state_for_rendering(state);
+    //
+    
     std::vector<double>& lo = observation_space.low;
     std::vector<double>& hi = observation_space.high;
 
@@ -2007,17 +2373,17 @@ bool MountainCar::is_terminal(std::vector<double> state)
     return ((state[position] >= goal_position) && (state[velocity]>=goal_velocity));
 }
 
-std::unique_ptr<Env<std::vector<double>, int>> MountainCar::clone() const
+std::unique_ptr<ContinuousStateEnv> MountainCar::clone() const
 {
     return std::make_unique<MountainCar>(*this);
 }
 
-utils::render::Scene MountainCar::get_scene_for_render2d(std::vector<double> state_var)
+utils::render::Scene2D MountainCar::get_scene_for_render2d(std::vector<double> state_var)
 {
     float y = std::sin(3*state_var[position])*0.45 + 0.55;
     float x = state_var[position];
 
-    utils::render::Scene car_scene;
+    utils::render::Scene2D car_scene;
     utils::render::Geometric2D car;
     car.type = "GL_POLYGON";
     car.set_color(0.0f, 0.0f, 0.0f);
@@ -2032,9 +2398,9 @@ utils::render::Scene MountainCar::get_scene_for_render2d(std::vector<double> sta
     return car_scene;
 }
 
-utils::render::Scene MountainCar::get_background_for_render2d()
+utils::render::Scene2D MountainCar::get_background_for_render2d()
 {
-    utils::render::Scene background;
+    utils::render::Scene2D background;
     utils::render::Geometric2D mountain;
     utils::render::Geometric2D flag;
     mountain.type = "GL_TRIANGLE_FAN";
@@ -2080,10 +2446,6 @@ namespace env
 
 CartPole::CartPole()
 {
-    // Initialize pointers in the base class
-    p_action_space = &action_space;
-    p_observation_space = &observation_space;
-
     // Set seed
     int _seed = std::rand();
     set_seed(_seed);
@@ -2102,9 +2464,7 @@ CartPole::CartPole()
     // id
     id = "CartPole";
 
-    // 2D rendering is enabled for CartPole
-    rendering2d_enabled = true;
-
+    // 2D rendering parameters
     clipping_area_for_render2d[0] = -2.4;
     clipping_area_for_render2d[1] =  2.4;
     clipping_area_for_render2d[2] = -0.5;
@@ -2113,6 +2473,10 @@ CartPole::CartPole()
 
 StepResult<std::vector<double>> CartPole::step(int action)
 {
+    // for rendering
+    if (rendering_enabled) append_state_for_rendering(state);
+    //
+    
     // get state variables
     double x = state[0]; 
     double x_dot = state[1];
@@ -2179,12 +2543,12 @@ std::vector<double> CartPole::reset()
     return state; 
 }
 
-std::unique_ptr<Env<std::vector<double>, int>> CartPole::clone() const
+std::unique_ptr<ContinuousStateEnv> CartPole::clone() const
 {
     return std::make_unique<CartPole>(*this);
 }
 
-utils::render::Scene CartPole::get_scene_for_render2d(std::vector<double> state_var)
+utils::render::Scene2D CartPole::get_scene_for_render2d(std::vector<double> state_var)
 {
     // Compute cart and pole positions
     float pole_length = 2.0*half_pole_length; 
@@ -2217,7 +2581,7 @@ utils::render::Scene CartPole::get_scene_for_render2d(std::vector<double> state_
     u_vec[0] /= 50.0;
     u_vec[1] /= 50.0;
 
-    utils::render::Scene cartpole_scene;
+    utils::render::Scene2D cartpole_scene;
     utils::render::Geometric2D cart, pole;
     cart.type = "GL_QUADS";
     cart.set_color(0.0f, 0.0f, 0.0f);
@@ -2240,9 +2604,9 @@ utils::render::Scene CartPole::get_scene_for_render2d(std::vector<double> state_
     return cartpole_scene;
 }
 
-utils::render::Scene CartPole::get_background_for_render2d()
+utils::render::Scene2D CartPole::get_background_for_render2d()
 {
-    utils::render::Scene background;
+    utils::render::Scene2D background;
     utils::render::Geometric2D base;
     base.type = "GL_QUADS";
     base.set_color(0.6, 0.3, 0.0);
@@ -2403,6 +2767,127 @@ namespace rlly
 namespace env
 {
 
+SquareWorld::SquareWorld(/* args */)
+{
+    id = "SquareWorld";
+    state.push_back(start_x);
+    state.push_back(start_y);
+
+    // observation and action spaces
+    std::vector<double> _low  = {0.0, 0.0};
+    std::vector<double> _high = {1.0, 1.0};
+    observation_space.set_bounds(_low, _high);
+    action_space.set_n(4);
+
+    // set seed
+    int _seed = std::rand();
+    set_seed(_seed);
+
+    // SquareWorld supports 2d rendering
+    refresh_interval_for_render2d = 500;
+    clipping_area_for_render2d[0] = 0.0;
+    clipping_area_for_render2d[1] = 1.0;
+    clipping_area_for_render2d[2] = 0.0;
+    clipping_area_for_render2d[3] = 1.0;
+}
+
+env::StepResult<std::vector<double>> SquareWorld::step(int action)
+{
+    // for rendering
+    if (rendering_enabled) append_state_for_rendering(state);
+
+    //
+    bool done = false; 
+    double reward = std::exp( -0.5*(std::pow(state[0]-goal_x, 2) + std::pow(state[1]-goal_y, 2))/(std::pow(reward_smoothness, 2)));
+    reward += randgen.sample_gaussian(0, reward_noise_stdev);
+
+    double noise_x = randgen.sample_gaussian(0, transition_noise_stdev);
+    double noise_y = randgen.sample_gaussian(0, transition_noise_stdev);
+
+    state[0] = std::min(1.0, std::max(0.0, state[0] + noise_x));
+    state[1] = std::min(1.0, std::max(0.0, state[1] + noise_y)); 
+
+    if      (action == 0) state[0] = std::max(0.0, state[0] - displacement);
+    else if (action == 1) state[0] = std::min(1.0, state[0] + displacement);
+    else if (action == 2) state[1] = std::max(0.0, state[1] - displacement);
+    else if (action == 3) state[1] = std::min(1.0, state[1] + displacement);
+
+    env::StepResult<std::vector<double>> result(state, reward, done);
+    return result;
+}
+
+std::vector<double> SquareWorld::reset()
+{
+    std::vector<double> initial_state {start_x, start_y};
+    state = initial_state;
+    return initial_state; 
+}
+
+std::unique_ptr<ContinuousStateEnv> SquareWorld::clone() const
+{
+    return std::make_unique<SquareWorld>(*this);
+}
+
+utils::render::Scene2D SquareWorld::get_scene_for_render2d(std::vector<double> state_var)
+{
+    utils::render::Scene2D agent_scene;
+    utils::render::Geometric2D agent;
+    agent.type = "GL_QUADS";
+    agent.set_color(0.0, 0.0, 0.5);
+
+    float size = 0.025;
+    float x = state_var[0];
+    float y = state_var[1];
+    agent.add_vertex(x-size/4.0, y-size);
+    agent.add_vertex(x+size/4.0, y-size);
+    agent.add_vertex(x+size/4.0, y+size);
+    agent.add_vertex(x-size/4.0, y+size);
+
+    agent.add_vertex(x-size, y-size/4.0);
+    agent.add_vertex(x+size, y-size/4.0);
+    agent.add_vertex(x+size, y+size/4.0);
+    agent.add_vertex(x-size, y+size/4.0);
+
+    agent_scene.add_shape(agent);
+    return agent_scene;
+}
+
+utils::render::Scene2D SquareWorld::get_background_for_render2d()
+{
+    utils::render::Scene2D background;
+    
+    float epsilon = 0.01;
+    float x = 0.0;
+    while (x < 1.0)
+    {
+        float y = 0.0;
+        while (y < 1.0)
+        {
+            utils::render::Geometric2D shape;
+            shape.type = "GL_QUADS";
+            float reward = std::exp( -0.5*(std::pow(x-goal_x, 2) + std::pow(y-goal_y, 2))/(std::pow(reward_smoothness, 2)));
+
+            shape.set_color(0.4, 0.7*reward + 0.3, 0.4);
+            shape.add_vertex(x-epsilon, y-epsilon);
+            shape.add_vertex(x+epsilon, y-epsilon);
+            shape.add_vertex(x+epsilon, y+epsilon);
+            shape.add_vertex(x-epsilon, y+epsilon);
+            background.add_shape(shape);
+            y += epsilon;
+        }
+        x += epsilon;
+    }
+    
+    return background;
+}
+
+}  // namespace env
+}  // namespace rlly
+namespace rlly
+{
+namespace env
+{
+
 DiscreteReward::DiscreteReward()
 {
     noise_type = "none";
@@ -2446,11 +2931,11 @@ namespace rlly
 namespace render
 {
 
-std::vector<utils::render::Scene> Render2D::data;
+std::vector<utils::render::Scene2D> Render2D::data;
 
 //
 
-utils::render::Scene Render2D::background;
+utils::render::Scene2D Render2D::background;
 
 // 
 
@@ -2498,12 +2983,12 @@ void Render2D::set_clipping_area(std::vector<float> area)
     window_height = (int) (base_size*height_range);
 }
 
-void Render2D::set_data(std::vector<utils::render::Scene> _data)
+void Render2D::set_data(std::vector<utils::render::Scene2D> _data)
 {
     data = _data;
 }
 
-void Render2D::set_background(utils::render::Scene _background)
+void Render2D::set_background(utils::render::Scene2D _background)
 {
     background = _background;
 }
@@ -2672,13 +3157,62 @@ std::vector<double> Box::sample()
 }
 
 }
-}namespace rlly
+}// #include "discretize_state_wrapper.h"
+
+// namespace rlly
+// {
+// namespace wrappers
+// {
+
+// DiscretizeStateWrapper::DiscretizeStateWrapper(env::ContinuousStateEnv& env, int n_bins):  ContinuousStateEnvWrapper(env)
+// {
+//     int dim = env.observation_space.low.size();
+//     for(int dd = 0; dd < dim; dd++)
+//     {
+//         double range = env.observation_space.high[dd] - env.observation_space.low[dd];
+//         double epsilon = range/n_bins;
+//         // discretization of dimension dd
+//         std::vector<double> discretization(n_bins+1);
+//         for (int bin = 0; bin < n_bins+1; bin++)
+//         {
+//             discretization[bin] = env.observation_space.low[dd] + epsilon*bin;
+//         } 
+//         all_bins.push_back(discretization);
+//     }
+// }
+
+// DiscretizeStateWrapper::DiscretizeStateWrapper(env::ContinuousStateEnv& env, std::vector<int> vec_n_bins): ContinuousStateEnvWrapper(env)
+// {
+//     unsigned int dim = env.observation_space.low.size();
+//     if (vec_n_bins.size() != dim)
+//     {
+//         std::cerr << "Incompatible dimensions in the constructor of DiscretizeStateWrapper." << std::endl;
+//         throw;
+//     }
+//     for(unsigned int dd = 0; dd < dim; dd++)
+//     {
+//         int n_bins = vec_n_bins[dd];
+//         double range = env.observation_space.high[dd] - env.observation_space.low[dd];
+//         double epsilon = range/n_bins;
+//         // discretization of dimension dd
+//         std::vector<double> discretization(n_bins+1);
+//         for (int bin = 0; bin < n_bins+1; bin++)
+//         {
+//             discretization[bin] = env.observation_space.low[dd] + epsilon*bin;
+//         } 
+//         all_bins.push_back(discretization);
+//     }
+// }
+
+// } // namespace wrappers
+// } // namespace rlly
+namespace rlly
 {
 namespace spaces
 {
 
 /*
-Members of Discrete
+   Members of Discrete
 */ 
 
 Discrete::Discrete()
@@ -2776,6 +3310,11 @@ double Random::sample_gaussian(double mu, double sigma)
     return mu + sigma*standard_sample;
 }
 
+int Random::get_seed()
+{
+    return seed;
+}
+
 } // namespace rand
 } // namesmape utils
 } // namespace rlly
@@ -2794,6 +3333,24 @@ double linear_map(double x, double x1, double x2, double y1, double y2)
     double b = y1 - a*x1;
     return a*x + b;
 }
+
+int binary_search(double val, std::vector<double> vec, int l /*= 0*/, int r /*= -1*/) 
+{ 
+    if (r == - 1) r = vec.size()-1;
+
+    if (r > l) 
+    { 
+        int mid = l + (r - l) / 2; 
+        if (vec[mid] <= val && vec[mid+1] > val) 
+            return mid;
+        if (val >= vec[mid+1])
+            return binary_search(val, vec, mid+1, r);
+        if (val < vec[mid])
+            return binary_search(val, vec, l, mid);
+    } 
+    return -1; 
+} 
+
 }
 }
 

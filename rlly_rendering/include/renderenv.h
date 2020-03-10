@@ -18,13 +18,12 @@ namespace render
 {
 
 /**
- * @param states list of states to render
- * @param env    environment
- * @tparam EnvType represents Env<S, A> (see abstractenv.h) OR a wrapper (see basewrapper.h)
+ * @param env  Environment
+ * @tparam EnvType an enviroment that implements a rendering interface
  * @tparam S type of state space
  */
-template <typename EnvType, typename S>
-void render_env(std::vector<S> states, EnvType& env)
+template <typename EnvType>
+void render_env(EnvType& env)
 {
     if (env.rendering_enabled && env.rendering_type == "2d")
     {
@@ -33,10 +32,10 @@ void render_env(std::vector<S> states, EnvType& env)
 
         // Data
         std::vector<utils::render::Scene2D> data;    
-        int n_data = states.size();
+        int n_data = env.state_history_for_rendering.size();
         for(int ii = 0; ii < n_data; ii++)
         {
-            utils::render::Scene2D scene = env.get_scene_for_render2d(states[ii]);
+            utils::render::Scene2D scene = env.get_scene_for_render2d(env.state_history_for_rendering[ii]);
             data.push_back(scene);
         }   
 
@@ -51,7 +50,7 @@ void render_env(std::vector<S> states, EnvType& env)
     }
     else
     {
-        std::cerr << "Error: environement " << env.id << " is not enabled for rendering (flag rendering2d_enabled is false)" << std::endl;
+        std::cerr << "Error: environement " << env.id << " is not enabled for rendering. Try calling env.enable_rendering()." << std::endl;
     }
     
 }

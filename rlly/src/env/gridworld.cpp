@@ -116,8 +116,7 @@ GridWorld::GridWorld(int _nrows, int _ncols, double fail_p /* = 0 */, double rew
         
     id = "GridWorld";
 
-    // 2D rendering is enabled for GridWorld
-    rendering_enabled = true;
+    // 2D rendering parameters
     refresh_interval_for_render2d = 1000; // 1 second between frames
     clipping_area_for_render2d[0] = 0.0;
     clipping_area_for_render2d[1] = 1.0*ncols;
@@ -198,6 +197,21 @@ void GridWorld::render_values(std::vector<double> values)
     }
     for(int ii = 0; ii < ncols; ii ++) std::cout<<"------";
     std::cout << std::endl;       
+}
+
+
+StepResult<int> GridWorld::step(int action)
+{
+    // for rendering
+    if (rendering_enabled) append_state_for_rendering(state);
+    
+    // Sample next state
+    int next_state = randgen.choice(transitions[state][action]);
+    double reward = reward_function.sample(state, action, next_state, randgen); 
+    bool done = is_terminal(next_state);
+    StepResult<int> step_result(next_state, reward, done);
+    state = step_result.next_state;
+    return step_result;
 }
 
 std::unique_ptr<FiniteEnv> GridWorld::clone() const

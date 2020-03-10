@@ -10,18 +10,18 @@
 
 int main()
 {
+    // create environment, set seed and enable rendering
     rlly::env::MountainCar env;
     env.set_seed(123);
-
+    env.enable_rendering();
+    // run
     int horizon = 200;
-    rlly::utils::vec::vec_2d states; // or std::vector<std::vector<double>> states;
     for(int hh = 0; hh < horizon; hh++)
     {
         auto action = env.action_space.sample();
         auto step_result = env.step(action);
-        states.push_back(step_result.next_state);
     }
-
-    rlly::render::render_env(states, env);
+    // render
+    rlly::render::render_env(env);
     return 0;
 }

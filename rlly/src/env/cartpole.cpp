@@ -26,9 +26,7 @@ CartPole::CartPole()
     // id
     id = "CartPole";
 
-    // 2D rendering is enabled for CartPole
-    rendering_enabled = true;
-
+    // 2D rendering parameters
     clipping_area_for_render2d[0] = -2.4;
     clipping_area_for_render2d[1] =  2.4;
     clipping_area_for_render2d[2] = -0.5;
@@ -38,6 +36,10 @@ CartPole::CartPole()
 
 StepResult<std::vector<double>> CartPole::step(int action)
 {
+    // for rendering
+    if (rendering_enabled) append_state_for_rendering(state);
+    //
+    
     // get state variables
     double x = state[0]; 
     double x_dot = state[1];

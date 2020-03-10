@@ -56,7 +56,7 @@ public:
      * @param action action to take
      * @return StepResult object, contaning next state, reward and 'done' flag
      */
-    StepResult<int> step(int action) override;
+    virtual StepResult<int> step(int action) override;
 
     /**
      * @brief Check if _state is terminal

@@ -29,13 +29,9 @@ add_library(rlly SHARED ${SOURCES})
 # test targets
 #
 add_executable(unit_tests main.cpp
-                          space_test.cpp
-                          random_test.cpp
-                          vector_op_test.cpp
+                          utils_test.cpp
                           env_test.cpp)
 target_link_libraries(unit_tests rlly)
-
-
 
 
 # - add_test() is not necessary when running ./unit_tests

@@ -7,8 +7,6 @@
 
 namespace rlly
 {
-namespace env
-{
 namespace wrappers
 {
 
@@ -16,18 +14,18 @@ template <typename S, typename A>
 class Wrapper
 {
 public:
-    Wrapper(Env<S, A>& env);
+    Wrapper(env::Env<S, A>& env);
     ~Wrapper(){};
 
     /**
      *  Pointer to the wrapped environment.
      */
-    std::unique_ptr<Env<S, A>> p_env;
+    std::unique_ptr<env::Env<S, A>> p_env;
 
     // reset 
     virtual S reset();
     // step
-    virtual StepResult<S> step(A action);
+    virtual env::StepResult<S> step(A action);
 
     // id
     std::string id;
@@ -55,7 +53,7 @@ public:
 };
 
 template <typename S, typename A>
-Wrapper<S, A>::Wrapper(Env<S, A>& env)
+Wrapper<S, A>::Wrapper(env::Env<S, A>& env)
 {
     p_env               = env.clone();
     id                  = (*p_env).id + "Wrapper";
@@ -75,7 +73,7 @@ S Wrapper<S, A>::reset()
 }
 
 template <typename S, typename A>
-StepResult<S> Wrapper<S, A>::step(A action)
+env::StepResult<S> Wrapper<S, A>::step(A action)
 {
     return (*p_env).step(action);
 }
@@ -95,6 +93,5 @@ utils::render::Scene Wrapper<S, A>::get_background_for_render2d()
 
 
 } // namespace wrappers
-} // namespace env
 } // namespace rlly
 #endif

@@ -11,14 +11,11 @@
 
 namespace rlly
 {
-namespace env
-{
-    
+
 /**
  * @brief Wrappers for the environments
  */
 namespace wrappers{}
 
-}
 }
 #endif

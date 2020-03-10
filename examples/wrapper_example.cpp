@@ -9,7 +9,7 @@
 #include "wrappers.h"
 
 
-typedef rlly::env::wrappers::Wrapper<std::vector<double>, int> ContinuousStateWrapper;
+typedef rlly::wrappers::Wrapper<std::vector<double>, int> ContinuousStateWrapper;
 typedef rlly::env::Env<std::vector<double>, int> ContinuousStateEnv;
 
 class WrapperExample: public ContinuousStateWrapper
@@ -33,7 +33,7 @@ rlly::env::StepResult<std::vector<double>> WrapperExample::step(int action)
 {
     auto step_result = (*p_env).step(action);
     // do something
-    step_result.next_state[0] = 0; // setting x always to 0
+    step_result.next_state[0] = 0; // setting x always to 0, for example
     return step_result;
 }
 

@@ -109,7 +109,7 @@ std::unique_ptr<ContinuousStateEnv> CartPole::clone() const
     return std::make_unique<CartPole>(*this);
 }
 
-utils::render::Scene CartPole::get_scene_for_render2d(std::vector<double> state_var)
+utils::render::Scene2D CartPole::get_scene_for_render2d(std::vector<double> state_var)
 {
     // Compute cart and pole positions
     float pole_length = 2.0*half_pole_length; 
@@ -144,7 +144,7 @@ utils::render::Scene CartPole::get_scene_for_render2d(std::vector<double> state_
 
 
 
-    utils::render::Scene cartpole_scene;
+    utils::render::Scene2D cartpole_scene;
     utils::render::Geometric2D cart, pole;
     cart.type = "GL_QUADS";
     cart.set_color(0.0f, 0.0f, 0.0f);
@@ -168,9 +168,9 @@ utils::render::Scene CartPole::get_scene_for_render2d(std::vector<double> state_
     return cartpole_scene;
 }
 
-utils::render::Scene CartPole::get_background_for_render2d()
+utils::render::Scene2D CartPole::get_background_for_render2d()
 {
-    utils::render::Scene background;
+    utils::render::Scene2D background;
     utils::render::Geometric2D base;
     base.type = "GL_QUADS";
     base.set_color(0.6, 0.3, 0.0);

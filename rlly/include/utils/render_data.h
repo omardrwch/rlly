@@ -78,7 +78,7 @@ struct Geometric2D
 /**
  * Data representing a scene, which is a vector of Geometric2D objects
  */
-struct Scene
+struct Scene2D
 {
     /**
      * Vector of 2D shapes represeting the scene

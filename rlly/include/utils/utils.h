@@ -5,6 +5,7 @@
 #include "random.h"
 #include "misc.h"
 #include "render_data.h"
+#include "render_interface.h"
 
 
 /**

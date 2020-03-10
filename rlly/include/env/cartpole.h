@@ -18,7 +18,7 @@ namespace env
 /**
  * CartPole environment, as in https://github.com/openai/gym/blob/master/gym/envs/classic_control/cartpole.py
  */
-class CartPole: public ContinuousStateEnv
+class CartPole: public ContinuousStateEnv, public rlly::utils::render::RenderInterface2D<std::vector<double>>
 {
 private:
     
@@ -54,12 +54,12 @@ public:
     /**
      * Get scene representing a given state
      */
-    utils::render::Scene get_scene_for_render2d(std::vector<double> state_var) override;
+    utils::render::Scene2D get_scene_for_render2d(std::vector<double> state_var) override;
 
     /**
      * Returns background for rendering 
      */
-    utils::render::Scene get_background_for_render2d() override;
+    utils::render::Scene2D get_background_for_render2d() override;
 };
 
 

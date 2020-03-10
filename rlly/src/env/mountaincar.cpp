@@ -88,13 +88,13 @@ std::unique_ptr<ContinuousStateEnv> MountainCar::clone() const
 
 
 
-utils::render::Scene MountainCar::get_scene_for_render2d(std::vector<double> state_var)
+utils::render::Scene2D MountainCar::get_scene_for_render2d(std::vector<double> state_var)
 {
     float y = std::sin(3*state_var[position])*0.45 + 0.55;
     float x = state_var[position];
 
 
-    utils::render::Scene car_scene;
+    utils::render::Scene2D car_scene;
     utils::render::Geometric2D car;
     car.type = "GL_POLYGON";
     car.set_color(0.0f, 0.0f, 0.0f);
@@ -109,9 +109,9 @@ utils::render::Scene MountainCar::get_scene_for_render2d(std::vector<double> sta
     return car_scene;
 }
 
-utils::render::Scene MountainCar::get_background_for_render2d()
+utils::render::Scene2D MountainCar::get_background_for_render2d()
 {
-    utils::render::Scene background;
+    utils::render::Scene2D background;
     utils::render::Geometric2D mountain;
     utils::render::Geometric2D flag;
     mountain.type = "GL_TRIANGLE_FAN";

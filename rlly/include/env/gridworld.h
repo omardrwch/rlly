@@ -31,7 +31,7 @@ namespace env
  *      With probability fail_p, a random action will be taken instead of the chosen action. Note that, even in
  *      the case of failure, the chosen action can be chosen by chance.
  */
-class GridWorld: public FiniteMDP
+class GridWorld: public FiniteMDP, public rlly::utils::render::RenderInterface2D<int>
 {
 public:
     /**
@@ -79,12 +79,12 @@ public:
     /**
      * Generate 2D representation (Scene) of a given state.
      */
-    utils::render::Scene get_scene_for_render2d(int state_var) override;
+    utils::render::Scene2D get_scene_for_render2d(int state_var) override;
 
     /**
      * Background for rendering
      */
-    utils::render::Scene get_background_for_render2d() override;
+    utils::render::Scene2D get_background_for_render2d() override;
 
 private:
     /* data */

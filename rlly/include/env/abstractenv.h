@@ -90,44 +90,6 @@ public:
      * @param _seed
      */
     virtual void set_seed(int _seed);
-    
-    /*
-
-        Methods and attributes used for graph rendering
-
-    */
-
-    /**
-     * Set to true if the environment supports 2D rendering.
-     * To support 2D rendering, the derived class must:
-     *     - set rendering2d_enabled to true
-     *     - implement the method get_scene_for_render2d()
-     *     - implement the method get_background_for_render()
-     *     - optionally, change the value of refresh_interval_for_render2d 
-     *     - optionally, define clipping_area_for_render2d;
-     */
-    bool rendering2d_enabled = false;
-
-    /**
-     * Retuns a scene (list of shapes) representing the state
-     * @param state_var
-     */
-    virtual utils::render::Scene get_scene_for_render2d(S state_var) {return utils::render::Scene();};    
-    
-    /**
-     * Retuns a scene (list of shapes) representing the background
-     */
-    virtual utils::render::Scene get_background_for_render2d(){return utils::render::Scene();};
-
-    /**
-     *  Refresh interval of rendering (in milliseconds)
-     */
-    int refresh_interval_for_render2d = 50;
-
-    /**
-     * Clipping area for rendering (left, right, bottom, top). Default = {-1.0, 1.0, -1.0, 1.0}
-     */
-    std::vector<float> clipping_area_for_render2d = {-1.0, 1.0, -1.0, 1.0};
 }; 
 
 template <typename S, typename A, typename S_space, typename A_space>

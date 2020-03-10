@@ -32,10 +32,10 @@ private:
     static constexpr float background_color[3] = {0.6, 0.75, 1.0}; 
 
     // Backgroud image 
-    static utils::render::Scene background;
+    static utils::render::Scene2D background;
 
     // Data to be rendered (represented by a vector of scenes)
-    static std::vector<utils::render::Scene> data;
+    static std::vector<utils::render::Scene2D> data;
 
     // Time counter 
     static unsigned int time_count;
@@ -74,12 +74,12 @@ public:
     /**
      * Set scene to be rendered
      */
-    void set_data(std::vector<utils::render::Scene> _data);
+    void set_data(std::vector<utils::render::Scene2D> _data);
 
     /**
      * Set background
      */
-    void set_background(utils::render::Scene _background);
+    void set_background(utils::render::Scene2D _background);
 
     /**
      * Set window name

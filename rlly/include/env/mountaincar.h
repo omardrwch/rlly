@@ -29,7 +29,7 @@ namespace env
  * 
  *   A reward of 0 is obtained everywhere, except for the terminal state, where the reward is 1.
  */
-class MountainCar: public ContinuousStateEnv
+class MountainCar: public ContinuousStateEnv, public rlly::utils::render::RenderInterface2D<std::vector<double>>
 {
     
 public:
@@ -48,12 +48,12 @@ public:
     /**
      * Get scene representing a given state
      */
-    utils::render::Scene get_scene_for_render2d(std::vector<double> state_var) override;
+    utils::render::Scene2D get_scene_for_render2d(std::vector<double> state_var) override;
 
     /**
      * Returns background for rendering 
      */
-    utils::render::Scene get_background_for_render2d() override;
+    utils::render::Scene2D get_background_for_render2d() override;
 
     /**
      * Clone 

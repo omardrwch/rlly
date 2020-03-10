@@ -38,8 +38,6 @@ rlly::env::StepResult<std::vector<double>> WrapperExample::step(int action)
 }
 
 
-
-
 int main()
 {
     rlly::env::CartPole cartpole;
@@ -62,7 +60,7 @@ int main()
         if (step_result.done) break;
     }
 
-    rlly::render::render_env(states, env);
+    // rlly::render::render_env(states, env);
 
     return 0;
 }

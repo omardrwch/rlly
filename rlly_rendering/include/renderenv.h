@@ -32,11 +32,11 @@ void render_env(std::vector<S> states, EnvType& env)
         auto background = env.get_background_for_render2d();
 
         // Data
-        std::vector<utils::render::Scene> data;    
+        std::vector<utils::render::Scene2D> data;    
         int n_data = states.size();
         for(int ii = 0; ii < n_data; ii++)
         {
-            utils::render::Scene scene = env.get_scene_for_render2d(states[ii]);
+            utils::render::Scene2D scene = env.get_scene_for_render2d(states[ii]);
             data.push_back(scene);
         }   
 

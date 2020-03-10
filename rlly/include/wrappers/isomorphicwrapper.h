@@ -12,7 +12,8 @@ namespace wrappers
 
 /**
  * @brief Wrapper such that the observation and action spaces of the wrapper environment are the
- * same as the original environment.
+ * same as the original environment. 
+ * @details Useful to define wrappers like time limit.
  */
 template <typename S, typename A, typename S_space, typename A_space>
 class IsomorphicWrapper: public env::Env<S, A, S_space, A_space>
@@ -37,12 +38,6 @@ public:
      */
     virtual std::unique_ptr<env::Env<S, A, S_space, A_space>> clone() const override;
 
-    // Retuns a scene (list of shapes) representing the state
-    virtual utils::render::Scene get_scene_for_render2d(S state_var) override;    
-    
-    // Retuns a scene (list of shapes) representing the background
-    virtual utils::render::Scene get_background_for_render2d() override;
-
     // Set seed
     void set_seed(int _seed);
 };
@@ -55,11 +50,6 @@ IsomorphicWrapper<S, A, S_space, A_space>::IsomorphicWrapper(env::Env<S, A, S_sp
     this->id            = (*p_env).id + "IsomorphicWrapper";
     this->observation_space = (*p_env).observation_space;
     this->action_space      = (*p_env).action_space;
-
-    // rendering parameters
-    this->rendering2d_enabled = (*p_env).rendering2d_enabled;
-    this->clipping_area_for_render2d = (*p_env).clipping_area_for_render2d;
-    this->refresh_interval_for_render2d = (*p_env).refresh_interval_for_render2d;
 }
 
 template <typename S, typename A, typename S_space, typename A_space>
@@ -73,20 +63,6 @@ env::StepResult<S> IsomorphicWrapper<S, A, S_space, A_space>::step(A action)
 {
     return (*p_env).step(action);
 }
-
-
-template <typename S, typename A, typename S_space, typename A_space>
-utils::render::Scene IsomorphicWrapper<S, A, S_space, A_space>::get_scene_for_render2d(S state_var)
-{
-    return (*p_env).get_scene_for_render2d(state_var);
-}
-
-template <typename S, typename A, typename S_space, typename A_space>
-utils::render::Scene IsomorphicWrapper<S, A, S_space, A_space>::get_background_for_render2d()
-{
-    return (*p_env).get_background_for_render2d();
-}
-
 
 template <typename S, typename A, typename S_space, typename A_space>
 std::unique_ptr<env::Env<S, A, S_space, A_space>> IsomorphicWrapper<S, A, S_space, A_space>::clone() const

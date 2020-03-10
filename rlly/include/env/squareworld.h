@@ -24,7 +24,7 @@ namespace env
  *      The immediate reward received in each state s = (s_x, s_y) is, for any action a,
  *          r(s, a) = exp( - ((s_x-goal_x)^2 + (s_y-goal_y)^2)/(2*reward_smoothness^2)  )
  */
-class SquareWorld: public ContinuousStateEnv
+class SquareWorld: public ContinuousStateEnv, public rlly::utils::render::RenderInterface2D<std::vector<double>>
 {
 private:
     // Coordinates of start position
@@ -55,8 +55,8 @@ public:
     std::vector<double> reset() override;
     env::StepResult<std::vector<double>> step(int action) override;
 
-    utils::render::Scene get_scene_for_render2d(std::vector<double> state_var) override;    
-    utils::render::Scene get_background_for_render2d();
+    utils::render::Scene2D get_scene_for_render2d(std::vector<double> state_var) override;    
+    utils::render::Scene2D get_background_for_render2d();
 
 };
 

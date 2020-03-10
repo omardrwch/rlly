@@ -205,9 +205,9 @@ std::unique_ptr<FiniteEnv> GridWorld::clone() const
     return std::make_unique<GridWorld>(*this);
 }
 
-utils::render::Scene GridWorld::get_scene_for_render2d(int state_var)
+utils::render::Scene2D GridWorld::get_scene_for_render2d(int state_var)
 {
-    utils::render::Scene scene; 
+    utils::render::Scene2D scene; 
     utils::render::Geometric2D agent_shape;
     agent_shape.type = "GL_QUADS";
     agent_shape.set_color(0.0, 0.0, 0.5);
@@ -235,9 +235,9 @@ utils::render::Scene GridWorld::get_scene_for_render2d(int state_var)
     return scene;
 }
 
-utils::render::Scene GridWorld::get_background_for_render2d()
+utils::render::Scene2D GridWorld::get_background_for_render2d()
 {
-    utils::render::Scene scene; 
+    utils::render::Scene2D scene; 
 
     // Getting (x, y) representation of the state
     float x_size = 1.0;

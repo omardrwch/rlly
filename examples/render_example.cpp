@@ -17,8 +17,8 @@ int main()
     render2D.set_refresh_interval(2000); // in milliseconds
 
     // Create a background
-    std::vector<rlly::utils::render::Scene> data;
-    rlly::utils::render::Scene scene1, scene2;
+    std::vector<rlly::utils::render::Scene2D> data;
+    rlly::utils::render::Scene2D scene1, scene2;
     rlly::utils::render::Geometric2D shape1, shape2, shape3, shape4;
 
     // Define 4 polygons

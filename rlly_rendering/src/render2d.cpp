@@ -9,11 +9,11 @@ namespace rlly
 namespace render
 {
 
-std::vector<utils::render::Scene> Render2D::data;
+std::vector<utils::render::Scene2D> Render2D::data;
 
 //
 
-utils::render::Scene Render2D::background;
+utils::render::Scene2D Render2D::background;
 
 // 
 
@@ -63,12 +63,12 @@ void Render2D::set_clipping_area(std::vector<float> area)
     window_height = (int) (base_size*height_range);
 }
 
-void Render2D::set_data(std::vector<utils::render::Scene> _data)
+void Render2D::set_data(std::vector<utils::render::Scene2D> _data)
 {
     data = _data;
 }
 
-void Render2D::set_background(utils::render::Scene _background)
+void Render2D::set_background(utils::render::Scene2D _background)
 {
     background = _background;
 }

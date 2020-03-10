@@ -200,7 +200,7 @@ void GridWorld::render_values(std::vector<double> values)
     std::cout << std::endl;       
 }
 
-std::unique_ptr<Env<int, int>> GridWorld::clone() const
+std::unique_ptr<FiniteEnv> GridWorld::clone() const
 {
     return std::make_unique<GridWorld>(*this);
 }

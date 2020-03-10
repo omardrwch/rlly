@@ -9,7 +9,7 @@
 #include <vector>
 #include <string>
 #include <assert.h>
-#include "finite_env.h"
+#include "env_typedefs.h"
 #include "utils.h"
 #include "discrete_reward.h"
 

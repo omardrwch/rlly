@@ -6,7 +6,7 @@
 #include <cmath>
 #include <limits>
 #include <iostream>
-#include "continuous_state_env.h"
+#include "env_typedefs.h"
 #include "utils.h"
 
 
@@ -49,7 +49,7 @@ public:
     /**
      *  Clone the object
      */
-    std::unique_ptr<Env<std::vector<double>, int>> clone() const override;
+    std::unique_ptr<ContinuousStateEnv> clone() const override;
 
     /**
      * Get scene representing a given state

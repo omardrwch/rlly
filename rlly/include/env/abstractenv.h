@@ -25,8 +25,12 @@ namespace env
 
 /**
  * @brief Abstract class for reinforcement learning environments
+ * @tparam S type of state variables  (e.g. int, std::vector<double>)
+ * @tparam A type of action variables (e.g. int, std::vector<double>)
+ * @tparam S_space type of state space  (e.g. spaces::Box, spaces::Discrete)
+ * @tparam A_space type of action space (e.g. spaces::Box, spaces::Discrete)
  */
-template <typename S, typename A>
+template <typename S, typename A, typename S_space, typename A_space>
 class Env
 {
 protected:
@@ -58,15 +62,26 @@ public:
      */
     std::string id;
 
+
     /**
      * Pointer to observation space
      */
-    spaces::Space<S>* p_observation_space;
+    S_space observation_space;
 
     /**
      * Pointer to action space
      */   
-    spaces::Space<A>* p_action_space;
+    A_space action_space;
+
+    // /**
+    //  * Pointer to observation space
+    //  */
+    // spaces::Space<S>* p_observation_space;
+
+    // /**
+    //  * Pointer to action space
+    //  */   
+    // spaces::Space<A>* p_action_space;
 
     /**
     * For random number generation
@@ -76,7 +91,7 @@ public:
     /**
      * Function to clone the environment
      */
-    virtual std::unique_ptr<Env<S, A>> clone() const = 0;
+    virtual std::unique_ptr<Env<S, A, S_space, A_space>> clone() const = 0;
 
 
     /**
@@ -133,8 +148,8 @@ public:
 
 }; 
 
-template <typename S, typename A>
-void Env<S, A>::set_seed(int _seed)
+template <typename S, typename A, typename S_space, typename A_space>
+void Env<S, A, S_space, A_space>::set_seed(int _seed)
 {
     if (_seed < 1) 
     {
@@ -144,15 +159,15 @@ void Env<S, A>::set_seed(int _seed)
 
     randgen.set_seed(_seed);
     // seeds for spaces
-    if ( p_observation_space != nullptr && p_action_space != nullptr) 
-    { 
-        (*p_observation_space).generator.seed(_seed+123);
-        (*p_action_space).generator.seed(_seed+456);
-    }
-    else
-    {
-        std::cerr << "Warning (rlly::Env), trying to set seed of not initialized observation or action space." << std::endl;
-    }
+    // if ( p_observation_space != nullptr && p_action_space != nullptr) 
+    // { 
+        observation_space.generator.seed(_seed+123);
+        action_space.generator.seed(_seed+456);
+    // }
+    // else
+    // {
+    //     std::cerr << "Warning (rlly::Env), trying to set seed of not initialized observation or action space." << std::endl;
+    // }
     
 }; 
 

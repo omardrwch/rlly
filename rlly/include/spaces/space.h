@@ -1,5 +1,5 @@
-#ifndef __SPACE_H__
-#define __SPACE_H__
+#ifndef __RLLY_SPACE_H__
+#define __RLLY_SPACE_H__
 
 #include "discrete.h"
 #include "box.h"

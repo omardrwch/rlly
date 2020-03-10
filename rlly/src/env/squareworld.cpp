@@ -61,7 +61,7 @@ std::vector<double> SquareWorld::reset()
 }
 
 
-std::unique_ptr<Env<std::vector<double>, int>> SquareWorld::clone() const
+std::unique_ptr<ContinuousStateEnv> SquareWorld::clone() const
 {
     return std::make_unique<SquareWorld>(*this);
 }

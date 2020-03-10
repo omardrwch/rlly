@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <assert.h>
-#include "continuous_state_env.h"
+#include "env_typedefs.h"
 #include "utils.h"
 
 namespace rlly
@@ -58,7 +58,7 @@ public:
     /**
      * Clone 
      */
-    std::unique_ptr<Env<std::vector<double>, int>> clone() const override;
+    std::unique_ptr<ContinuousStateEnv> clone() const override;
 
 protected:
     /**

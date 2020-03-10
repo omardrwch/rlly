@@ -10,17 +10,17 @@ namespace rlly
 namespace wrappers
 {
 
-template <typename S, typename A>
-class Wrapper: public env::Env<S, A>
+template <typename S, typename A, typename S_space, typename A_space>
+class Wrapper: public env::Env<S, A, S_space, A_space>
 {
 public:
-    Wrapper(env::Env<S, A>& env);
+    Wrapper(env::Env<S, A, S_space, A_space>& env);
     ~Wrapper(){};
 
     /**
      *  Pointer to the wrapped environment.
      */
-    std::unique_ptr<env::Env<S, A>> p_env;
+    std::unique_ptr<env::Env<S, A, S_space, A_space>> p_env;
 
     // reset 
     virtual S reset() override;
@@ -30,7 +30,7 @@ public:
     /**
      * @brief Returns a clone of the (!) wrapped (!) environment.
      */
-    virtual std::unique_ptr<env::Env<S, A>> clone() const override;
+    virtual std::unique_ptr<env::Env<S, A, S_space, A_space>> clone() const override;
 
     // Retuns a scene (list of shapes) representing the state
     virtual utils::render::Scene get_scene_for_render2d(S state_var) override;    
@@ -46,13 +46,13 @@ public:
 };
 
 
-template <typename S, typename A>
-Wrapper<S, A>::Wrapper(env::Env<S, A>& env)
+template <typename S, typename A, typename S_space, typename A_space>
+Wrapper<S, A, S_space, A_space>::Wrapper(env::Env<S, A, S_space, A_space>& env)
 {
     p_env               = env.clone();
     this->id            = (*p_env).id + "Wrapper";
-    this->p_observation_space = (*p_env).p_observation_space;
-    this->p_action_space      = (*p_env).p_action_space;
+    this->observation_space = (*p_env).observation_space;
+    this->action_space      = (*p_env).action_space;
 
     // rendering parameters
     this->rendering2d_enabled = (*p_env).rendering2d_enabled;
@@ -60,46 +60,46 @@ Wrapper<S, A>::Wrapper(env::Env<S, A>& env)
     this->refresh_interval_for_render2d = (*p_env).refresh_interval_for_render2d;
 }
 
-template <typename S, typename A>
-S Wrapper<S, A>::reset()
+template <typename S, typename A, typename S_space, typename A_space>
+S Wrapper<S, A, S_space, A_space>::reset()
 {
     return (*p_env).reset();
 }
 
-template <typename S, typename A>
-env::StepResult<S> Wrapper<S, A>::step(A action)
+template <typename S, typename A, typename S_space, typename A_space>
+env::StepResult<S> Wrapper<S, A, S_space, A_space>::step(A action)
 {
     return (*p_env).step(action);
 }
 
 
-template <typename S, typename A>
-utils::render::Scene Wrapper<S, A>::get_scene_for_render2d(S state_var)
+template <typename S, typename A, typename S_space, typename A_space>
+utils::render::Scene Wrapper<S, A, S_space, A_space>::get_scene_for_render2d(S state_var)
 {
     return (*p_env).get_scene_for_render2d(state_var);
 }
 
-template <typename S, typename A>
-utils::render::Scene Wrapper<S, A>::get_background_for_render2d()
+template <typename S, typename A, typename S_space, typename A_space>
+utils::render::Scene Wrapper<S, A, S_space, A_space>::get_background_for_render2d()
 {
     return (*p_env).get_background_for_render2d();
 }
 
 
-template <typename S, typename A>
-std::unique_ptr<env::Env<S, A>> Wrapper<S, A>::clone() const
+template <typename S, typename A, typename S_space, typename A_space>
+std::unique_ptr<env::Env<S, A, S_space, A_space>> Wrapper<S, A, S_space, A_space>::clone() const
 {
     return (*p_env).clone();
 }
 
-template <typename S, typename A>
-void Wrapper<S, A>::set_seed(int _seed)
+template <typename S, typename A, typename S_space, typename A_space>
+void Wrapper<S, A, S_space, A_space>::set_seed(int _seed)
 {
     (*p_env).set_seed(_seed);
 }
 
-template <typename S, typename A>
-S Wrapper<S, A>::get_state()
+template <typename S, typename A, typename S_space, typename A_space>
+S Wrapper<S, A, S_space, A_space>::get_state()
 {
     return (*p_env).get_state();
 }

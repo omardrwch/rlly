@@ -7,10 +7,10 @@
 #include "env.h"
 #include "render.h"
 #include "wrappers.h"
+#include "space.h"
 
-
-typedef rlly::wrappers::Wrapper<std::vector<double>, int> ContinuousStateWrapper;
-typedef rlly::env::Env<std::vector<double>, int> ContinuousStateEnv;
+typedef rlly::wrappers::Wrapper<std::vector<double>, int, rlly::spaces::Box, rlly::spaces::Discrete> ContinuousStateWrapper;
+typedef rlly::env::ContinuousStateEnv ContinuousStateEnv;
 
 class WrapperExample: public ContinuousStateWrapper
 {
@@ -54,7 +54,7 @@ int main()
     for(int ii = 0; ii < horizon; ii++)
     {
         // auto action = env.action_space.sample();
-        auto action = (*env.p_action_space).sample();
+        auto action = env.action_space.sample();
         auto step_result = env.step(action);
         states.push_back(step_result.next_state);
         std::cout << "state = "; rlly::utils::vec::printvec(step_result.next_state);

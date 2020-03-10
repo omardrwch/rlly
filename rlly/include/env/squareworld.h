@@ -2,7 +2,7 @@
 #define __RLLY_SQUAREWORLD_H__
 
 #include <vector>
-#include "continuous_state_env.h"
+#include "env_typedefs.h"
 #include "utils.h"
 
 /**
@@ -51,7 +51,7 @@ public:
     SquareWorld();
     ~SquareWorld(){};
 
-    std::unique_ptr<Env<std::vector<double>, int>> clone() const override;
+    std::unique_ptr<ContinuousStateEnv> clone() const override;
     std::vector<double> reset() override;
     env::StepResult<std::vector<double>> step(int action) override;
 

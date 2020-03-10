@@ -81,7 +81,7 @@ bool MountainCar::is_terminal(std::vector<double> state)
 }
 
 
-std::unique_ptr<Env<std::vector<double>, int>> MountainCar::clone() const
+std::unique_ptr<ContinuousStateEnv> MountainCar::clone() const
 {
     return std::make_unique<MountainCar>(*this);
 }

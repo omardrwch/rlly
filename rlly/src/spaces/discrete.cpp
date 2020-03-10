@@ -9,7 +9,7 @@ namespace spaces
 {
 
 /*
-Members of Discrete
+   Members of Discrete
 */ 
 
 Discrete::Discrete()

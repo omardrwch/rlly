@@ -33,7 +33,7 @@ public:
     /**
      * Clone
      */
-    std::unique_ptr<Env<int, int>> clone() const override;
+    std::unique_ptr<FiniteEnv> clone() const override;
 };
 
 } // namespace env

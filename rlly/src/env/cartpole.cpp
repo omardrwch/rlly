@@ -104,7 +104,7 @@ std::vector<double> CartPole::reset()
     return state; 
 }
 
-std::unique_ptr<Env<std::vector<double>, int>> CartPole::clone() const
+std::unique_ptr<ContinuousStateEnv> CartPole::clone() const
 {
     return std::make_unique<CartPole>(*this);
 }

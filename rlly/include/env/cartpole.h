@@ -6,7 +6,7 @@
 #include <cmath>
 #include <limits>
 #include <iostream>
-#include "abstractenv.h"
+#include "continuous_state_env.h"
 #include "utils.h"
 
 
@@ -18,7 +18,7 @@ namespace env
 /**
  * CartPole environment, as in https://github.com/openai/gym/blob/master/gym/envs/classic_control/cartpole.py
  */
-class CartPole: public Env<std::vector<double>, int>
+class CartPole: public ContinuousStateEnv
 {
 private:
     
@@ -45,17 +45,6 @@ public:
 
     std::vector<double> reset();
     StepResult<std::vector<double>> step(int action) override;
-
-
-    /**
-    * State (observation) space
-    */
-    spaces::Box observation_space;
-
-    /**
-    *  Action space
-    */
-    spaces::Discrete action_space;
 
     /**
      *  Clone the object

@@ -17,9 +17,6 @@ SquareWorld::SquareWorld(/* args */)
     std::vector<double> _high = {1.0, 1.0};
     observation_space.set_bounds(_low, _high);
     action_space.set_n(4);
-    // initialize pointers in base class
-    p_observation_space = &observation_space;
-    p_action_space      = &action_space;
 
     // set seed
     int _seed = std::rand();

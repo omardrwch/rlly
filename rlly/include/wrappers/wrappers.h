@@ -2,7 +2,7 @@
 #define __RLLY_WRAPPERS_H__
 
 #include "basewrapper.h"
-
+#include "discretize_state_wrapper.h"
 
 /**
  * @file 

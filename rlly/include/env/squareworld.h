@@ -2,7 +2,7 @@
 #define __RLLY_SQUAREWORLD_H__
 
 #include <vector>
-#include "abstractenv.h"
+#include "continuous_state_env.h"
 #include "utils.h"
 
 /**
@@ -24,7 +24,7 @@ namespace env
  *      The immediate reward received in each state s = (s_x, s_y) is, for any action a,
  *          r(s, a) = exp( - ((s_x-goal_x)^2 + (s_y-goal_y)^2)/(2*reward_smoothness^2)  )
  */
-class SquareWorld: public Env<std::vector<double>, int>
+class SquareWorld: public ContinuousStateEnv
 {
 private:
     // Coordinates of start position
@@ -50,17 +50,6 @@ private:
 public:
     SquareWorld();
     ~SquareWorld(){};
-
-
-    /**
-    * State (observation) space
-    */
-    spaces::Box observation_space;
-
-    /**
-    *  Action space
-    */
-    spaces::Discrete action_space;
 
     std::unique_ptr<Env<std::vector<double>, int>> clone() const override;
     std::vector<double> reset() override;

@@ -36,7 +36,7 @@ protected:
     S state;
 
 public:
-    Env(/* args */) {};
+    Env() {};
     ~Env() {};
 
     /**

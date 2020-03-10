@@ -12,10 +12,6 @@ namespace env
 
 MountainCar::MountainCar()
 {
-    // Initialize pointers in the base class
-    p_action_space = &action_space;
-    p_observation_space = &observation_space;
-
     // Set seed
     int _seed = std::rand();
     set_seed(_seed);

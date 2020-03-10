@@ -2,6 +2,9 @@
 #define __RLLY_ENV_H__
 
 #include "abstractenv.h"
+#include "continuous_state_env.h"
+#include "finite_env.h"
+
 #include "finitemdp.h"
 #include "discrete_reward.h"
 #include "stepresult.h"

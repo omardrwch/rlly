@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <assert.h>
-#include "abstractenv.h"
+#include "continuous_state_env.h"
 #include "utils.h"
 
 namespace rlly
@@ -29,7 +29,7 @@ namespace env
  * 
  *   A reward of 0 is obtained everywhere, except for the terminal state, where the reward is 1.
  */
-class MountainCar: public Env<std::vector<double>, int>
+class MountainCar: public ContinuousStateEnv
 {
     
 public:
@@ -44,16 +44,6 @@ public:
     MountainCar();
     std::vector<double> reset();
     StepResult<std::vector<double>> step(int action) override;
-
-    /**
-    * State (observation) space
-    */
-    spaces::Box observation_space;
-
-    /**
-    *  Action space
-    */
-    spaces::Discrete action_space;
 
     /**
      * Get scene representing a given state

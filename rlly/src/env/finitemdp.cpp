@@ -33,10 +33,6 @@ void FiniteMDP::set_params(DiscreteReward _reward_function, utils::vec::vec_3d _
     // observation and action spaces
     observation_space.set_n(ns);
     action_space.set_n(na);
-
-    // initialize pointers of base class
-    p_observation_space = &observation_space;
-    p_action_space      = &action_space;
     set_seed(_seed);
     
     reset();

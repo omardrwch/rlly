@@ -9,7 +9,7 @@
 #include <vector>
 #include <string>
 #include <assert.h>
-#include "abstractenv.h"
+#include "finite_env.h"
 #include "utils.h"
 #include "discrete_reward.h"
 
@@ -19,9 +19,9 @@ namespace rlly
 namespace env
 {
 /**
- * Base class for Finite Markov Decision Processes.
+ * Base class for Finite Markov Decision Processes with __known__ transitions and rewards.
  */ 
-class FiniteMDP: public Env<int, int>
+class FiniteMDP: public FiniteEnv
 {
 
 public:
@@ -125,18 +125,6 @@ public:
      * Vector of terminal states
      */
     std::vector<int> terminal_states;
-
-    /**
-     * State (observation) space
-     */
-    spaces::Discrete observation_space;
-
-    /**
-     *  Action space
-     */
-    spaces::Discrete action_space;
-
-    // Members of base class
 
 };
 } // namespace env

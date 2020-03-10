@@ -81,6 +81,11 @@ namespace utils
              * @return sample
              */
             double sample_gaussian(double mu, double sigma);
+
+            /**
+             * @brief returns seed value
+             */
+            int get_seed();
         };     
     }
 }  // namespace utils

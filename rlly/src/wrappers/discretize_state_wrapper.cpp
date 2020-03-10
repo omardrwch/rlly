@@ -7,7 +7,7 @@
 
 
 
-// DiscretizeStateWrapper::DiscretizeStateWrapper(env::ContinuousStateEnv& env, int n_bins):  Wrapper<std::vector<double>, int>(env)
+// DiscretizeStateWrapper::DiscretizeStateWrapper(env::ContinuousStateEnv& env, int n_bins):  ContinuousStateEnvWrapper(env)
 // {
 //     int dim = env.observation_space.low.size();
 //     for(int dd = 0; dd < dim; dd++)
@@ -24,15 +24,15 @@
 //     }
 // }
 
-// DiscretizeStateWrapper::DiscretizeStateWrapper(env::ContinuousStateEnv& env, std::vector<int> vec_n_bins):  Wrapper<std::vector<double>, int>(env)
+// DiscretizeStateWrapper::DiscretizeStateWrapper(env::ContinuousStateEnv& env, std::vector<int> vec_n_bins): ContinuousStateEnvWrapper(env)
 // {
-//     int dim = env.observation_space.low.size();
+//     unsigned int dim = env.observation_space.low.size();
 //     if (vec_n_bins.size() != dim)
 //     {
 //         std::cerr << "Incompatible dimensions in the constructor of DiscretizeStateWrapper." << std::endl;
 //         throw;
 //     }
-//     for(int dd = 0; dd < dim; dd++)
+//     for(unsigned int dd = 0; dd < dim; dd++)
 //     {
 //         int n_bins = vec_n_bins[dd];
 //         double range = env.observation_space.high[dd] - env.observation_space.low[dd];

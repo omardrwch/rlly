@@ -66,6 +66,11 @@ double Random::sample_gaussian(double mu, double sigma)
     return mu + sigma*standard_sample;
 }
 
+int Random::get_seed()
+{
+    return seed;
+}
+
 } // namespace rand
 } // namesmape utils
 } // namespace rlly

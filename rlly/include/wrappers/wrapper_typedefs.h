@@ -1,7 +1,7 @@
 #ifndef __RLLY_WRAPPER_TYPEDEFS_H__
 #define __RLLY_WRAPPER_TYPEDEFS_H__
 
-#include "basewrapper.h"
+#include "isomorphicwrapper.h"
 #include "space.h"
 
 /**
@@ -16,14 +16,24 @@ namespace wrappers
 {
 
 /**
- * @brief Base class for wrappers for environments with finite states and finite actions.
+ * @brief FiniteEnv -> FiniteEnv wrapper
  */
-typedef Wrapper<int, int, spaces::Discrete, spaces::Discrete> FiniteEnvWrapper;
+typedef IsomorphicWrapper<int, int, spaces::Discrete, spaces::Discrete> FiniteEnvWrapper;
 
 /**
- * @brief Base class for wrappers for continuous-state environments with finite actions.
+ * @brief ContinuousStateEnv -> ContinuousStateEnv wrapper
  */
-typedef Wrapper<std::vector<double>, int, spaces::Box, spaces::Discrete> ContinuousStateEnvWrapper;
+typedef IsomorphicWrapper<std::vector<double>, int, spaces::Box, spaces::Discrete> ContinuousStateEnvWrapper;
+
+/**
+ * @brief ContinuousEnv -> ContinuousEnv wrapper
+ */
+typedef IsomorphicWrapper<std::vector<double>, std::vector<double>, spaces::Box, spaces::Box> ContinuousEnvWrapper;
+
+/**
+ * @brief ContinuousActionEnv -> ContinuousActionEnv wrapper
+ */
+typedef IsomorphicWrapper<int, std::vector<double>, spaces::Discrete, spaces::Box> ContinuousActionEnvWrapper;
 
 
 }  // namespace env

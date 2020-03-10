@@ -3,7 +3,7 @@
 
 // #include <vector>
 // #include <iostream>
-// #include "basewrapper.h"
+// #include "basic_wrapper.h"
 // #include "utils.h"
 // #include "space.h"
 // #include "env.h"
@@ -14,10 +14,8 @@
 // {
 
 
-// class DiscretizeStateWrapper: public FiniteEnvWrapper
+// class DiscretizeStateWrapper: public ContinuousStateEnvWrapper
 // {
-// private:
-//     void check();
 // public:
 //     /**
 //      * @param env

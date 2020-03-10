@@ -9,7 +9,7 @@
 #include "wrappers.h"
 #include "space.h"
 
-typedef rlly::wrappers::Wrapper<std::vector<double>, int, rlly::spaces::Box, rlly::spaces::Discrete> ContinuousStateWrapper;
+typedef rlly::wrappers::ContinuousStateEnvWrapper ContinuousStateWrapper;
 typedef rlly::env::ContinuousStateEnv ContinuousStateEnv;
 
 class WrapperExample: public ContinuousStateWrapper

@@ -1,5 +1,5 @@
-#ifndef __RLLY_BASE_WRAPPER_H__
-#define __RLLY_BASE_WRAPPER_H__
+#ifndef __RLLY_ISOMORPHIC_WRAPPER_H__
+#define __RLLY_ISOMORPHIC_WRAPPER_H__
 
 #include <memory>
 #include <string>
@@ -10,12 +10,16 @@ namespace rlly
 namespace wrappers
 {
 
+/**
+ * @brief Wrapper such that the observation and action spaces of the wrapper environment are the
+ * same as the original environment.
+ */
 template <typename S, typename A, typename S_space, typename A_space>
-class Wrapper: public env::Env<S, A, S_space, A_space>
+class IsomorphicWrapper: public env::Env<S, A, S_space, A_space>
 {
 public:
-    Wrapper(env::Env<S, A, S_space, A_space>& env);
-    ~Wrapper(){};
+    IsomorphicWrapper(env::Env<S, A, S_space, A_space>& env);
+    ~IsomorphicWrapper(){};
 
     /**
      *  Pointer to the wrapped environment.
@@ -24,12 +28,12 @@ public:
 
     // reset 
     virtual S reset() override;
-    
+
     // step
     virtual env::StepResult<S> step(A action) override;
 
     /**
-     * @brief Returns a clone of the (!) wrapped (!) environment.
+     * @brief Returns a null pointer. Prevents the wrapper from being cloned.
      */
     virtual std::unique_ptr<env::Env<S, A, S_space, A_space>> clone() const override;
 
@@ -41,17 +45,14 @@ public:
 
     // Set seed
     void set_seed(int _seed);
-
-    // Get state
-    S get_state();
 };
 
 
 template <typename S, typename A, typename S_space, typename A_space>
-Wrapper<S, A, S_space, A_space>::Wrapper(env::Env<S, A, S_space, A_space>& env)
+IsomorphicWrapper<S, A, S_space, A_space>::IsomorphicWrapper(env::Env<S, A, S_space, A_space>& env)
 {
     p_env               = env.clone();
-    this->id            = (*p_env).id + "Wrapper";
+    this->id            = (*p_env).id + "IsomorphicWrapper";
     this->observation_space = (*p_env).observation_space;
     this->action_space      = (*p_env).action_space;
 
@@ -62,47 +63,44 @@ Wrapper<S, A, S_space, A_space>::Wrapper(env::Env<S, A, S_space, A_space>& env)
 }
 
 template <typename S, typename A, typename S_space, typename A_space>
-S Wrapper<S, A, S_space, A_space>::reset()
+S IsomorphicWrapper<S, A, S_space, A_space>::reset()
 {
     return (*p_env).reset();
 }
 
 template <typename S, typename A, typename S_space, typename A_space>
-env::StepResult<S> Wrapper<S, A, S_space, A_space>::step(A action)
+env::StepResult<S> IsomorphicWrapper<S, A, S_space, A_space>::step(A action)
 {
     return (*p_env).step(action);
 }
 
 
 template <typename S, typename A, typename S_space, typename A_space>
-utils::render::Scene Wrapper<S, A, S_space, A_space>::get_scene_for_render2d(S state_var)
+utils::render::Scene IsomorphicWrapper<S, A, S_space, A_space>::get_scene_for_render2d(S state_var)
 {
     return (*p_env).get_scene_for_render2d(state_var);
 }
 
 template <typename S, typename A, typename S_space, typename A_space>
-utils::render::Scene Wrapper<S, A, S_space, A_space>::get_background_for_render2d()
+utils::render::Scene IsomorphicWrapper<S, A, S_space, A_space>::get_background_for_render2d()
 {
     return (*p_env).get_background_for_render2d();
 }
 
 
 template <typename S, typename A, typename S_space, typename A_space>
-std::unique_ptr<env::Env<S, A, S_space, A_space>> Wrapper<S, A, S_space, A_space>::clone() const
+std::unique_ptr<env::Env<S, A, S_space, A_space>> IsomorphicWrapper<S, A, S_space, A_space>::clone() const
 {
-    return (*p_env).clone();
+    return nullptr;
 }
 
 template <typename S, typename A, typename S_space, typename A_space>
-void Wrapper<S, A, S_space, A_space>::set_seed(int _seed)
+void IsomorphicWrapper<S, A, S_space, A_space>::set_seed(int _seed)
 {
     (*p_env).set_seed(_seed);
-}
-
-template <typename S, typename A, typename S_space, typename A_space>
-S Wrapper<S, A, S_space, A_space>::get_state()
-{
-    return (*p_env).get_state();
+    int seed = (*p_env).randgen.get_seed();
+    this->observation_space.generator.seed(seed+123);
+    this->action_space.generator.seed(seed+456);
 }
 
 } // namespace wrappers

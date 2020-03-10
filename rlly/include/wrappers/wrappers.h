@@ -1,8 +1,9 @@
 #ifndef __RLLY_WRAPPERS_H__
 #define __RLLY_WRAPPERS_H__
 
-#include "basewrapper.h"
+#include "isomorphicwrapper.h"
 #include "wrapper_typedefs.h"
+#include "basic_wrapper.h"
 #include "discretize_state_wrapper.h"
 
 /**

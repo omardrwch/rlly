@@ -62,7 +62,6 @@ public:
      */
     std::string id;
 
-
     /**
      * Pointer to observation space
      */
@@ -73,16 +72,6 @@ public:
      */   
     A_space action_space;
 
-    // /**
-    //  * Pointer to observation space
-    //  */
-    // spaces::Space<S>* p_observation_space;
-
-    // /**
-    //  * Pointer to action space
-    //  */   
-    // spaces::Space<A>* p_action_space;
-
     /**
     * For random number generation
     */
@@ -92,12 +81,6 @@ public:
      * Function to clone the environment
      */
     virtual std::unique_ptr<Env<S, A, S_space, A_space>> clone() const = 0;
-
-
-    /**
-     * Return state of the environment
-     */
-    virtual S get_state(){ return state; };
 
     /**
      * Set the seed of randgen and seed of action space and observation space
@@ -145,7 +128,6 @@ public:
      * Clipping area for rendering (left, right, bottom, top). Default = {-1.0, 1.0, -1.0, 1.0}
      */
     std::vector<float> clipping_area_for_render2d = {-1.0, 1.0, -1.0, 1.0};
-
 }; 
 
 template <typename S, typename A, typename S_space, typename A_space>
@@ -154,21 +136,10 @@ void Env<S, A, S_space, A_space>::set_seed(int _seed)
     if (_seed < 1) 
     {
         _seed = std::rand();
-        // std::cout << _seed << std::endl;
     }
-
     randgen.set_seed(_seed);
-    // seeds for spaces
-    // if ( p_observation_space != nullptr && p_action_space != nullptr) 
-    // { 
-        observation_space.generator.seed(_seed+123);
-        action_space.generator.seed(_seed+456);
-    // }
-    // else
-    // {
-    //     std::cerr << "Warning (rlly::Env), trying to set seed of not initialized observation or action space." << std::endl;
-    // }
-    
+    observation_space.generator.seed(_seed+123);
+    action_space.generator.seed(_seed+456);
 }; 
 
 }  // namespace env

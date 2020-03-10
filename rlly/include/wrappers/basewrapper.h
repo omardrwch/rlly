@@ -24,6 +24,7 @@ public:
 
     // reset 
     virtual S reset() override;
+    
     // step
     virtual env::StepResult<S> step(A action) override;
 

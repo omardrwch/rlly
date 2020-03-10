@@ -11,7 +11,7 @@ namespace wrappers
 {
 
 template <typename S, typename A>
-class Wrapper
+class Wrapper: public env::Env<S, A>
 {
 public:
     Wrapper(env::Env<S, A>& env);
@@ -23,47 +23,35 @@ public:
     std::unique_ptr<env::Env<S, A>> p_env;
 
     // reset 
-    virtual S reset();
+    virtual S reset() override;
     // step
-    virtual env::StepResult<S> step(A action);
+    virtual env::StepResult<S> step(A action) override;
 
-    // id
-    std::string id;
-    // pointer to observation space
-    spaces::Space<S>* p_observation_space;
-    // pointer to action space
-    spaces::Space<A>* p_action_space;
-
-
-    // 2d rendering flag
-    bool rendering2d_enabled;
+    /**
+     * @brief Returns a clone of the wrapped environment.
+     */
+    virtual std::unique_ptr<env::Env<S, A>> clone() const override;
 
     // Retuns a scene (list of shapes) representing the state
-    virtual utils::render::Scene get_scene_for_render2d(S state_var);    
+    virtual utils::render::Scene get_scene_for_render2d(S state_var) override;    
     
     // Retuns a scene (list of shapes) representing the background
-    virtual utils::render::Scene get_background_for_render2d();
-
-    // Refresh interval of rendering (in milliseconds)
-    int refresh_interval_for_render2d;
-
-    // Clipping area for 2d rendering 
-    std::vector<float> clipping_area_for_render2d;
-
+    virtual utils::render::Scene get_background_for_render2d() override;
 };
+
 
 template <typename S, typename A>
 Wrapper<S, A>::Wrapper(env::Env<S, A>& env)
 {
     p_env               = env.clone();
-    id                  = (*p_env).id + "Wrapper";
-    p_observation_space = (*p_env).p_observation_space;
-    p_action_space      = (*p_env).p_action_space;
+    this->id            = (*p_env).id + "Wrapper";
+    this->p_observation_space = (*p_env).p_observation_space;
+    this->p_action_space      = (*p_env).p_action_space;
 
     // rendering parameters
-    rendering2d_enabled = (*p_env).rendering2d_enabled;
-    clipping_area_for_render2d = (*p_env).clipping_area_for_render2d;
-    refresh_interval_for_render2d = (*p_env).refresh_interval_for_render2d;
+    this->rendering2d_enabled = (*p_env).rendering2d_enabled;
+    this->clipping_area_for_render2d = (*p_env).clipping_area_for_render2d;
+    this->refresh_interval_for_render2d = (*p_env).refresh_interval_for_render2d;
 }
 
 template <typename S, typename A>
@@ -89,6 +77,13 @@ template <typename S, typename A>
 utils::render::Scene Wrapper<S, A>::get_background_for_render2d()
 {
     return (*p_env).get_background_for_render2d();
+}
+
+
+template <typename S, typename A>
+std::unique_ptr<env::Env<S, A>> Wrapper<S, A>::clone() const
+{
+    return (*p_env).clone();
 }
 
 

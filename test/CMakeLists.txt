@@ -11,7 +11,8 @@ project(RLLY_TEST)
 
 include_directories(../rlly/include/env
                     ../rlly/include/spaces
-                    ../rlly/include/utils)
+                    ../rlly/include/utils
+                    ../rlly/include/wrappers)
 
 
 #
@@ -30,7 +31,8 @@ add_library(rlly SHARED ${SOURCES})
 #
 add_executable(unit_tests main.cpp
                           utils_test.cpp
-                          env_test.cpp)
+                          env_test.cpp
+                          wrapper_test.cpp)
 target_link_libraries(unit_tests rlly)
 
 

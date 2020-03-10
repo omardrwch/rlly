@@ -23,7 +23,7 @@ SquareWorld::SquareWorld(/* args */)
     set_seed(_seed);
 
     // SquareWorld supports 2d rendering
-    rendering2d_enabled = true;
+    rendering_enabled = true;
     refresh_interval_for_render2d = 500;
     clipping_area_for_render2d[0] = 0.0;
     clipping_area_for_render2d[1] = 1.0;

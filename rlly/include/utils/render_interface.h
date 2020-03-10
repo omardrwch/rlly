@@ -2,6 +2,7 @@
 #define __RLLY_RENDER_INTERFACE_H__
 
 #include <vector>
+#include <string>
 #include "render_data.h"
 
 namespace rlly
@@ -27,9 +28,14 @@ public:
     */
 
     /**
-     * Set to true to enable rendering.
+     * Flag to say that rendering is enabled
      */
-    bool rendering2d_enabled = false;
+    bool rendering_enabled = false;
+
+    /**
+     * Rendering type
+     */ 
+    const std::string rendering_type = "2d";
 
     /**
      * Retuns a scene (list of shapes) representing the state

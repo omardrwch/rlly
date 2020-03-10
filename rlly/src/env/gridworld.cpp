@@ -117,7 +117,7 @@ GridWorld::GridWorld(int _nrows, int _ncols, double fail_p /* = 0 */, double rew
     id = "GridWorld";
 
     // 2D rendering is enabled for GridWorld
-    rendering2d_enabled = true;
+    rendering_enabled = true;
     refresh_interval_for_render2d = 1000; // 1 second between frames
     clipping_area_for_render2d[0] = 0.0;
     clipping_area_for_render2d[1] = 1.0*ncols;

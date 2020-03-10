@@ -26,7 +26,7 @@ namespace render
 template <typename EnvType, typename S>
 void render_env(std::vector<S> states, EnvType& env)
 {
-    if (env.rendering2d_enabled)
+    if (env.rendering_enabled && env.rendering_type == "2d")
     {
         // Background
         auto background = env.get_background_for_render2d();

@@ -27,7 +27,7 @@ CartPole::CartPole()
     id = "CartPole";
 
     // 2D rendering is enabled for CartPole
-    rendering2d_enabled = true;
+    rendering_enabled = true;
 
     clipping_area_for_render2d[0] = -2.4;
     clipping_area_for_render2d[1] =  2.4;

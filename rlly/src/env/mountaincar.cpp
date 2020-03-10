@@ -31,7 +31,7 @@ MountainCar::MountainCar()
     id = "MountainCar";
 
     // 2D rendering is enabled for MountainCar
-    rendering2d_enabled = true;
+    rendering_enabled = true;
     clipping_area_for_render2d[0] = -1.2;
     clipping_area_for_render2d[1] =  0.6;
     clipping_area_for_render2d[2] = -0.2;

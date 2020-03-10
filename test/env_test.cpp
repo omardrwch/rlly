@@ -58,19 +58,19 @@ TEST_CASE( "Testing chain", "[chain]" )
     REQUIRE( p_env.id.compare("Chain") == 0);  
     REQUIRE(chain.observation_space.name == rlly::spaces::discrete);
     REQUIRE(chain.action_space.name == rlly::spaces::discrete);
-    REQUIRE( chain.state == 0);
+    REQUIRE( chain.get_state() == 0);
 
     rlly::env::StepResult<int> step_result; 
     
     step_result = chain.step(0);
-    REQUIRE( (chain.state == 1 && step_result.reward == 0) );
+    REQUIRE( (chain.get_state() == 1 && step_result.reward == 0) );
 
     step_result = chain.step(1); 
-    REQUIRE( (chain.state == 0 && step_result.reward == 0) );
+    REQUIRE( (chain.get_state() == 0 && step_result.reward == 0) );
 
     step_result = chain.step(0);
     step_result = chain.step(0);
-    REQUIRE( (chain.state == 2 && step_result.reward == 1.0) );
+    REQUIRE( (chain.get_state() == 2 && step_result.reward == 1.0) );
 
     REQUIRE( chain.observation_space.contains(step_result.next_state) );
 }
@@ -92,7 +92,7 @@ TEST_CASE( "Testing GridWorld", "[gridworld]" )
 
 
 
-    REQUIRE( env.state == 0);  
+    REQUIRE( env.get_state() == 0);  
     REQUIRE( (env.index2coord[0][0] == 0 &&  env.index2coord[0][1] == 0) );
 
     // Left action must do nothing
@@ -101,15 +101,15 @@ TEST_CASE( "Testing GridWorld", "[gridworld]" )
 
     // Right action must increment  column
     env.step(1);
-    REQUIRE( (env.index2coord[env.state][0] == 0 &&  env.index2coord[env.state][1] == 1) );
+    REQUIRE( (env.index2coord[env.get_state()][0] == 0 &&  env.index2coord[env.get_state()][1] == 1) );
 
     // Down action must increment row
     env.step(3);
-    REQUIRE( (env.index2coord[env.state][0] == 1 &&  env.index2coord[env.state][1] == 1) );
+    REQUIRE( (env.index2coord[env.get_state()][0] == 1 &&  env.index2coord[env.get_state()][1] == 1) );
 
     // Up action must decrement row
     env.step(2);
-    REQUIRE( (env.index2coord[env.state][0] == 0 &&  env.index2coord[env.state][1] == 1) );
+    REQUIRE( (env.index2coord[env.get_state()][0] == 0 &&  env.index2coord[env.get_state()][1] == 1) );
 
     auto step_result = env.step(env.action_space.sample());
     REQUIRE( env.observation_space.contains(step_result.next_state) );

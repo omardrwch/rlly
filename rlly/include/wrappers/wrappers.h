@@ -2,8 +2,7 @@
 #define __RLLY_WRAPPERS_H__
 
 #include "isomorphicwrapper.h"
-#include "wrapper_typedefs.h"
-#include "basic_wrapper.h"
+#include "basewrapper.h"
 #include "discretize_state_wrapper.h"
 
 /**

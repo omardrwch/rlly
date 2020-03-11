@@ -41,8 +41,8 @@ target_include_directories(cartpole_example PUBLIC ${RLLY_SOURCE_DIR}/rlly/inclu
 add_executable(squareworld_example squareworld_example.cpp)
 target_link_libraries(squareworld_example rlly rlly_rendering)
 target_include_directories(squareworld_example PUBLIC ${RLLY_SOURCE_DIR}/rlly/include/env
-                                                   ${RLLY_SOURCE_DIR}/rlly/include/spaces
-                                                   ${RLLY_SOURCE_DIR}/rlly/include/utils)
+                                                      ${RLLY_SOURCE_DIR}/rlly/include/spaces
+                                                      ${RLLY_SOURCE_DIR}/rlly/include/utils)
                                                 
         
 #
@@ -52,3 +52,11 @@ target_include_directories(wrapper_example PUBLIC  ${RLLY_SOURCE_DIR}/rlly/inclu
                                                    ${RLLY_SOURCE_DIR}/rlly/include/spaces
                                                    ${RLLY_SOURCE_DIR}/rlly/include/utils
                                                    ${RLLY_SOURCE_DIR}/rlly/include/wrappers)
+
+#
+add_executable(discretize_state_example discretize_state_example.cpp)
+target_link_libraries(discretize_state_example rlly rlly_rendering)
+target_include_directories(discretize_state_example PUBLIC  ${RLLY_SOURCE_DIR}/rlly/include/env
+                                                            ${RLLY_SOURCE_DIR}/rlly/include/spaces
+                                                            ${RLLY_SOURCE_DIR}/rlly/include/utils
+                                                            ${RLLY_SOURCE_DIR}/rlly/include/wrappers)

@@ -63,6 +63,8 @@ int main()
         if (step_result.done) break;
     }
     // Rendering is done with the original enrivonment
-    rlly::render::render_env(cartpole);
+    rlly::render::render_env(env.p_env);
+    // or
+    // rlly::render::render_env(cartpole);
     return 0;
 }

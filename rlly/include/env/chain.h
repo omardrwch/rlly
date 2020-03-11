@@ -27,7 +27,7 @@ public:
     /**
      * @brief Build chain MDP of length N
      */
-    Chain(int N, double fail_p=0);
+    Chain(int N=3, double fail_p=0);
     ~Chain(){};
 
     /**

@@ -1200,7 +1200,7 @@ public:
     /**
      * @brief Build chain MDP of length N
      */
-    Chain(int N, double fail_p=0);
+    Chain(int N=3, double fail_p=0);
     ~Chain(){};
 
     /**
@@ -1497,15 +1497,25 @@ namespace wrappers
  * @brief Wrapper such that the observation and action spaces of the wrapper environment are the
  * same as the original environment. 
  * @details Useful to define wrappers like time limit.
+ * @tparam EnvType must NOT be abstract, we need to instantiate it to infer the types of state and action spaces
  */
-template <typename S_space, typename A_space>
-class IsomorphicWrapper: public env::Env<S_space, A_space>
+template <typename EnvType>
+class IsomorphicWrapper: public EnvType
 {
 private:
+    EnvType foo_env;
+    using S_space = decltype(foo_env.observation_space);
+    using A_space = decltype(foo_env.action_space);
     S_space foo_obs_space;
     A_space foo_act_space;
 public:
-    IsomorphicWrapper(env::Env<S_space, A_space>& env);
+    IsomorphicWrapper(EnvType& env)
+    {
+        p_env               = env.clone();
+        this->id            = (*p_env).id + "IsomorphicWrapper";
+        this->observation_space = (*p_env).observation_space;
+        this->action_space      = (*p_env).action_space;
+    };
     ~IsomorphicWrapper(){};
 
     // type of state and action variables
@@ -1534,6 +1544,7 @@ public:
      */
     virtual std::unique_ptr<env::Env<S_space, A_space>> clone() const override
     {
+        std::cerr << "Error: trying to clone a wrapper, returning nullptr" << std::endl;
         return nullptr;
     };
 
@@ -1541,35 +1552,8 @@ public:
     void set_seed(int _seed);
 };
 
-template <typename S_space, typename A_space>
-IsomorphicWrapper<S_space, A_space>::IsomorphicWrapper(env::Env<S_space, A_space>& env)
-{
-    p_env               = env.clone();
-    this->id            = (*p_env).id + "IsomorphicWrapper";
-    this->observation_space = (*p_env).observation_space;
-    this->action_space      = (*p_env).action_space;
-}
-
-// template <typename S_space, typename A_space>
-// S_type IsomorphicWrapper<S_space, A_space>::reset()
-// {
-//     return (*p_env).reset();
-// }
-
-// template <typename S_space, typename A_space>
-// env::StepResult<S_type> IsomorphicWrapper<S_space, A_space>::step(A_type action)
-// {
-//     return (*p_env).step(action);
-// }
-
-// template <typename S, typename A, typename S_space, typename A_space>
-// std::unique_ptr<env::Env<S_space, A_space>> IsomorphicWrapper<S, A, S_space, A_space>::clone() const
-// {
-//     return nullptr;
-// }
-
-template <typename S_space, typename A_space>
-void IsomorphicWrapper<S_space, A_space>::set_seed(int _seed)
+template <typename EnvType>
+void IsomorphicWrapper<EnvType>::set_seed(int _seed)
 {
     (*p_env).set_seed(_seed);
     int seed = (*p_env).randgen.get_seed();
@@ -1787,25 +1771,25 @@ namespace rlly
 namespace wrappers
 {
 
-/**
- * @brief FiniteEnv -> FiniteEnv wrapper
- */
-typedef IsomorphicWrapper<spaces::Discrete, spaces::Discrete> FiniteEnvWrapper;
+// /**
+//  * @brief FiniteEnv -> FiniteEnv wrapper
+//  */
+// typedef IsomorphicWrapper<spaces::Discrete, spaces::Discrete> FiniteEnvWrapper;
 
-/**
- * @brief ContinuousStateEnv -> ContinuousStateEnv wrapper
- */
-typedef IsomorphicWrapper<spaces::Box, spaces::Discrete> ContinuousStateEnvWrapper;
+// /**
+//  * @brief ContinuousStateEnv -> ContinuousStateEnv wrapper
+//  */
+// typedef IsomorphicWrapper<spaces::Box, spaces::Discrete> ContinuousStateEnvWrapper;
 
-/**
- * @brief ContinuousEnv -> ContinuousEnv wrapper
- */
-typedef IsomorphicWrapper<spaces::Box, spaces::Box> ContinuousEnvWrapper;
+// /**
+//  * @brief ContinuousEnv -> ContinuousEnv wrapper
+//  */
+// typedef IsomorphicWrapper<spaces::Box, spaces::Box> ContinuousEnvWrapper;
 
-/**
- * @brief ContinuousActionEnv -> ContinuousActionEnv wrapper
- */
-typedef IsomorphicWrapper<spaces::Discrete, spaces::Box> ContinuousActionEnvWrapper;
+// /**
+//  * @brief ContinuousActionEnv -> ContinuousActionEnv wrapper
+//  */
+// typedef IsomorphicWrapper<spaces::Discrete, spaces::Box> ContinuousActionEnvWrapper;
 
 }  // namespace env
 }  // namespace rlly

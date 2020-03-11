@@ -9,29 +9,31 @@
 #include "wrappers.h"
 #include "space.h"
 
-typedef rlly::wrappers::ContinuousStateEnvWrapper ContinuousStateWrapper;
-typedef rlly::env::ContinuousStateEnv ContinuousStateEnv;
+using namespace rlly::wrappers;
 
-class WrapperExample: public ContinuousStateWrapper
+template <typename EnvType>
+class WrapperExample: public rlly::wrappers::IsomorphicWrapper<EnvType>
 {
 private:
     /* data */
 public:
-    WrapperExample(ContinuousStateEnv& env);
+    WrapperExample(EnvType& env);
     ~WrapperExample(){};
 
     // override step function
     rlly::env::StepResult<std::vector<double>> step(int action) override;
 };
 
-WrapperExample::WrapperExample(ContinuousStateEnv& env): ContinuousStateWrapper(env)
+template <typename EnvType>
+WrapperExample<EnvType>::WrapperExample(EnvType& env): IsomorphicWrapper<EnvType>(env)
 {
     // do something
 }
 
-rlly::env::StepResult<std::vector<double>> WrapperExample::step(int action)
+template <typename EnvType>
+rlly::env::StepResult<std::vector<double>> WrapperExample<EnvType>::step(int action)
 {
-    auto step_result = (*p_env).step(action);
+    auto step_result = this->p_env.step(action);
     // do something
     step_result.next_state[0] = 0; // setting x always to 0, for example
     return step_result;
@@ -60,8 +62,7 @@ int main()
         std::cout << "reward = " << step_result.reward << std::endl;
         if (step_result.done) break;
     }
-    // For now, wrapped environments can't be rendered
-    // rlly::render::render_env(cartpole);
-
+    // Rendering is done with the original enrivonment
+    rlly::render::render_env(cartpole);
     return 0;
 }

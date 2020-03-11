@@ -11,7 +11,7 @@
 TEST_CASE( "Testing CartPole Wrapper", "[cartpole_wrapper]" )
 {   
     rlly::env::CartPole cartpole;
-    rlly::wrappers::ContinuousStateEnvWrapper env(cartpole);
+    rlly::wrappers::IsomorphicWrapper env(cartpole);
     rlly::env::ContinuousStateEnv& p_env = env; 
 
     REQUIRE( env.id.compare("CartPoleIsomorphicWrapper") == 0);
@@ -30,7 +30,7 @@ TEST_CASE( "Testing CartPole Wrapper", "[cartpole_wrapper]" )
 TEST_CASE( "Testing Chain Wrapper", "[chain_wrapper]" )
 {
     rlly::env::Chain chain(3);
-    rlly::wrappers::FiniteEnvWrapper env(chain);
+    rlly::wrappers::IsomorphicWrapper env(chain);
 
     REQUIRE(env.id.compare("ChainIsomorphicWrapper") == 0);  
     REQUIRE(env.observation_space.name == rlly::spaces::discrete);

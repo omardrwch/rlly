@@ -15,25 +15,25 @@ namespace rlly
 namespace wrappers
 {
 
-/**
- * @brief FiniteEnv -> FiniteEnv wrapper
- */
-typedef IsomorphicWrapper<spaces::Discrete, spaces::Discrete> FiniteEnvWrapper;
+// /**
+//  * @brief FiniteEnv -> FiniteEnv wrapper
+//  */
+// typedef IsomorphicWrapper<spaces::Discrete, spaces::Discrete> FiniteEnvWrapper;
 
-/**
- * @brief ContinuousStateEnv -> ContinuousStateEnv wrapper
- */
-typedef IsomorphicWrapper<spaces::Box, spaces::Discrete> ContinuousStateEnvWrapper;
+// /**
+//  * @brief ContinuousStateEnv -> ContinuousStateEnv wrapper
+//  */
+// typedef IsomorphicWrapper<spaces::Box, spaces::Discrete> ContinuousStateEnvWrapper;
 
-/**
- * @brief ContinuousEnv -> ContinuousEnv wrapper
- */
-typedef IsomorphicWrapper<spaces::Box, spaces::Box> ContinuousEnvWrapper;
+// /**
+//  * @brief ContinuousEnv -> ContinuousEnv wrapper
+//  */
+// typedef IsomorphicWrapper<spaces::Box, spaces::Box> ContinuousEnvWrapper;
 
-/**
- * @brief ContinuousActionEnv -> ContinuousActionEnv wrapper
- */
-typedef IsomorphicWrapper<spaces::Discrete, spaces::Box> ContinuousActionEnvWrapper;
+// /**
+//  * @brief ContinuousActionEnv -> ContinuousActionEnv wrapper
+//  */
+// typedef IsomorphicWrapper<spaces::Discrete, spaces::Box> ContinuousActionEnvWrapper;
 
 
 }  // namespace env

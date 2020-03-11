@@ -74,7 +74,7 @@ utils::render::Scene2D SquareWorld::get_scene_for_render2d(std::vector<double> s
     utils::render::Scene2D agent_scene;
     utils::render::Geometric2D agent;
     agent.type = "GL_QUADS";
-    agent.set_color(0.0, 0.0, 0.5);
+    agent.set_color(0.75, 0.0, 0.5);
 
     float size = 0.025;
     float x = state_var[0];
@@ -108,7 +108,7 @@ utils::render::Scene2D SquareWorld::get_background_for_render2d()
             shape.type = "GL_QUADS";
             float reward = std::exp( -0.5*(std::pow(x-goal_x, 2) + std::pow(y-goal_y, 2))/(std::pow(reward_smoothness, 2)));
 
-            shape.set_color(0.4, 0.7*reward + 0.3, 0.4);
+            shape.set_color(0.1, 0.9*reward + 0.1, 0.1);
             shape.add_vertex(x-epsilon, y-epsilon);
             shape.add_vertex(x+epsilon, y-epsilon);
             shape.add_vertex(x+epsilon, y+epsilon);

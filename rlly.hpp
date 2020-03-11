@@ -789,29 +789,41 @@ namespace env
 
 /**
  * @brief Abstract class for reinforcement learning environments
- * @tparam S type of state variables  (e.g. int, std::vector<double>)
- * @tparam A type of action variables (e.g. int, std::vector<double>)
  * @tparam S_space type of state space  (e.g. spaces::Box, spaces::Discrete)
  * @tparam A_space type of action space (e.g. spaces::Box, spaces::Discrete)
  */
-template <typename S, typename A, typename S_space, typename A_space>
+template <typename S_space, typename A_space>
 class Env
 {
-protected:
-    /**
-     * Current state
-     */
-    S state;
-
 public:
     Env() {};
     ~Env() {};
 
     /**
+     * Observation space
+     */
+    S_space observation_space;
+
+    /**
+     * Action space
+     */   
+    A_space action_space;
+
+    /**
+     * type of state variables
+     */
+    using S_type = decltype(observation_space.sample());
+
+    /**
+     *  type of action variables
+     */
+    using A_type = decltype(action_space.sample());
+
+    /**
      * @brief Put environment in default state
      * @return Default state
      */
-    virtual S reset()=0;
+    virtual S_type reset()=0;
 
     /**
      * @brief Take a step in the MDP
@@ -819,22 +831,12 @@ public:
      * @return An instance of mdp::StepResult containing the next state,
      * the reward and the done flag.
      */
-    virtual StepResult<S> step(A action)=0;
+    virtual StepResult<S_type> step(A_type action)=0;
 
     /**
      *  Environment identifier
      */
     std::string id;
-
-    /**
-     * Pointer to observation space
-     */
-    S_space observation_space;
-
-    /**
-     * Pointer to action space
-     */   
-    A_space action_space;
 
     /**
     * For random number generation
@@ -844,7 +846,7 @@ public:
     /**
      * Function to clone the environment
      */
-    virtual std::unique_ptr<Env<S, A, S_space, A_space>> clone() const = 0;
+    virtual std::unique_ptr<Env<S_space, A_space>> clone() const = 0;
 
     /**
      * Set the seed of randgen and seed of action space and observation space
@@ -854,10 +856,16 @@ public:
      * @param _seed
      */
     virtual void set_seed(int _seed);
+protected:
+    /**
+     * Current state
+     */
+    S_type state;
+
 }; 
 
-template <typename S, typename A, typename S_space, typename A_space>
-void Env<S, A, S_space, A_space>::set_seed(int _seed)
+template <typename S_space, typename A_space>
+void Env<S_space, A_space>::set_seed(int _seed)
 {
     if (_seed < 1) 
     {
@@ -888,22 +896,22 @@ namespace env
 /**
  * @brief Base class for environments with finite states and finite actions.
  */
-typedef Env<int, int, spaces::Discrete, spaces::Discrete> FiniteEnv;
+typedef Env<spaces::Discrete, spaces::Discrete> FiniteEnv;
 
 /**
  * @brief Base class for continuous-state environments with finite actions.
  */
-typedef Env<std::vector<double>, int, spaces::Box, spaces::Discrete> ContinuousStateEnv;
+typedef Env<spaces::Box, spaces::Discrete> ContinuousStateEnv;
 
 /**
  * @brief Base class for continuous-state environments with continuous actions.
  */
-typedef Env<std::vector<double>, std::vector<double>, spaces::Box, spaces::Box> ContinuousEnv;
+typedef Env<spaces::Box, spaces::Box> ContinuousEnv;
 
 /**
  * @brief Base class for discrete-state environments with continuous actions.
  */
-typedef Env<int, std::vector<double>, spaces::Discrete, spaces::Box> ContinuousActionEnv;
+typedef Env<spaces::Discrete, spaces::Box> ContinuousActionEnv;
 
 }  // namespace env
 }  // namespace rlly
@@ -1490,35 +1498,51 @@ namespace wrappers
  * same as the original environment. 
  * @details Useful to define wrappers like time limit.
  */
-template <typename S, typename A, typename S_space, typename A_space>
-class IsomorphicWrapper: public env::Env<S, A, S_space, A_space>
+template <typename S_space, typename A_space>
+class IsomorphicWrapper: public env::Env<S_space, A_space>
 {
+private:
+    S_space foo_obs_space;
+    A_space foo_act_space;
 public:
-    IsomorphicWrapper(env::Env<S, A, S_space, A_space>& env);
+    IsomorphicWrapper(env::Env<S_space, A_space>& env);
     ~IsomorphicWrapper(){};
+
+    // type of state and action variables
+    using S_type = decltype(foo_obs_space.sample());
+    using A_type = decltype(foo_act_space.sample());
 
     /**
      *  Pointer to the wrapped environment.
      */
-    std::unique_ptr<env::Env<S, A, S_space, A_space>> p_env;
+    std::unique_ptr<env::Env<S_space, A_space>> p_env;
 
     // reset 
-    virtual S reset() override;
+    virtual S_type reset() override
+    {
+        return (*p_env).reset();
+    };
 
     // step
-    virtual env::StepResult<S> step(A action) override;
+    virtual env::StepResult<S_type> step(A_type action) override
+    {
+        return (*p_env).step(action);
+    };
 
     /**
      * @brief Returns a null pointer. Prevents the wrapper from being cloned.
      */
-    virtual std::unique_ptr<env::Env<S, A, S_space, A_space>> clone() const override;
+    virtual std::unique_ptr<env::Env<S_space, A_space>> clone() const override
+    {
+        return nullptr;
+    };
 
     // Set seed
     void set_seed(int _seed);
 };
 
-template <typename S, typename A, typename S_space, typename A_space>
-IsomorphicWrapper<S, A, S_space, A_space>::IsomorphicWrapper(env::Env<S, A, S_space, A_space>& env)
+template <typename S_space, typename A_space>
+IsomorphicWrapper<S_space, A_space>::IsomorphicWrapper(env::Env<S_space, A_space>& env)
 {
     p_env               = env.clone();
     this->id            = (*p_env).id + "IsomorphicWrapper";
@@ -1526,26 +1550,26 @@ IsomorphicWrapper<S, A, S_space, A_space>::IsomorphicWrapper(env::Env<S, A, S_sp
     this->action_space      = (*p_env).action_space;
 }
 
-template <typename S, typename A, typename S_space, typename A_space>
-S IsomorphicWrapper<S, A, S_space, A_space>::reset()
-{
-    return (*p_env).reset();
-}
+// template <typename S_space, typename A_space>
+// S_type IsomorphicWrapper<S_space, A_space>::reset()
+// {
+//     return (*p_env).reset();
+// }
 
-template <typename S, typename A, typename S_space, typename A_space>
-env::StepResult<S> IsomorphicWrapper<S, A, S_space, A_space>::step(A action)
-{
-    return (*p_env).step(action);
-}
+// template <typename S_space, typename A_space>
+// env::StepResult<S_type> IsomorphicWrapper<S_space, A_space>::step(A_type action)
+// {
+//     return (*p_env).step(action);
+// }
 
-template <typename S, typename A, typename S_space, typename A_space>
-std::unique_ptr<env::Env<S, A, S_space, A_space>> IsomorphicWrapper<S, A, S_space, A_space>::clone() const
-{
-    return nullptr;
-}
+// template <typename S, typename A, typename S_space, typename A_space>
+// std::unique_ptr<env::Env<S_space, A_space>> IsomorphicWrapper<S, A, S_space, A_space>::clone() const
+// {
+//     return nullptr;
+// }
 
-template <typename S, typename A, typename S_space, typename A_space>
-void IsomorphicWrapper<S, A, S_space, A_space>::set_seed(int _seed)
+template <typename S_space, typename A_space>
+void IsomorphicWrapper<S_space, A_space>::set_seed(int _seed)
 {
     (*p_env).set_seed(_seed);
     int seed = (*p_env).randgen.get_seed();
@@ -1766,22 +1790,22 @@ namespace wrappers
 /**
  * @brief FiniteEnv -> FiniteEnv wrapper
  */
-typedef IsomorphicWrapper<int, int, spaces::Discrete, spaces::Discrete> FiniteEnvWrapper;
+typedef IsomorphicWrapper<spaces::Discrete, spaces::Discrete> FiniteEnvWrapper;
 
 /**
  * @brief ContinuousStateEnv -> ContinuousStateEnv wrapper
  */
-typedef IsomorphicWrapper<std::vector<double>, int, spaces::Box, spaces::Discrete> ContinuousStateEnvWrapper;
+typedef IsomorphicWrapper<spaces::Box, spaces::Discrete> ContinuousStateEnvWrapper;
 
 /**
  * @brief ContinuousEnv -> ContinuousEnv wrapper
  */
-typedef IsomorphicWrapper<std::vector<double>, std::vector<double>, spaces::Box, spaces::Box> ContinuousEnvWrapper;
+typedef IsomorphicWrapper<spaces::Box, spaces::Box> ContinuousEnvWrapper;
 
 /**
  * @brief ContinuousActionEnv -> ContinuousActionEnv wrapper
  */
-typedef IsomorphicWrapper<int, std::vector<double>, spaces::Discrete, spaces::Box> ContinuousActionEnvWrapper;
+typedef IsomorphicWrapper<spaces::Discrete, spaces::Box> ContinuousActionEnvWrapper;
 
 }  // namespace env
 }  // namespace rlly
@@ -1823,7 +1847,7 @@ namespace wrappers
  * @tparam A_space type of action space of the wrapper (e.g. spaces::Box, spaces::Discrete)
  */
 template <typename EnvType, typename S, typename A, typename S_space, typename A_space>
-class BasicWrapper: rlly::env::Env<S, A, S_space, A_space>
+class BasicWrapper: rlly::env::Env<S_space, A_space>
 {
 public:
     BasicWrapper(EnvType& env)
@@ -1841,7 +1865,7 @@ public:
     /**
      * @brief Returns a null pointer. Prevents the wrapper from being cloned.
      */
-    virtual std::unique_ptr<env::Env<S, A, S_space, A_space>> clone() const override { return nullptr;};
+    virtual std::unique_ptr<env::Env<S_space, A_space>> clone() const override { return nullptr;};
 
     /**
      * Set seed

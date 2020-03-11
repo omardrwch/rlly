@@ -25,29 +25,42 @@ namespace env
 
 /**
  * @brief Abstract class for reinforcement learning environments
- * @tparam S type of state variables  (e.g. int, std::vector<double>)
- * @tparam A type of action variables (e.g. int, std::vector<double>)
  * @tparam S_space type of state space  (e.g. spaces::Box, spaces::Discrete)
  * @tparam A_space type of action space (e.g. spaces::Box, spaces::Discrete)
  */
-template <typename S, typename A, typename S_space, typename A_space>
+template <typename S_space, typename A_space>
 class Env
 {
-protected:
-    /**
-     * Current state
-     */
-    S state;
-
 public:
     Env() {};
     ~Env() {};
+
+
+    /**
+     * Observation space
+     */
+    S_space observation_space;
+
+    /**
+     * Action space
+     */   
+    A_space action_space;
+
+    /**
+     * type of state variables
+     */
+    using S_type = decltype(observation_space.sample());
+
+    /**
+     *  type of action variables
+     */
+    using A_type = decltype(action_space.sample());
 
     /**
      * @brief Put environment in default state
      * @return Default state
      */
-    virtual S reset()=0;
+    virtual S_type reset()=0;
 
     /**
      * @brief Take a step in the MDP
@@ -55,22 +68,12 @@ public:
      * @return An instance of mdp::StepResult containing the next state,
      * the reward and the done flag.
      */
-    virtual StepResult<S> step(A action)=0;
+    virtual StepResult<S_type> step(A_type action)=0;
 
     /**
      *  Environment identifier
      */
     std::string id;
-
-    /**
-     * Pointer to observation space
-     */
-    S_space observation_space;
-
-    /**
-     * Pointer to action space
-     */   
-    A_space action_space;
 
     /**
     * For random number generation
@@ -80,7 +83,7 @@ public:
     /**
      * Function to clone the environment
      */
-    virtual std::unique_ptr<Env<S, A, S_space, A_space>> clone() const = 0;
+    virtual std::unique_ptr<Env<S_space, A_space>> clone() const = 0;
 
     /**
      * Set the seed of randgen and seed of action space and observation space
@@ -90,10 +93,16 @@ public:
      * @param _seed
      */
     virtual void set_seed(int _seed);
+protected:
+    /**
+     * Current state
+     */
+    S_type state;
+
 }; 
 
-template <typename S, typename A, typename S_space, typename A_space>
-void Env<S, A, S_space, A_space>::set_seed(int _seed)
+template <typename S_space, typename A_space>
+void Env<S_space, A_space>::set_seed(int _seed)
 {
     if (_seed < 1) 
     {

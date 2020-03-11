@@ -19,7 +19,7 @@ namespace wrappers
  * @tparam A_space type of action space of the wrapper (e.g. spaces::Box, spaces::Discrete)
  */
 template <typename EnvType, typename S, typename A, typename S_space, typename A_space>
-class BasicWrapper: rlly::env::Env<S, A, S_space, A_space>
+class BasicWrapper: rlly::env::Env<S_space, A_space>
 {
 public:
     BasicWrapper(EnvType& env)
@@ -37,7 +37,7 @@ public:
     /**
      * @brief Returns a null pointer. Prevents the wrapper from being cloned.
      */
-    virtual std::unique_ptr<env::Env<S, A, S_space, A_space>> clone() const override { return nullptr;};
+    virtual std::unique_ptr<env::Env<S_space, A_space>> clone() const override { return nullptr;};
 
     /**
      * Set seed

@@ -18,22 +18,22 @@ namespace wrappers
 /**
  * @brief FiniteEnv -> FiniteEnv wrapper
  */
-typedef IsomorphicWrapper<int, int, spaces::Discrete, spaces::Discrete> FiniteEnvWrapper;
+typedef IsomorphicWrapper<spaces::Discrete, spaces::Discrete> FiniteEnvWrapper;
 
 /**
  * @brief ContinuousStateEnv -> ContinuousStateEnv wrapper
  */
-typedef IsomorphicWrapper<std::vector<double>, int, spaces::Box, spaces::Discrete> ContinuousStateEnvWrapper;
+typedef IsomorphicWrapper<spaces::Box, spaces::Discrete> ContinuousStateEnvWrapper;
 
 /**
  * @brief ContinuousEnv -> ContinuousEnv wrapper
  */
-typedef IsomorphicWrapper<std::vector<double>, std::vector<double>, spaces::Box, spaces::Box> ContinuousEnvWrapper;
+typedef IsomorphicWrapper<spaces::Box, spaces::Box> ContinuousEnvWrapper;
 
 /**
  * @brief ContinuousActionEnv -> ContinuousActionEnv wrapper
  */
-typedef IsomorphicWrapper<int, std::vector<double>, spaces::Discrete, spaces::Box> ContinuousActionEnvWrapper;
+typedef IsomorphicWrapper<spaces::Discrete, spaces::Box> ContinuousActionEnvWrapper;
 
 
 }  // namespace env

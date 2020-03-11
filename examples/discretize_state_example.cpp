@@ -61,17 +61,5 @@ int main()
         }
         std::cout << std::endl;
     }   
-    // for(int dd = 0; dd < 2; dd++)
-    // {
-    //     double range = env.observation_space.high[dd] - env.observation_space.low[dd];
-    //     double epsilon = range/nn;
-    //     for(int ii = 0; ii < nn; ii++)
-    //     {
-    //         std::vector<double> foo_state;
-    //         foo_state.push_back();
-    //         foo_state.push_back();
-    //         std::cout << env_discrete.get_state_index();
-    //     }
-    // }
     return 0;
 }

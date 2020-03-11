@@ -14,9 +14,8 @@ namespace rlly
 namespace utils
 {
 
-    // this should be defined in C++17
     /**
-     * @brief Clamp a value between an upper and lower bound. Requires C++17.
+     * @brief Clamp a value between an upper and lower bound.
      * @param v value to be clampled
      * @param lo lower bound
      * @param hi upper bound
@@ -45,6 +44,16 @@ namespace utils
      * @param r   index where to end the search (default = -1). If -1, it is set to vec.size()-1
      */
     int binary_search(double val, std::vector<double> vec, int l = 0, int r = -1);
+
+
+    /**
+     * @brief Binary search in d dimensions. Returns flat index. 
+     * @param d_val vector to be searched
+     * @param bins 2d array such that bins[i] represents the intervals where to search for d_val[i]. Represents
+     * a set of hypercubes in R^d
+     * @return flat index in column-major order corresponding to the hypercube where d_val lives
+     */
+    int binary_search_nd(std::vector<double> d_val, std::vector<std::vector<double>> bins);
 }
 }  
 

@@ -150,3 +150,21 @@ TEST_CASE( "Testing binary search", "[binary_search]")
     REQUIRE(rlly::utils::binary_search(val8, vec7) ==  5);
 }
 
+TEST_CASE( "Testing d-dimensional binary search", "[d_dim_binary_search]")
+{
+    std::vector<std::vector<double>> all_bins;
+
+    std::vector<double> bin1 = {0.0, 1.0, 2.0, 3.0}; // 3 intervals
+    std::vector<double> bin2 = {1.0, 2.0, 3.0, 4.0}; // 3 intervals
+    std::vector<double> bin3 = {2.0, 3.0, 4.0, 5.0, 6.0}; // 4 intervals
+
+    all_bins.push_back(bin1);
+    all_bins.push_back(bin2);
+    all_bins.push_back(bin3);
+    
+    std::vector<double> vec1 = {0.0, 1.0, 2.0};
+    std::vector<double> vec2 = {2.9, 3.9, 5.9};
+
+    REQUIRE( rlly::utils::binary_search_nd (vec1, all_bins) == 0 );
+    REQUIRE( rlly::utils::binary_search_nd (vec2, all_bins) == 3*3*4-1);
+}

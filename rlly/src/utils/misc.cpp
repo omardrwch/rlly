@@ -34,5 +34,21 @@ int binary_search(double val, std::vector<double> vec, int l /*= 0*/, int r /*= 
     return -1; 
 } 
 
+int binary_search_nd(std::vector<double> d_val, std::vector<std::vector<double>> bins)
+{
+    unsigned int dim = bins.size();
+    int flat_index = 0;
+    int aux = 1;
+    if (dim != d_val.size()) throw;
+    for(unsigned int dd = 0; dd < dim; dd++)
+    {
+        int index_dd = binary_search(d_val[dd], bins[dd]);
+        if (index_dd == -1) throw;
+        flat_index += aux*index_dd;
+        aux *= (bins[dd].size()-1);
+    }
+    return flat_index;
+}
+
 }
 }

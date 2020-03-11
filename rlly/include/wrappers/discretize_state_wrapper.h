@@ -47,7 +47,6 @@ public:
      *  Get discrete representation of a continuous state
      */
     int get_state_index(std::vector<double> state);
-
 };
 
 template <typename EnvType>
@@ -126,18 +125,7 @@ DiscretizeStateWrapper<EnvType>::DiscretizeStateWrapper(EnvType& env, std::vecto
 template <typename EnvType>
 int DiscretizeStateWrapper<EnvType>::get_state_index(std::vector<double> state)
 {
-    unsigned int dim = this->p_env.observation_space.low.size();
-    int state_index = 0;
-    int aux = 1;
-    if (dim != state.size()) throw;
-    for(unsigned int dd = 0; dd < dim; dd++)
-    {
-        int index_dd = utils::binary_search(state[dd], all_bins[dd]);
-        if (index_dd == -1) throw;
-        state_index += aux*index_dd;
-        aux *= (all_bins[dd].size()-1);
-    }
-    return state_index;
+    return utils::binary_search_nd(state, all_bins);
 }
 
 

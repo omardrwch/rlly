@@ -4,9 +4,7 @@
 */
 
 #include <iostream>
-#include "env.h"
-#include "wrappers.h"
-#include "render.h"
+#include "rlly.hpp"
 
 
 int main()

@@ -2,12 +2,8 @@
     To run this example:
     $ bash scripts/compile.sh wrapper_example && ./build/examples/wrapper_example
 */
-
 #include <iostream>
-#include "env.h"
-#include "render.h"
-#include "wrappers.h"
-#include "space.h"
+#include "rlly.hpp"
 
 using namespace rlly::wrappers;
 

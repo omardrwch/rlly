@@ -528,9 +528,8 @@ namespace rlly
 namespace utils
 {
 
-    // this should be defined in C++17
     /**
-     * @brief Clamp a value between an upper and lower bound. Requires C++17.
+     * @brief Clamp a value between an upper and lower bound.
      * @param v value to be clampled
      * @param lo lower bound
      * @param hi upper bound
@@ -559,6 +558,15 @@ namespace utils
      * @param r   index where to end the search (default = -1). If -1, it is set to vec.size()-1
      */
     int binary_search(double val, std::vector<double> vec, int l = 0, int r = -1);
+
+    /**
+     * @brief Binary search in d dimensions. Returns flat index. 
+     * @param d_val vector to be searched
+     * @param bins 2d array such that bins[i] represents the intervals where to search for d_val[i]. Represents
+     * a set of hypercubes in R^d
+     * @return flat index in column-major order corresponding to the hypercube where d_val lives
+     */
+    int binary_search_nd(std::vector<double> d_val, std::vector<std::vector<double>> bins);
 }
 }  
 
@@ -1509,12 +1517,11 @@ private:
     S_space foo_obs_space;
     A_space foo_act_space;
 public:
-    IsomorphicWrapper(EnvType& env)
+    IsomorphicWrapper(EnvType& env): p_env(env)
     {
-        p_env               = env.clone();
-        this->id            = (*p_env).id + "IsomorphicWrapper";
-        this->observation_space = (*p_env).observation_space;
-        this->action_space      = (*p_env).action_space;
+        this->id                = p_env.id + "IsomorphicWrapper";
+        this->observation_space = p_env.observation_space;
+        this->action_space      = p_env.action_space;
     };
     ~IsomorphicWrapper(){};
 
@@ -1523,20 +1530,20 @@ public:
     using A_type = decltype(foo_act_space.sample());
 
     /**
-     *  Pointer to the wrapped environment.
+     *  Reference to the wrapped environment.
      */
-    std::unique_ptr<env::Env<S_space, A_space>> p_env;
+    EnvType& p_env;
 
     // reset 
     virtual S_type reset() override
     {
-        return (*p_env).reset();
+        return p_env.reset();
     };
 
     // step
     virtual env::StepResult<S_type> step(A_type action) override
     {
-        return (*p_env).step(action);
+        return p_env.step(action);
     };
 
     /**
@@ -1555,14 +1562,77 @@ public:
 template <typename EnvType>
 void IsomorphicWrapper<EnvType>::set_seed(int _seed)
 {
-    (*p_env).set_seed(_seed);
-    int seed = (*p_env).randgen.get_seed();
+    p_env.set_seed(_seed);
+    int seed = p_env.randgen.get_seed();
     this->observation_space.generator.seed(seed+123);
     this->action_space.generator.seed(seed+456);
 }
 
 } // namespace wrappers
 } // namespace rlly
+#endif
+#ifndef __RLLY_BASIC_WRAPPER_H__
+#define __RLLY_BASIC_WRAPPER_H__
+
+namespace rlly
+{
+namespace wrappers
+{
+
+/**
+ * @brief Wrapper such that the observation and action spaces of the wrapper environment are not 
+ * necessarily the same as in the original environment.
+ * @tparam EnvType type of the original environment (can be an abstract class)
+ * @tparam S_space type of state space of the wrapper (e.g. spaces::Box, spaces::Discrete)
+ * @tparam A_space type of action space of the wrapper (e.g. spaces::Box, spaces::Discrete)
+ */
+template <typename EnvType, typename S_space, typename A_space>
+class BaseWrapper: public rlly::env::Env<S_space, A_space>
+{
+protected:
+    S_space foo_obs_space;
+    A_space foo_act_space;
+public:
+    BaseWrapper(EnvType& env): p_env(env){};
+    ~BaseWrapper(){};
+
+    // type of state and action variables
+    using S_type = decltype(foo_obs_space.sample());
+    using A_type = decltype(foo_act_space.sample());
+
+    /**
+     * reset() must be implemented by derived class
+     */
+    virtual S_type reset()=0;
+
+    /**
+     * step() must be implemented by derived class
+     */
+    virtual env::StepResult<S_type> step(A_type action)=0;
+
+    /**
+     *  Reference to the wrapped environment.
+     */
+    EnvType& p_env;
+
+    /**
+     * @brief Returns a null pointer. Prevents the wrapper from being cloned.
+     */
+    virtual std::unique_ptr<env::Env<S_space, A_space>> clone() const override { return nullptr;};
+
+    /**
+     * Set seed
+     */
+    void set_seed(int _seed)
+    {
+        this->set_seed(_seed+123);
+        p_env.set_seed(_seed);
+    };
+};
+
+} // namespace wrappers
+} // namespace rlly
+
 #endif
 /**
  * @file
@@ -1718,81 +1788,148 @@ void render_env(EnvType& env)
 } // namespace rlly
 
 #endif
-// #ifndef __RLLY_DISCRETIZE_STATE_WRAPPER_H___
-// #define __RLLY_DISCRETIZE_STATE_WRAPPER_H___
-
-// #include <vector>
-// #include <iostream>
-// #include "basic_wrapper.h"
-// #include "utils.h"
-// #include "space.h"
-// #include "env.h"
-
-// namespace rlly
-// {
-// namespace wrappers
-// {
-
-// class DiscretizeStateWrapper: public ContinuousStateEnvWrapper
-// {
-// public:
-//     /**
-//      * @param env
-//      * @param n_bins number of intervals in the discretization of each dimension of the state space
-//      */
-//     DiscretizeStateWrapper(env::ContinuousStateEnv& env, int n_bins);
-//     /**
-//      * @param env
-//      * @param vec_n_bins vec_n_bins[i] is the number of intervals in the discretization of the i-th each dimension of the state space
-//      */
-//     DiscretizeStateWrapper(env::ContinuousStateEnv& env, std::vector<int> vec_n_bins);
-//     ~DiscretizeStateWrapper(){};
-
-//     /**
-//      * all_bins[i] = {x_1, ..., x_n } the points corresponding to the discretization of the i-th dimension of the state space
-//      */  
-//     utils::vec::vec_2d all_bins;
-// };
-
-// } // namespace wrappers
-// } // namespace rlly
-
-// #endif
-#ifndef __RLLY_WRAPPER_TYPEDEFS_H__
-#define __RLLY_WRAPPER_TYPEDEFS_H__
-
-/**
- * @file
- * @brief Useful type definitions for wrappers
- */
+#ifndef __RLLY_DISCRETIZE_STATE_WRAPPER_H___
+#define __RLLY_DISCRETIZE_STATE_WRAPPER_H___
 
 namespace rlly
 {
 namespace wrappers
 {
 
-// /**
-//  * @brief FiniteEnv -> FiniteEnv wrapper
-//  */
-// typedef IsomorphicWrapper<spaces::Discrete, spaces::Discrete> FiniteEnvWrapper;
+template <typename EnvType>
+class DiscretizeStateWrapper: public BaseWrapper<EnvType, spaces::Discrete, spaces::Discrete>
+{
+private:
+    void init();
+    double tol = 1e-9;
+public:
+    /**
+     * @param env
+     * @param n_bins number of intervals in the discretization of each dimension of the state space
+     */
+    DiscretizeStateWrapper(EnvType& env, int n_bins);
+    /**
+     * @param env
+     * @param vec_n_bins vec_n_bins[i] is the number of intervals in the discretization of the i-th each dimension of the state space
+     */
+    DiscretizeStateWrapper(EnvType& env, std::vector<int> vec_n_bins);
+    ~DiscretizeStateWrapper(){};
 
-// /**
-//  * @brief ContinuousStateEnv -> ContinuousStateEnv wrapper
-//  */
-// typedef IsomorphicWrapper<spaces::Box, spaces::Discrete> ContinuousStateEnvWrapper;
+    // reset
+    int reset() override; 
 
-// /**
-//  * @brief ContinuousEnv -> ContinuousEnv wrapper
-//  */
-// typedef IsomorphicWrapper<spaces::Box, spaces::Box> ContinuousEnvWrapper;
+    // step
+    env::StepResult<int> step(int action) override;
 
-// /**
-//  * @brief ContinuousActionEnv -> ContinuousActionEnv wrapper
-//  */
-// typedef IsomorphicWrapper<spaces::Discrete, spaces::Box> ContinuousActionEnvWrapper;
+    /**
+     * all_bins[i] = {x_1, ..., x_n } the points corresponding to the discretization of the i-th dimension of the state space
+     */  
+    utils::vec::vec_2d all_bins;
 
-}  // namespace env
-}  // namespace rlly
+    /**
+     *  Get discrete representation of a continuous state
+     */
+    int get_state_index(std::vector<double> state);
+};
+
+template <typename EnvType>
+void DiscretizeStateWrapper<EnvType>::init()
+{
+    if(this->p_env.observation_space.name != spaces::box)
+    {
+        std::cerr << "Error: DiscretizeStateWrapper requires an environment with an observation space of type spaces::Box ." << std::endl;
+        throw;
+    }
+    if(this->p_env.action_space.name != spaces::discrete)
+    {
+        std::cerr << "Error: DiscretizeStateWrapper requires an environment with an action space of type spaces::Discrete." << std::endl;
+        throw;
+    }
+    this->action_space = this->p_env.action_space;
+}
+
+template <typename EnvType>
+DiscretizeStateWrapper<EnvType>::DiscretizeStateWrapper(EnvType& env, int n_bins): 
+    BaseWrapper<EnvType, spaces::Discrete, spaces::Discrete>(env)
+{
+    init();
+
+    int num_states = 1;
+    unsigned int dim = env.observation_space.low.size();
+    for(unsigned int dd = 0; dd < dim; dd++)
+    {
+        double range = env.observation_space.high[dd] - env.observation_space.low[dd];
+        double epsilon = range/n_bins;
+        // discretization of dimension dd
+        std::vector<double> discretization(n_bins+1);
+        for (int bin = 0; bin < n_bins+1; bin++)
+        {
+            discretization[bin] = env.observation_space.low[dd] + epsilon*bin;
+            if (bin == n_bins) discretization[bin] += tol; // "close" the last interval
+        } 
+        all_bins.push_back(discretization);
+        num_states = num_states*n_bins;
+    }
+    this->observation_space.set_n(num_states);
+}
+
+template <typename EnvType>
+DiscretizeStateWrapper<EnvType>::DiscretizeStateWrapper(EnvType& env, std::vector<int> vec_n_bins): 
+    BaseWrapper<EnvType, spaces::Discrete, spaces::Discrete>(env)
+{
+    init();
+
+    int num_states = 1;
+    unsigned int dim = env.observation_space.low.size();
+    if (vec_n_bins.size() != dim)
+    {
+        std::cerr << "Incompatible dimensions in the constructor of DiscretizeStateWrapper." << std::endl;
+        throw;
+    }
+    for(unsigned int dd = 0; dd < dim; dd++)
+    {
+        int n_bins = vec_n_bins[dd];
+        double range = env.observation_space.high[dd] - env.observation_space.low[dd];
+        double epsilon = range/n_bins;
+        // discretization of dimension dd
+        std::vector<double> discretization(n_bins+1);
+        for (int bin = 0; bin < n_bins+1; bin++)
+        {
+            discretization[bin] = env.observation_space.low[dd] + epsilon*bin;
+            if (bin == n_bins) discretization[bin] += tol; // "close" the last interval
+        } 
+        all_bins.push_back(discretization);
+        num_states = num_states*n_bins;
+    }
+    this->observation_space.set_n(num_states);
+}
+
+template <typename EnvType>
+int DiscretizeStateWrapper<EnvType>::get_state_index(std::vector<double> state)
+{
+    return utils::binary_search_nd(state, all_bins);
+}
+
+template <typename EnvType>
+env::StepResult<int> DiscretizeStateWrapper<EnvType>::step(int action)
+{
+    env::StepResult<int> result;
+    env::StepResult<std::vector<double>> wrapped_result = this->p_env.step(action);
+    result.next_state = get_state_index(wrapped_result.next_state);
+    result.reward     = wrapped_result.reward;
+    result.done       = wrapped_result.done;
+    return result;
+}   
+
+template <typename EnvType>
+int DiscretizeStateWrapper<EnvType>::reset()
+{
+    std::vector<double> wrapped_state = this->p_env.reset();
+    return get_state_index(wrapped_state);
+}   
+
+} // namespace wrappers
+} // namespace rlly
 
 #endif
 /**
@@ -1810,58 +1947,6 @@ namespace render
 {
 
 } // namspace render
-} // namespace rlly
-
-#endif
-#ifndef __RLLY_BASIC_WRAPPER_H__
-#define __RLLY_BASIC_WRAPPER_H__
-
-namespace rlly
-{
-namespace wrappers
-{
-
-/**
- * @brief Wrapper such that the observation and action spaces of the wrapper environment are not 
- * necessarily the same as in the original environment.
- * @tparam EnvType type of the original environment
- * @tparam S type of state variables of the wrapper  (e.g. int, std::vector<double>)
- * @tparam A type of action variables of the wrapper (e.g. int, std::vector<double>)
- * @tparam S_space type of state space of the wrapper (e.g. spaces::Box, spaces::Discrete)
- * @tparam A_space type of action space of the wrapper (e.g. spaces::Box, spaces::Discrete)
- */
-template <typename EnvType, typename S, typename A, typename S_space, typename A_space>
-class BasicWrapper: rlly::env::Env<S_space, A_space>
-{
-public:
-    BasicWrapper(EnvType& env)
-    {
-        p_env = env.clone();
-        this->id  = (*p_env).id + "Wrapper";
-    };
-    ~BasicWrapper(){};
-
-    /**
-     *  Pointer to the wrapped environment.
-     */
-    std::unique_ptr<EnvType> p_env;
-
-    /**
-     * @brief Returns a null pointer. Prevents the wrapper from being cloned.
-     */
-    virtual std::unique_ptr<env::Env<S_space, A_space>> clone() const override { return nullptr;};
-
-    /**
-     * Set seed
-     */
-    void set_seed(int _seed)
-    {
-        this->set_seed(_seed+123);
-        p_env->set_seed(_seed);
-    };
-};
-
-} // namespace wrappers
 } // namespace rlly
 
 #endif
@@ -2841,7 +2926,7 @@ utils::render::Scene2D SquareWorld::get_scene_for_render2d(std::vector<double> s
     utils::render::Scene2D agent_scene;
     utils::render::Geometric2D agent;
     agent.type = "GL_QUADS";
-    agent.set_color(0.0, 0.0, 0.5);
+    agent.set_color(0.75, 0.0, 0.5);
 
     float size = 0.025;
     float x = state_var[0];
@@ -2875,7 +2960,7 @@ utils::render::Scene2D SquareWorld::get_background_for_render2d()
             shape.type = "GL_QUADS";
             float reward = std::exp( -0.5*(std::pow(x-goal_x, 2) + std::pow(y-goal_y, 2))/(std::pow(reward_smoothness, 2)));
 
-            shape.set_color(0.4, 0.7*reward + 0.3, 0.4);
+            shape.set_color(0.1, 0.9*reward + 0.1, 0.1);
             shape.add_vertex(x-epsilon, y-epsilon);
             shape.add_vertex(x+epsilon, y-epsilon);
             shape.add_vertex(x+epsilon, y+epsilon);
@@ -3165,55 +3250,13 @@ std::vector<double> Box::sample()
 }
 
 }
-}// #include "discretize_state_wrapper.h"
+}namespace rlly
+{
+namespace wrappers
+{
 
-// namespace rlly
-// {
-// namespace wrappers
-// {
-
-// DiscretizeStateWrapper::DiscretizeStateWrapper(env::ContinuousStateEnv& env, int n_bins):  ContinuousStateEnvWrapper(env)
-// {
-//     int dim = env.observation_space.low.size();
-//     for(int dd = 0; dd < dim; dd++)
-//     {
-//         double range = env.observation_space.high[dd] - env.observation_space.low[dd];
-//         double epsilon = range/n_bins;
-//         // discretization of dimension dd
-//         std::vector<double> discretization(n_bins+1);
-//         for (int bin = 0; bin < n_bins+1; bin++)
-//         {
-//             discretization[bin] = env.observation_space.low[dd] + epsilon*bin;
-//         } 
-//         all_bins.push_back(discretization);
-//     }
-// }
-
-// DiscretizeStateWrapper::DiscretizeStateWrapper(env::ContinuousStateEnv& env, std::vector<int> vec_n_bins): ContinuousStateEnvWrapper(env)
-// {
-//     unsigned int dim = env.observation_space.low.size();
-//     if (vec_n_bins.size() != dim)
-//     {
-//         std::cerr << "Incompatible dimensions in the constructor of DiscretizeStateWrapper." << std::endl;
-//         throw;
-//     }
-//     for(unsigned int dd = 0; dd < dim; dd++)
-//     {
-//         int n_bins = vec_n_bins[dd];
-//         double range = env.observation_space.high[dd] - env.observation_space.low[dd];
-//         double epsilon = range/n_bins;
-//         // discretization of dimension dd
-//         std::vector<double> discretization(n_bins+1);
-//         for (int bin = 0; bin < n_bins+1; bin++)
-//         {
-//             discretization[bin] = env.observation_space.low[dd] + epsilon*bin;
-//         } 
-//         all_bins.push_back(discretization);
-//     }
-// }
-
-// } // namespace wrappers
-// } // namespace rlly
+} // namespace wrappers
+} // namespace rlly
 namespace rlly
 {
 namespace spaces
@@ -3358,6 +3401,22 @@ int binary_search(double val, std::vector<double> vec, int l /*= 0*/, int r /*= 
     } 
     return -1; 
 } 
+
+int binary_search_nd(std::vector<double> d_val, std::vector<std::vector<double>> bins)
+{
+    unsigned int dim = bins.size();
+    int flat_index = 0;
+    int aux = 1;
+    if (dim != d_val.size()) throw;
+    for(unsigned int dd = 0; dd < dim; dd++)
+    {
+        int index_dd = binary_search(d_val[dd], bins[dd]);
+        if (index_dd == -1) throw;
+        flat_index += aux*index_dd;
+        aux *= (bins[dd].size()-1);
+    }
+    return flat_index;
+}
 
 }
 }

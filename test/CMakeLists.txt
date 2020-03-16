@@ -20,8 +20,7 @@ include_directories(../rlly/include/env
 # 
 
 # Adding all .cpp files as source
-file(GLOB SOURCES "../rlly/src/*.cpp")  # if there are no subfolders
-file(GLOB SOURCES "../rlly/src/*/*.cpp")
+file(GLOB SOURCES "../rlly/src/*/*.cpp" "../rlly/src/*.cpp")
 
 # Generate shared library from the code
 add_library(rlly SHARED ${SOURCES})

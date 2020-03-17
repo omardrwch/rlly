@@ -1,2 +1,2 @@
-test/catch.hpp linguist-vendored
-generate_header/acme.py linguist-vendored
+ext/catch2/catch.hpp linguist-vendored
+ext/acme/acme.py linguist-vendored

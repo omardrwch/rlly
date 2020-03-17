@@ -256,3 +256,7 @@ and open the file `docs/html/index.html`.
 $ bash scripts/run_tests.sh
 ```
 
+
+## Third-party code
+
+All third-party code are in the directory `ext` with their respective LICENSE files.

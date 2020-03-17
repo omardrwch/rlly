@@ -12,7 +12,8 @@ project(RLLY_TEST)
 include_directories(../rlly/include/env
                     ../rlly/include/spaces
                     ../rlly/include/utils
-                    ../rlly/include/wrappers)
+                    ../rlly/include/wrappers
+                    ../ext/catch2)
 
 
 #

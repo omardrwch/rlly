@@ -17,10 +17,6 @@ The goal of __rlly__ is to implement simple environments for reinforcement learn
         ```
     * __Remark:__ It is possible to use the library without rendering options and avoid these requirements.
 
-* To run the notebooks in `examples`:
-    * Jupyter notebook `conda install -c anaconda jupyter`
-    * [xeus-cling](https://xeus-cling.readthedocs.io/en/latest/)  `conda install -c conda-forge xeus-cling`
-
 * For test coverage (to run `scripts/run_tests_with_coverage.sh`):
     * lcov ``sudo apt install lcov``
 

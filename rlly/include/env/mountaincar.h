@@ -2,7 +2,6 @@
 #define __RLLY_MOUNTAINCAR_H__
 
 #include <vector>
-#include <assert.h>
 #include "env_typedefs.h"
 #include "utils.h"
 

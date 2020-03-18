@@ -8,12 +8,13 @@
 #include "discrete_reward.h"
 #include "stepresult.h"
 
+#include "lqr.h"
 #include "chain.h"
 #include "mountaincar.h"
 #include "gridworld.h"
 #include "cartpole.h"
 #include "squareworld.h"
-
+#include "movingball.h"
 
 /**
  * @file 

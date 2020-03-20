@@ -56,8 +56,6 @@ StepResult<std::vector<double>> MovingBall::step(std::vector<double> action)
     // for rendering
     if (rendering_enabled) append_state_for_rendering(state);
     //
-
-    if (!action_space.contains(action)) throw;
     double x  = state[0];
     double y  = state[1];
     double vx = state[2];

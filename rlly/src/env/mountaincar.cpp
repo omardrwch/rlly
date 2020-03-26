@@ -25,8 +25,10 @@ MountainCar::MountainCar()
     goal_position = 0.5;
     goal_velocity = 0;
 
+    // Initialize state
     state.push_back(0);
     state.push_back(0);
+    reset();
 
     id = "MountainCar";
 
@@ -39,7 +41,7 @@ MountainCar::MountainCar()
 
 std::vector<double> MountainCar::reset()
 {
-    state[position] = randgen.sample_real_uniform(observation_space.low[position], observation_space.high[position]);
+    state[position] = randgen.sample_real_uniform(-0.6, -0.4);
     state[velocity] = 0;
     return state;
 }

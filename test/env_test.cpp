@@ -228,3 +228,23 @@ TEST_CASE( "Testing MovingBall", "[movingball]" )
     auto step_result = env.step(env.action_space.sample());
     REQUIRE( env.observation_space.contains(step_result.next_state) );
 }
+
+
+TEST_CASE( "Testing Factory", "[factory]" )
+{   
+    rlly::env::ContinuousStateEnv* p_env_1;
+    rlly::env::ContinuousStateEnv* p_env_2;
+    rlly::env::ContinuousStateEnv* p_env_3;
+
+    p_env_1 = rlly::env::make_continuous_state_env("SquareWorld");
+    p_env_2 = rlly::env::make_continuous_state_env("MountainCar");
+    p_env_3 = rlly::env::make_continuous_state_env("CartPole");
+
+    REQUIRE( p_env_1->id.compare("SquareWorld") == 0);
+    REQUIRE( p_env_2->id.compare("MountainCar") == 0);
+    REQUIRE( p_env_3->id.compare("CartPole")    == 0);
+
+    delete p_env_1;
+    delete p_env_2;
+    delete p_env_3;
+}

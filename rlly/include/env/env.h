@@ -3,6 +3,7 @@
 
 #include "abstractenv.h"
 #include "env_typedefs.h"
+#include "env_factory.h"
 
 #include "finitemdp.h"
 #include "discrete_reward.h"

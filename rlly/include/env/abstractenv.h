@@ -33,7 +33,7 @@ class Env
 {
 public:
     Env() {};
-    ~Env() {};
+    virtual ~Env() {};
 
 
     /**

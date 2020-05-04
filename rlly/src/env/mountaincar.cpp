@@ -12,10 +12,6 @@ namespace env
 
 MountainCar::MountainCar()
 {
-    // Set seed
-    int _seed = std::rand();
-    set_seed(_seed);
-
     // observation and action spaces
     std::vector<double> _low = {-1.2, -0.07};
     std::vector<double> _high = {0.6, 0.07};

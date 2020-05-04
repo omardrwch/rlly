@@ -40,21 +40,21 @@ namespace utils
             /**
              * Seed for the std::mt19937 generator.
              */
-            unsigned seed;
+            uint seed;
 
         public:
             /**
              * @brief Initializes object with given seed.
              * @param _seed
              */
-            Random(unsigned _seed = 42);
+            Random(uint _seed = 42);
             ~Random(){};
 
             /**
              * @brief Set seed for random number generator
              * @param _seed
              */
-            void set_seed(unsigned _seed);
+            void set_seed(uint _seed);
 
             /**
              * @brief Sample according to probability vector.
@@ -85,7 +85,7 @@ namespace utils
             /**
              * @brief returns seed value
              */
-            int get_seed();
+            uint get_seed();
         };     
     }
 }  // namespace utils

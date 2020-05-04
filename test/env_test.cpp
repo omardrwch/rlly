@@ -248,3 +248,55 @@ TEST_CASE( "Testing Factory", "[factory]" )
     delete p_env_2;
     delete p_env_3;
 }
+
+
+template <class EnvType>
+void test_continuous_state_env_seeding()
+{
+    EnvType env;
+    std::vector<uint> seeds = {1, 4294967295/8, 4294967295/4, 4294967295/2, 4294967295}; 
+    for(uint ii = 0; ii < seeds.size(); ii++)
+    {
+        env.set_seed(seeds[ii]);
+        REQUIRE(env.randgen.get_seed() == seeds[ii]);
+    }
+
+    EnvType env1;
+    EnvType env2;
+    env1.set_seed(4294967295);
+    env2.set_seed(4294967295);
+
+    int dim = env1.observation_space.low.size();
+    for(int ii = 0; ii < 10; ii++)
+    {
+        auto action = env1.action_space.sample();
+        auto result1 = env1.step(action);
+        auto result2 = env2.step(action);
+        for(int dd = 0; dd < dim; dd++)
+        {
+            REQUIRE( result1.next_state[dd] ==  result2.next_state[dd]);
+        }
+    }
+}
+
+TEST_CASE( "SquareWorld seeding test", "[SquareWorld_seeding]" )
+{
+    test_continuous_state_env_seeding<rlly::env::SquareWorld>();
+}
+
+TEST_CASE( "MountainCar seeding test", "[MountainCar_seeding]" )
+{
+    test_continuous_state_env_seeding<rlly::env::MountainCar>();
+}
+
+TEST_CASE( "CartPole seeding test", "[CartPole_seeding]" )
+{
+    test_continuous_state_env_seeding<rlly::env::CartPole>();
+}
+
+TEST_CASE( "MovingBall seeding test", "[MovingBall_seeding]" )
+{
+    test_continuous_state_env_seeding<rlly::env::MovingBall>();
+}
+
+

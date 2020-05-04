@@ -9,13 +9,13 @@ namespace utils
 namespace rand
 {
 
-Random::Random(unsigned _seed /* = 42 */)
+Random::Random(uint _seed /* = 42 */)
 {
     seed = _seed;
     generator.seed(_seed);
 }
 
-void Random::set_seed(unsigned _seed)
+void Random::set_seed(uint _seed)
 {
     seed = _seed;
     generator.seed(_seed);
@@ -66,7 +66,7 @@ double Random::sample_gaussian(double mu, double sigma)
     return mu + sigma*standard_sample;
 }
 
-int Random::get_seed()
+uint Random::get_seed()
 {
     return seed;
 }

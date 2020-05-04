@@ -92,7 +92,7 @@ public:
      * Note: If _seed < 1,  we set _seed = std::rand()
      * @param _seed
      */
-    virtual void set_seed(int _seed);
+    virtual void set_seed(uint _seed);
 protected:
     /**
      * Current state
@@ -102,9 +102,9 @@ protected:
 }; 
 
 template <typename S_space, typename A_space>
-void Env<S_space, A_space>::set_seed(int _seed)
+void Env<S_space, A_space>::set_seed(uint _seed)
 {
-    if (_seed < 1) 
+    if (_seed == 0) 
     {
         _seed = std::rand();
     }

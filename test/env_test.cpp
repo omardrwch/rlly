@@ -201,6 +201,36 @@ TEST_CASE( "Testing SquareWorld", "[squareworld]" )
     REQUIRE( (*unique_p_env).observation_space.contains(env.reset()) ); 
 }
 
+
+TEST_CASE( "Testing WallSquareWorld", "[wallsquareworld]" )
+{   
+    rlly::env::WallSquareWorld env;
+    rlly::env::ContinuousStateEnv& p_env = env;
+    auto unique_p_env = env.clone();
+
+    REQUIRE( env.id.compare("WallSquareWorld") == 0);
+    REQUIRE(env.observation_space.name == rlly::spaces::box);
+    REQUIRE(env.action_space.name == rlly::spaces::discrete);
+
+    auto step_result = env.step(env.action_space.sample());
+    REQUIRE( env.observation_space.contains(step_result.next_state) );
+
+
+    REQUIRE( p_env.id.compare("WallSquareWorld") == 0);
+    REQUIRE( p_env.observation_space.name == rlly::spaces::box);
+    REQUIRE( p_env.action_space.name == rlly::spaces::discrete);
+    REQUIRE( p_env.action_space.n == 4 );
+    REQUIRE( p_env.observation_space.n == -1 );
+    REQUIRE( p_env.observation_space.contains(env.reset()) ); 
+
+    REQUIRE( (*unique_p_env).id.compare("WallSquareWorld") == 0);
+    REQUIRE( (*unique_p_env).observation_space.name == rlly::spaces::box);
+    REQUIRE( (*unique_p_env).action_space.name == rlly::spaces::discrete);
+    REQUIRE( (*unique_p_env).action_space.n == 4 );
+    REQUIRE( (*unique_p_env).observation_space.n == -1 );
+    REQUIRE( (*unique_p_env).observation_space.contains(env.reset()) ); 
+}
+
 TEST_CASE( "Testing MovingBall", "[movingball]" )
 {   
     rlly::env::MovingBall env;

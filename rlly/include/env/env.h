@@ -15,6 +15,7 @@
 #include "gridworld.h"
 #include "cartpole.h"
 #include "squareworld.h"
+#include "wallsquareworld.h"
 #include "movingball.h"
 
 /**

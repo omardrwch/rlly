@@ -14,9 +14,10 @@ FiniteEnv* make_finite_env(std::string env_name)
 
 ContinuousStateEnv*  make_continuous_state_env(std::string env_name)
 {
-    if      (env_name == "SquareWorld") return new SquareWorld();
-    else if (env_name == "MountainCar") return new MountainCar();
-    else if (env_name == "CartPole")    return new CartPole();
+    if      (env_name == "SquareWorld")     return new SquareWorld();
+    else if (env_name == "WallSquareWorld") return new WallSquareWorld();
+    else if (env_name == "MountainCar")     return new MountainCar();
+    else if (env_name == "CartPole")        return new CartPole();
     return nullptr;
 }
 ContinuousEnv*       make_continuous_env(std::string env_name)

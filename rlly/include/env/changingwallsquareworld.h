@@ -27,6 +27,10 @@ namespace env
  * 
  *      There is a wall that makes it more difficult for the agent to find the reward. 
  *      The position of passage in the wall changes every N episodes.
+ * 
+ *      The position of the reward also changes.
+ * 
+ *      The direction of the actions also change (left <-> right / up <-> down)
  *   
  */
 class ChangingWallSquareWorld: public ContinuousStateEnv, public rlly::utils::render::RenderInterface2D<std::vector<double>>
@@ -53,6 +57,10 @@ private:
 
     // y-displacement of the wall passage when there is a change
     double wall_displacement = 0.5;
+
+    // y-displacement of the reward when there is a change
+    double reward_displacement = 0.7;
+
 
     // bool representing the current passage position
     bool current_position = 0;

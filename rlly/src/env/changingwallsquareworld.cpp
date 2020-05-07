@@ -35,11 +35,12 @@ env::StepResult<std::vector<double>> ChangingWallSquareWorld::step(int action)
 {
     if (rendering_enabled)
     { 
-        // state for rendering -> the renderer needs to know the wall position!
-        std::vector<double> state_with_wall_info = state;
-        state_with_wall_info.push_back(wall_1_y1);
-        state_with_wall_info.push_back(wall_2_y0);
-        append_state_for_rendering(state_with_wall_info);
+        // state for rendering -> the renderer needs to know the wall and reward positions!
+        std::vector<double> state_with_env_info = state;
+        state_with_env_info.push_back(wall_1_y1);
+        state_with_env_info.push_back(wall_2_y0);
+        state_with_env_info.push_back(goal_y);
+        append_state_for_rendering(state_with_env_info);
     }
     //
     bool done = false; 
@@ -106,16 +107,23 @@ std::vector<double> ChangingWallSquareWorld::reset()
     // change wall position according to period
     if (current_episode % period == 0)
     {
+        // change effect of the actions
+        displacement = -1*displacement;
+
+        // change position of walls and rewards
         if (current_position == 0)
         {
             wall_1_y1 = wall_1_y1 - wall_displacement;
             wall_2_y0 = wall_2_y0 - wall_displacement;
+            goal_y    = goal_y    - reward_displacement;
             current_position = 1;
         }
+
         else 
         {
             wall_1_y1 = wall_1_y1 + wall_displacement;
             wall_2_y0 = wall_2_y0 + wall_displacement;
+            goal_y    = goal_y    + reward_displacement;
             current_position = 0;           
         }
     }
@@ -135,6 +143,7 @@ utils::render::Scene2D ChangingWallSquareWorld::get_scene_for_render2d(std::vect
 {
     double temp_wall_1_y1 = state_var[2];
     double temp_wall_2_y0 = state_var[3];
+    double temp_goal_y    = state_var[4];
 
     utils::render::Scene2D agent_scene;
     utils::render::Geometric2D agent;
@@ -175,6 +184,15 @@ utils::render::Scene2D ChangingWallSquareWorld::get_scene_for_render2d(std::vect
     wall_2.add_vertex(wall_2_x1, temp_wall_2_y0);    
     agent_scene.add_shape(wall_2);
 
+    // Flag
+    utils::render::Geometric2D flag;
+    flag.set_color(0.0, 0.5, 0.0);
+    flag.type     = "GL_TRIANGLES";
+    flag.add_vertex(goal_x, temp_goal_y);
+    flag.add_vertex(goal_x+0.025f, temp_goal_y+0.075f);
+    flag.add_vertex(goal_x-0.025f, temp_goal_y+0.075f);
+    agent_scene.add_shape(flag);
+
     return agent_scene;
 }
 
@@ -182,15 +200,6 @@ utils::render::Scene2D ChangingWallSquareWorld::get_background_for_render2d()
 {
     utils::render::Scene2D background;
     
-    // Flag
-    utils::render::Geometric2D flag;
-    flag.set_color(0.0, 0.5, 0.0);
-    flag.type     = "GL_TRIANGLES";
-    flag.add_vertex(goal_x, goal_y);
-    flag.add_vertex(goal_x+0.025f, goal_y+0.075f);
-    flag.add_vertex(goal_x-0.025f, goal_y+0.075f);
-    background.add_shape(flag);
-
     return background;
 }
 

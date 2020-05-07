@@ -1,4 +1,4 @@
-#include "wallsquareworld.h"
+#include "changingwallsquareworld.h"
 
 
 namespace rlly
@@ -6,9 +6,9 @@ namespace rlly
 namespace env
 {
 
-WallSquareWorld::WallSquareWorld(/* args */)
+ChangingWallSquareWorld::ChangingWallSquareWorld(int _period): period(_period)
 {
-    id = "WallSquareWorld";
+    id = "ChangingWallSquareWorld";
     state.push_back(start_x);
     state.push_back(start_y);
 
@@ -31,11 +31,16 @@ WallSquareWorld::WallSquareWorld(/* args */)
 }
 
 
-env::StepResult<std::vector<double>> WallSquareWorld::step(int action)
+env::StepResult<std::vector<double>> ChangingWallSquareWorld::step(int action)
 {
-    // for rendering
-    if (rendering_enabled) append_state_for_rendering(state);
-
+    if (rendering_enabled)
+    { 
+        // state for rendering -> the renderer needs to know the wall position!
+        std::vector<double> state_with_wall_info = state;
+        state_with_wall_info.push_back(wall_1_y1);
+        state_with_wall_info.push_back(wall_2_y0);
+        append_state_for_rendering(state_with_wall_info);
+    }
     //
     bool done = false; 
     double reward = std::exp( -0.5*(std::pow(state[0]-goal_x, 2) + std::pow(state[1]-goal_y, 2))/(std::pow(reward_smoothness, 2)));
@@ -77,7 +82,7 @@ env::StepResult<std::vector<double>> WallSquareWorld::step(int action)
     return result;
 }
 
-void WallSquareWorld::clip_to_domain(double &xx, double &yy)
+void ChangingWallSquareWorld::clip_to_domain(double &xx, double &yy)
 {
     xx = std::max(0.0, xx);
     xx = std::min(1.0, xx);
@@ -85,7 +90,7 @@ void WallSquareWorld::clip_to_domain(double &xx, double &yy)
     yy = std::min(1.0, yy);
 }
 
-bool WallSquareWorld::is_inside_wall(double xx, double yy)
+bool ChangingWallSquareWorld::is_inside_wall(double xx, double yy)
 {
     clip_to_domain(xx, yy);
     bool flag = false;
@@ -94,21 +99,49 @@ bool WallSquareWorld::is_inside_wall(double xx, double yy)
     return flag;
 }
 
-std::vector<double> WallSquareWorld::reset()
+std::vector<double> ChangingWallSquareWorld::reset()
 {
+    // increase episode counter
+    current_episode += 1;
+
+    std::cout << "Episode " << current_episode << std::endl;
+    // change wall position according to period
+    if (current_episode % period == 0)
+    {
+        if (current_position == 0)
+        {
+            wall_1_y1 = wall_1_y1 - wall_displacement;
+            wall_2_y0 = wall_2_y0 - wall_displacement;
+            current_position = 1;
+        }
+        else 
+        {
+            wall_1_y1 = wall_1_y1 + wall_displacement;
+            wall_2_y0 = wall_2_y0 + wall_displacement;
+            current_position = 0;           
+        }
+        std::cout << "Changing position! " << current_episode << std::endl;
+        std::cout << "wall_1_y1  " << wall_1_y1 << std::endl;
+        std::cout << "wall_2_y0  " << wall_2_y0 << std::endl;
+        std::cout << " ---------------------- " << current_episode << std::endl;
+    }
+    // set initial state
     std::vector<double> initial_state {start_x, start_y};
     state = initial_state;
     return initial_state; 
 }
 
 
-std::unique_ptr<ContinuousStateEnv> WallSquareWorld::clone() const
+std::unique_ptr<ContinuousStateEnv> ChangingWallSquareWorld::clone() const
 {
-    return std::make_unique<WallSquareWorld>(*this);
+    return std::make_unique<ChangingWallSquareWorld>(*this);
 }
 
-utils::render::Scene2D WallSquareWorld::get_scene_for_render2d(std::vector<double> state_var)
+utils::render::Scene2D ChangingWallSquareWorld::get_scene_for_render2d(std::vector<double> state_var)
 {
+    double temp_wall_1_y1 = state_var[2];
+    double temp_wall_2_y0 = state_var[3];
+
     utils::render::Scene2D agent_scene;
     utils::render::Geometric2D agent;
     agent.type = "GL_QUADS";
@@ -128,14 +161,33 @@ utils::render::Scene2D WallSquareWorld::get_scene_for_render2d(std::vector<doubl
     agent.add_vertex(x-size, y+size/4.0);
 
     agent_scene.add_shape(agent);
+
+    // wall visualization
+    utils::render::Geometric2D wall_1;
+    wall_1.type = "GL_QUADS";
+    wall_1.set_color(0.0, 0.0, 0.0);
+    wall_1.add_vertex(wall_1_x0, wall_1_y0);
+    wall_1.add_vertex(wall_1_x0, temp_wall_1_y1);
+    wall_1.add_vertex(wall_1_x1, temp_wall_1_y1);
+    wall_1.add_vertex(wall_1_x1, wall_1_y0);    
+    agent_scene.add_shape(wall_1);
+
+    utils::render::Geometric2D wall_2;
+    wall_2.type = "GL_QUADS";
+    wall_2.set_color(0.0, 0.0, 0.0);
+    wall_2.add_vertex(wall_2_x0, temp_wall_2_y0);
+    wall_2.add_vertex(wall_2_x0, wall_2_y1);
+    wall_2.add_vertex(wall_2_x1, wall_2_y1);
+    wall_2.add_vertex(wall_2_x1, temp_wall_2_y0);    
+    agent_scene.add_shape(wall_2);
+
     return agent_scene;
 }
 
-utils::render::Scene2D WallSquareWorld::get_background_for_render2d()
+utils::render::Scene2D ChangingWallSquareWorld::get_background_for_render2d()
 {
     utils::render::Scene2D background;
     
-
     // Flag
     utils::render::Geometric2D flag;
     flag.set_color(0.0, 0.5, 0.0);
@@ -144,25 +196,6 @@ utils::render::Scene2D WallSquareWorld::get_background_for_render2d()
     flag.add_vertex(goal_x+0.025f, goal_y+0.075f);
     flag.add_vertex(goal_x-0.025f, goal_y+0.075f);
     background.add_shape(flag);
-
-    // wall visualization
-    utils::render::Geometric2D wall_1;
-    wall_1.type = "GL_QUADS";
-    wall_1.set_color(0.0, 0.0, 0.0);
-    wall_1.add_vertex(wall_1_x0, wall_1_y0);
-    wall_1.add_vertex(wall_1_x0, wall_1_y1);
-    wall_1.add_vertex(wall_1_x1, wall_1_y1);
-    wall_1.add_vertex(wall_1_x1, wall_1_y0);    
-    background.add_shape(wall_1);
-
-    utils::render::Geometric2D wall_2;
-    wall_2.type = "GL_QUADS";
-    wall_2.set_color(0.0, 0.0, 0.0);
-    wall_2.add_vertex(wall_2_x0, wall_2_y0);
-    wall_2.add_vertex(wall_2_x0, wall_2_y1);
-    wall_2.add_vertex(wall_2_x1, wall_2_y1);
-    wall_2.add_vertex(wall_2_x1, wall_2_y0);    
-    background.add_shape(wall_2);
 
     return background;
 }

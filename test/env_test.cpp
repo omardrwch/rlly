@@ -266,19 +266,23 @@ TEST_CASE( "Testing Factory", "[factory]" )
     rlly::env::ContinuousStateEnv* p_env_2;
     rlly::env::ContinuousStateEnv* p_env_3;
     rlly::env::ContinuousStateEnv* p_env_4;
+    rlly::env::ContinuousStateEnv* p_env_5;
+
 
 
     p_env_1 = rlly::env::make_continuous_state_env("SquareWorld");
     p_env_2 = rlly::env::make_continuous_state_env("MountainCar");
     p_env_3 = rlly::env::make_continuous_state_env("CartPole");
     p_env_4 = rlly::env::make_continuous_state_env("WallSquareWorld");
+    p_env_5 = rlly::env::make_continuous_state_env("ChangingWallSquareWorld_12345");
+
 
 
     REQUIRE( p_env_1->id.compare("SquareWorld") == 0);
     REQUIRE( p_env_2->id.compare("MountainCar") == 0);
     REQUIRE( p_env_3->id.compare("CartPole")    == 0);
     REQUIRE( p_env_4->id.compare("WallSquareWorld")    == 0);
-
+    REQUIRE( p_env_5->id.compare("ChangingWallSquareWorld")  == 0);
 
     delete p_env_1;
     delete p_env_2;

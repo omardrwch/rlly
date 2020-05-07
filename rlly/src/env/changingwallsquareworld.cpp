@@ -103,8 +103,6 @@ std::vector<double> ChangingWallSquareWorld::reset()
 {
     // increase episode counter
     current_episode += 1;
-
-    std::cout << "Episode " << current_episode << std::endl;
     // change wall position according to period
     if (current_episode % period == 0)
     {
@@ -120,10 +118,6 @@ std::vector<double> ChangingWallSquareWorld::reset()
             wall_2_y0 = wall_2_y0 + wall_displacement;
             current_position = 0;           
         }
-        std::cout << "Changing position! " << current_episode << std::endl;
-        std::cout << "wall_1_y1  " << wall_1_y1 << std::endl;
-        std::cout << "wall_2_y0  " << wall_2_y0 << std::endl;
-        std::cout << " ---------------------- " << current_episode << std::endl;
     }
     // set initial state
     std::vector<double> initial_state {start_x, start_y};

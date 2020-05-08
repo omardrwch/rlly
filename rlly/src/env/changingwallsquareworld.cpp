@@ -83,7 +83,7 @@ env::StepResult<std::vector<double>> ChangingWallSquareWorld::step(int action)
         action_x = action_2_displacement_vec[current_configuration][0];
         action_y = action_2_displacement_vec[current_configuration][1];
     }
-    else if (action == 2)
+    else if (action == 3)
     {
         action_x = action_3_displacement_vec[current_configuration][0];
         action_y = action_3_displacement_vec[current_configuration][1];        

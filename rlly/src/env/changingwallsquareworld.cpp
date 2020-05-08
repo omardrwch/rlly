@@ -33,15 +33,28 @@ ChangingWallSquareWorld::ChangingWallSquareWorld(int _period): period(_period)
 
 env::StepResult<std::vector<double>> ChangingWallSquareWorld::step(int action)
 {
+    // get current env parameters
+    double goal_x  = goal_x_vec[current_configuration];
+    double goal_y  = goal_y_vec[current_configuration];
+
     if (rendering_enabled)
     { 
         // state for rendering -> the renderer needs to know the wall and reward positions!
+        double wall_x0 = wall_x0_vec[current_configuration];
+        double wall_x1 = wall_x1_vec[current_configuration]; 
+        double wall_y0 = wall_y0_vec[current_configuration]; 
+        double wall_y1 = wall_y1_vec[current_configuration]; 
+
         std::vector<double> state_with_env_info = state;
-        state_with_env_info.push_back(wall_1_y1);
-        state_with_env_info.push_back(wall_2_y0);
+        state_with_env_info.push_back(goal_x);
         state_with_env_info.push_back(goal_y);
+        state_with_env_info.push_back(wall_x0);
+        state_with_env_info.push_back(wall_x1);
+        state_with_env_info.push_back(wall_y0);
+        state_with_env_info.push_back(wall_y1);
         append_state_for_rendering(state_with_env_info);
     }
+
     //
     bool done = false; 
     double reward = std::exp( -0.5*(std::pow(state[0]-goal_x, 2) + std::pow(state[1]-goal_y, 2))/(std::pow(reward_smoothness, 2)));
@@ -52,13 +65,32 @@ env::StepResult<std::vector<double>> ChangingWallSquareWorld::step(int action)
 
     double prev_x = state[0];
     double prev_y = state[1];
-    state[0] = std::min(1.0, std::max(0.0, state[0] + noise_x));
-    state[1] = std::min(1.0, std::max(0.0, state[1] + noise_y)); 
 
-    if      (action == 0) state[0] = std::max(0.0, state[0] - displacement);
-    else if (action == 1) state[0] = std::min(1.0, state[0] + displacement);
-    else if (action == 2) state[1] = std::max(0.0, state[1] - displacement);
-    else if (action == 3) state[1] = std::min(1.0, state[1] + displacement);
+    // compute action dispacement
+    double action_x, action_y;
+    if      (action == 0)
+    {
+        action_x = action_0_displacement_vec[current_configuration][0];
+        action_y = action_0_displacement_vec[current_configuration][1];
+    }
+    else if (action == 1)
+    {
+        action_x = action_1_displacement_vec[current_configuration][0];
+        action_y = action_1_displacement_vec[current_configuration][1];
+    }
+    else if (action == 2)
+    {
+        action_x = action_2_displacement_vec[current_configuration][0];
+        action_y = action_2_displacement_vec[current_configuration][1];
+    }
+    else if (action == 2)
+    {
+        action_x = action_3_displacement_vec[current_configuration][0];
+        action_y = action_3_displacement_vec[current_configuration][1];        
+    }
+    state[0] = state[0] + action_x + noise_x;
+    state[1] = state[1] + action_y + noise_y;
+    clip_to_domain(state[0], state[1]);
 
     // Check walls
     double delta_x = state[0] - prev_x;
@@ -93,10 +125,13 @@ void ChangingWallSquareWorld::clip_to_domain(double &xx, double &yy)
 
 bool ChangingWallSquareWorld::is_inside_wall(double xx, double yy)
 {
+    double wall_x0 = wall_x0_vec[current_configuration];
+    double wall_x1 = wall_x1_vec[current_configuration]; 
+    double wall_y0 = wall_y0_vec[current_configuration]; 
+    double wall_y1 = wall_y1_vec[current_configuration]; 
     clip_to_domain(xx, yy);
     bool flag = false;
-    flag = flag ||  ( xx <= wall_1_x1 && xx >= wall_1_x0 && yy <= wall_1_y1 && yy >= wall_1_y0);
-    flag = flag ||  ( xx <= wall_2_x1 && xx >= wall_2_x0 && yy <= wall_2_y1 && yy >= wall_2_y0);
+    flag = flag ||  ( xx <= wall_x1 && xx >= wall_x0 && yy <= wall_y1 && yy >= wall_y0);
     return flag;
 }
 
@@ -107,25 +142,7 @@ std::vector<double> ChangingWallSquareWorld::reset()
     // change wall position according to period
     if (current_episode % period == 0)
     {
-        // change effect of the actions
-        displacement = -1*displacement;
-
-        // change position of walls and rewards
-        if (current_position == 0)
-        {
-            wall_1_y1 = wall_1_y1 - wall_displacement;
-            wall_2_y0 = wall_2_y0 - wall_displacement;
-            goal_y    = goal_y    - reward_displacement;
-            current_position = 1;
-        }
-
-        else 
-        {
-            wall_1_y1 = wall_1_y1 + wall_displacement;
-            wall_2_y0 = wall_2_y0 + wall_displacement;
-            goal_y    = goal_y    + reward_displacement;
-            current_position = 0;           
-        }
+        current_configuration = (current_configuration + 1) % n_configurations;
     }
     // set initial state
     std::vector<double> initial_state {start_x, start_y};
@@ -141,9 +158,12 @@ std::unique_ptr<ContinuousStateEnv> ChangingWallSquareWorld::clone() const
 
 utils::render::Scene2D ChangingWallSquareWorld::get_scene_for_render2d(std::vector<double> state_var)
 {
-    double temp_wall_1_y1 = state_var[2];
-    double temp_wall_2_y0 = state_var[3];
-    double temp_goal_y    = state_var[4];
+    double goal_x  = state_var[2];
+    double goal_y  = state_var[3];
+    double wall_x0 = state_var[4];
+    double wall_x1 = state_var[5];
+    double wall_y0 = state_var[6];
+    double wall_y1 = state_var[7];
 
     utils::render::Scene2D agent_scene;
     utils::render::Geometric2D agent;
@@ -169,28 +189,20 @@ utils::render::Scene2D ChangingWallSquareWorld::get_scene_for_render2d(std::vect
     utils::render::Geometric2D wall_1;
     wall_1.type = "GL_QUADS";
     wall_1.set_color(0.0, 0.0, 0.0);
-    wall_1.add_vertex(wall_1_x0, wall_1_y0);
-    wall_1.add_vertex(wall_1_x0, temp_wall_1_y1);
-    wall_1.add_vertex(wall_1_x1, temp_wall_1_y1);
-    wall_1.add_vertex(wall_1_x1, wall_1_y0);    
+    wall_1.add_vertex(wall_x0, wall_y0);
+    wall_1.add_vertex(wall_x0, wall_y1);
+    wall_1.add_vertex(wall_x1, wall_y1);
+    wall_1.add_vertex(wall_x1, wall_y0);    
     agent_scene.add_shape(wall_1);
 
-    utils::render::Geometric2D wall_2;
-    wall_2.type = "GL_QUADS";
-    wall_2.set_color(0.0, 0.0, 0.0);
-    wall_2.add_vertex(wall_2_x0, temp_wall_2_y0);
-    wall_2.add_vertex(wall_2_x0, wall_2_y1);
-    wall_2.add_vertex(wall_2_x1, wall_2_y1);
-    wall_2.add_vertex(wall_2_x1, temp_wall_2_y0);    
-    agent_scene.add_shape(wall_2);
 
     // Flag
     utils::render::Geometric2D flag;
     flag.set_color(0.0, 0.5, 0.0);
     flag.type     = "GL_TRIANGLES";
-    flag.add_vertex(goal_x, temp_goal_y);
-    flag.add_vertex(goal_x+0.025f, temp_goal_y+0.075f);
-    flag.add_vertex(goal_x-0.025f, temp_goal_y+0.075f);
+    flag.add_vertex(goal_x, goal_y);
+    flag.add_vertex(goal_x+0.025f, goal_y+0.075f);
+    flag.add_vertex(goal_x-0.025f, goal_y+0.075f);
     agent_scene.add_shape(flag);
 
     return agent_scene;

@@ -40,33 +40,51 @@ private:
     double start_x = 0.1;
     double start_y = 0.1;
 
-    // Coordinates of goal position (where reward is max)
-    double goal_x = 0.85;
-    double goal_y = 0.85;
+    // Index of the current configuration (from 0 to 3)
+    int current_configuration = 0;
+    
+    // Number of configurations
+    int n_configurations = 4;
 
-    // Initial coordinates of the walls
-    double wall_1_x0 = 0.45;
-    double wall_1_x1 = 0.55;
-    double wall_1_y0 = 0.0;
-    double wall_1_y1 = 0.7;
+    // Coordinates of the goal position in each configuration
+    std::vector<double> goal_x_vec = {0.85, 0.85, 0.85, 0.15};
+    std::vector<double> goal_y_vec = {0.85, 0.85, 0.15, 0.85};
 
-    double wall_2_x0 = 0.45;
-    double wall_2_x1 = 0.55;
-    double wall_2_y0 = 0.8;
-    double wall_2_y1 = 1.0;
+    // Coordinates of the wall position in each configuration
+    std::vector<double> wall_x0_vec = {0.45, 0.20, 0.45, 0.00};
+    std::vector<double> wall_x1_vec = {0.55, 1.00, 0.55, 0.80};
+    std::vector<double> wall_y0_vec = {0.20, 0.45, 0.00, 0.45};
+    std::vector<double> wall_y1_vec = {1.00, 0.55, 0.80, 0.55};
 
-    // y-displacement of the wall passage when there is a change
-    double wall_displacement = 0.5;
+    // (-d, 0), (d, 0), (0, -d) and (0, d)
+    // Action displacement vector in each configuration
+    std::vector<std::vector<double>> action_0_displacement_vec =  {  
+                                                                    {-0.1,  0.0},  // left
+                                                                    { 0.1,  0.0},  // right
+                                                                    { 0.0, -0.1},  // down
+                                                                    { 0.0,  0.1}   // up
+                                                                  };
 
-    // y-displacement of the reward when there is a change
-    double reward_displacement = 0.7;
+    std::vector<std::vector<double>> action_1_displacement_vec =  {  
+                                                                    { 0.1,  0.0},  // right
+                                                                    {-0.1,  0.0},  // left
+                                                                    { 0.0,  0.1},  // up
+                                                                    { 0.0, -0.1}   // down
+                                                                  }; 
 
+    std::vector<std::vector<double>> action_2_displacement_vec =  {  
+                                                                    { 0.0, -0.1},  // down
+                                                                    { 0.0,  0.1},  // up
+                                                                    {-0.1,  0.0},  // left
+                                                                    { 0.1,  0.0}   // right
+                                                                  }; 
 
-    // bool representing the current passage position
-    bool current_position = 0;
-
-    // Action displacement
-    double displacement = 0.1;
+    std::vector<std::vector<double>> action_3_displacement_vec =  {  
+                                                                    { 0.0,  0.1},   // up
+                                                                    { 0.0, -0.1},   // down
+                                                                    { 0.1,  0.0},   // right
+                                                                    {-0.1,  0.0}    // left
+                                                                  }; 
 
     // Reward smoothness
     double reward_smoothness = 0.05;

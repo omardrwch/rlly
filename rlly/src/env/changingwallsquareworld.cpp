@@ -108,6 +108,7 @@ env::StepResult<std::vector<double>> ChangingWallSquareWorld::step(int action)
             yy = yy + eps_y;
         }
     }
+    clip_to_domain(xx, yy);
     state[0] = xx;
     state[1] = yy;
 

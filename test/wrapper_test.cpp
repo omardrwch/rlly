@@ -27,6 +27,7 @@ TEST_CASE( "Testing CartPole Wrapper", "[cartpole_wrapper]" )
     REQUIRE( p_env.observation_space.contains(env.reset()) ); 
 }
 
+
 TEST_CASE( "Testing Chain Wrapper", "[chain_wrapper]" )
 {
     rlly::env::Chain chain(3);
@@ -52,9 +53,32 @@ TEST_CASE( "Testing Chain Wrapper", "[chain_wrapper]" )
 }
 
 
-// TEST_CASE( "Testing DiscretizeStateWrapper", "[discretize_state_wrapper]" )
-// {
-//     rlly::env::MountainCar mountaincar;
-//     int n_bins = 10;
-//     rlly::wrappers::DiscretizeStateWrapper discrete_env(mountaincar, n_bins);
-// }
+TEST_CASE( "Testing DiscretizeStateWrapper in MountainCar", "[mountain_car_discretize_state_wrapper]" )
+{
+    rlly::env::MountainCar mountaincar;
+    int n_bins = 10;
+    rlly::wrappers::DiscretizeStateWrapper discrete_env(mountaincar, n_bins);
+    REQUIRE( discrete_env.observation_space.n == n_bins*n_bins);
+
+    for(int ii = 0; ii < 10; ii++) discrete_env.step(discrete_env.action_space.sample());
+}
+
+TEST_CASE( "Testing DiscretizeStateWrapper in WallSquareWorld", "[wallsquareworld_discretize_state_wrapper]" )
+{
+    rlly::env::WallSquareWorld cont_env;
+    int n_bins = 10;
+    rlly::wrappers::DiscretizeStateWrapper discrete_env(cont_env, n_bins);
+    REQUIRE( discrete_env.observation_space.n == n_bins*n_bins);
+
+    for(int ii = 0; ii < 10; ii++) discrete_env.step(discrete_env.action_space.sample());
+}
+
+TEST_CASE( "Testing DiscretizeStateWrapper in ChangingWallSquareWorld", "[changingwallsquareworld_discretize_state_wrapper]" )
+{
+    rlly::env::ChangingWallSquareWorld cont_env(1);
+    int n_bins = 10;
+    rlly::wrappers::DiscretizeStateWrapper discrete_env(cont_env, n_bins);
+    REQUIRE( discrete_env.observation_space.n == n_bins*n_bins);
+
+    for(int ii = 0; ii < 10; ii++) discrete_env.step(discrete_env.action_space.sample());
+}

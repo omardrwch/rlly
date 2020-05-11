@@ -59,6 +59,13 @@ double Random::sample_real_uniform(double a, double b)
     return (b - a)*unif_sample + a;
 }
 
+
+double Random::sample_int_uniform(int a, int b)
+{
+    std::uniform_int_distribution<> unif_int_distr(a, b);
+    return unif_int_distr(generator);
+}
+
 double Random::sample_gaussian(double mu, double sigma)
 {
     assert ( sigma > 0  && "Standard deviation must be positive.");

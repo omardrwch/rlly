@@ -75,6 +75,11 @@ namespace utils
             double sample_real_uniform(double a, double b);
 
             /**
+             * @brief Sample from (integer) uniform distribution in [a, b] (closed interval)
+             */
+            double sample_int_uniform(int a, int b);
+
+            /**
              * @brief Sample from a gaussian distribution with mean mu and variance sigma^2 
              * @param mu mean
              * @param sigma standard deviation

@@ -143,7 +143,8 @@ std::vector<double> ChangingWallSquareWorld::reset()
     // change wall position according to period
     if (current_episode % period == 0)
     {
-        current_configuration = (current_configuration + 1) % n_configurations;
+        // current_configuration = (current_configuration + 1) % n_configurations;
+        current_configuration = randgen.sample_int_uniform(0, n_configurations-1);
     }
     // set initial state
     std::vector<double> initial_state {start_x, start_y};

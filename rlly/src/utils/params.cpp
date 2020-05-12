@@ -2,7 +2,6 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <boost/algorithm/string.hpp>
 
 namespace rlly
 {

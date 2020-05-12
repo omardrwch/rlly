@@ -1,5 +1,6 @@
 #include <vector>
 #include <cmath>
+#include <string>
 #include "catch.hpp"
 #include "utils.h"
 
@@ -168,3 +169,37 @@ TEST_CASE( "Testing d-dimensional binary search", "[d_dim_binary_search]")
     REQUIRE( rlly::utils::binary_search_nd (vec1, all_bins) == 0 );
     REQUIRE( rlly::utils::binary_search_nd (vec2, all_bins) == 3*3*4-1);
 }
+
+
+TEST_CASE( "Testing params class", "[params_class]")
+{
+    rlly::utils::params::Params params;
+
+    REQUIRE( params.is_defined("string1") ==  false);
+    params.append("string1", std::string("hello_world"));
+    REQUIRE( params.string_params["string1"] ==  "hello_world");
+    REQUIRE( params.is_defined("string1") ==  true);
+    REQUIRE( params.is_defined("string2") ==  false);
+    REQUIRE( params.is_defined("string1", "string") ==  true);
+    REQUIRE( params.is_defined("string1", "double") ==  false);
+    REQUIRE( params.is_defined("string1", "int")    ==  false);
+
+    REQUIRE( params.is_defined("double1") ==  false);
+    params.append("double1", 0.005);
+    REQUIRE( params.double_params["double1"] == 0.005);
+    REQUIRE( params.is_defined("double1") ==  true);
+    REQUIRE( params.is_defined("double2") ==  false);
+    REQUIRE( params.is_defined("double1", "string") ==  false);
+    REQUIRE( params.is_defined("double1", "double") ==  true);
+    REQUIRE( params.is_defined("double1", "int")    ==  false);
+
+    REQUIRE( params.is_defined("int1") ==  false);
+    params.append("int1", 10);
+    REQUIRE( params.int_params["int1"] == 10);
+    REQUIRE( params.is_defined("int1") ==  true);
+    REQUIRE( params.is_defined("int2") ==  false);
+    REQUIRE( params.is_defined("int1", "string") ==  false);
+    REQUIRE( params.is_defined("int1", "double") ==  false);
+    REQUIRE( params.is_defined("int1", "int")    ==  true);
+}
+

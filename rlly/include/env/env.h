@@ -16,6 +16,7 @@
 #include "cartpole.h"
 #include "squareworld.h"
 #include "wallsquareworld.h"
+#include "changingsquareworld.h"
 #include "changingwallsquareworld.h"
 #include "movingball.h"
 

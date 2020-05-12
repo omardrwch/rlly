@@ -73,6 +73,16 @@ TEST_CASE( "Testing DiscretizeStateWrapper in WallSquareWorld", "[wallsquareworl
     for(int ii = 0; ii < 10; ii++) discrete_env.step(discrete_env.action_space.sample());
 }
 
+TEST_CASE( "Testing DiscretizeStateWrapper in ChangingSquareWorld", "[changingsquareworld_discretize_state_wrapper]" )
+{
+    rlly::env::ChangingSquareWorld cont_env(1);
+    int n_bins = 10;
+    rlly::wrappers::DiscretizeStateWrapper discrete_env(cont_env, n_bins);
+    REQUIRE( discrete_env.observation_space.n == n_bins*n_bins);
+
+    for(int ii = 0; ii < 10; ii++) discrete_env.step(discrete_env.action_space.sample());
+}
+
 TEST_CASE( "Testing DiscretizeStateWrapper in ChangingWallSquareWorld", "[changingwallsquareworld_discretize_state_wrapper]" )
 {
     rlly::env::ChangingWallSquareWorld cont_env(1);

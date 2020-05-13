@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <assert.h>
 #include <cmath>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <limits>
@@ -11,8 +12,8 @@
 #include <stdlib.h>
 #include <string>
 #include <vector>
-#ifndef __RLLY_ENVS_H__
-#define __RLLY_ENVS_H__ 
+#ifndef __RLLY_ENVS_RENDERING_H__
+#define __RLLY_ENVS_RENDERING_H__ 
 #ifndef __RLLY_ABSTRACT_SPACE_H__
 #define __RLLY_ABSTRACT_SPACE_H__
 
@@ -464,21 +465,21 @@ namespace utils
             /**
              * Seed for the std::mt19937 generator.
              */
-            unsigned seed;
+            uint seed;
 
         public:
             /**
              * @brief Initializes object with given seed.
              * @param _seed
              */
-            Random(unsigned _seed = 42);
+            Random(uint _seed = 42);
             ~Random(){};
 
             /**
              * @brief Set seed for random number generator
              * @param _seed
              */
-            void set_seed(unsigned _seed);
+            void set_seed(uint _seed);
 
             /**
              * @brief Sample according to probability vector.
@@ -499,6 +500,11 @@ namespace utils
             double sample_real_uniform(double a, double b);
 
             /**
+             * @brief Sample from (integer) uniform distribution in [a, b] (closed interval)
+             */
+            double sample_int_uniform(int a, int b);
+
+            /**
              * @brief Sample from a gaussian distribution with mean mu and variance sigma^2 
              * @param mu mean
              * @param sigma standard deviation
@@ -509,7 +515,7 @@ namespace utils
             /**
              * @brief returns seed value
              */
-            int get_seed();
+            uint get_seed();
         };     
     }
 }  // namespace utils
@@ -570,6 +576,60 @@ namespace utils
 }
 }  
 
+#endif
+#ifndef __RLLY_PARAMS_UTIL_H__
+#define __RLLY_PARAMS_UTIL_H__
+
+/**
+ * @file
+ * @brief Contains class for defining parameters.
+ * 
+ * @todo Implement I/O for parameters files.
+ */
+
+namespace rlly
+{
+namespace utils
+{
+namespace params
+{
+
+class Params
+{
+private:
+    /* data */
+public:
+    Params(){};
+    ~Params(){};
+
+    // int parameters
+    std::map<std::string, int>          int_params;
+    void append(std::string param_name, int param_val)
+    {int_params[param_name] = param_val;}; 
+
+    // double parameters
+    std::map<std::string, double>       double_params;
+    void append(std::string param_name, double param_val)
+    {double_params[param_name] = param_val;};
+
+    // string parameters
+    std::map<std::string, std::string>  string_params;
+    void append(std::string param_name, std::string param_val)
+    {string_params[param_name] = param_val;};
+
+    // Check is parameter is defined 
+    bool is_defined(std::string param_name, std::string param_type = "");
+
+    // Print function
+    void print();
+
+    // Save to .txt file
+    int save(std::string filename);
+};
+
+} // namespace params
+} // namespace utils
+} // namespace rlly
 #endif
 /**
  * @file
@@ -805,7 +865,7 @@ class Env
 {
 public:
     Env() {};
-    ~Env() {};
+    virtual ~Env() {};
 
     /**
      * Observation space
@@ -863,7 +923,7 @@ public:
      * Note: If _seed < 1,  we set _seed = std::rand()
      * @param _seed
      */
-    virtual void set_seed(int _seed);
+    virtual void set_seed(uint _seed);
 protected:
     /**
      * Current state
@@ -873,9 +933,9 @@ protected:
 }; 
 
 template <typename S_space, typename A_space>
-void Env<S_space, A_space>::set_seed(int _seed)
+void Env<S_space, A_space>::set_seed(uint _seed)
 {
-    if (_seed < 1) 
+    if (_seed == 0) 
     {
         _seed = std::rand();
     }
@@ -985,6 +1045,59 @@ public:
 
 }  // namespace env
 }  // namespace rlly
+
+#endif
+#ifndef __RLLY_LQR_H__
+#define __RLLY_LQR_H__
+
+namespace rlly
+{
+namespace env
+{
+
+/**
+ * @brief Base class for LQR environments
+ * @details Defined by the matrices A, B, Q and R such that:
+ * 
+ *  Transitions: x_{k+1} =  A x_k + B u_k + fixed_disturb
+ *  Cost       : c_k     = x_k' Q x_k + u_k' R u_k
+ * 
+ *  where x_k and u_k are the state and the action at time k, respectively.
+ */
+class LQR: public ContinuousEnv
+{
+public:
+    LQR(){};
+    ~LQR(){};
+    utils::vec::vec_2d A;
+    utils::vec::vec_2d B;
+    utils::vec::vec_2d Q;
+    utils::vec::vec_2d R;
+};
+
+} // namespace env
+} // namespace rlly
+
+#endif
+#ifndef __RLLY_ENV_FACTORY_H__
+#define __RLLY_ENV_FACTORY_H__
+
+/**
+ * @file 
+ * Factory methods to create environments.
+ */
+
+namespace rlly
+{
+namespace env
+{
+
+FiniteEnv*           make_finite_env(           std::string env_name, utils::params::Params* env_params = nullptr);
+ContinuousStateEnv*  make_continuous_state_env( std::string env_name, utils::params::Params* env_params = nullptr);
+ContinuousEnv*       make_continuous_env(       std::string env_name, utils::params::Params* env_params = nullptr);
+ContinuousActionEnv* make_continuous_action_env(std::string env_name, utils::params::Params* env_params = nullptr);
+} // namespace env
+} // namespace rlly
 
 #endif
 #ifndef __RLLY_DISCRETE_REWARD_H__
@@ -1476,6 +1589,378 @@ public:
 } // namespace rlly
 
 #endif
+#ifndef __RLLY_WALL_SQUAREWORLD_H__
+#define __RLLY_WALL_SQUAREWORLD_H__
+
+/**
+ * @file 
+ * @brief Contains a class for the WallSquareWorld environment.
+ */
+
+namespace rlly
+{
+namespace env
+{
+
+/**
+ * @brief WallSquareWorld environment with states in [0, 1]^2 and 4 actions 
+ * @details 
+ *      The agent starts at (start_x, start_y) and, in each state, it can take for actions (0 to 3) representing a
+ *      displacement of (-d, 0), (d, 0), (0, -d) and (0, d), respectively.
+ *          
+ *      The immediate reward received in each state s = (s_x, s_y) is, for any action a,
+ *          r(s, a) = exp( - ((s_x-goal_x)^2 + (s_y-goal_y)^2)/(2*reward_smoothness^2)  )
+ * 
+ * 
+ *      There is a wall that makes it more difficult for the agent to find the reward.
+ */
+class WallSquareWorld: public ContinuousStateEnv, public rlly::utils::render::RenderInterface2D<std::vector<double>>
+{
+private:
+    // Coordinates of start position
+    double start_x = 0.1;
+    double start_y = 0.1;
+
+    // Coordinates of goal position (where reward is max)
+    double goal_x = 0.85;
+    double goal_y = 0.85;
+
+    // Coordinates of the walls
+    double wall_1_x0 = 0.45;
+    double wall_1_x1 = 0.55;
+    double wall_1_y0 = 0.0;
+    double wall_1_y1 = 0.45;
+
+    // Coordinates of the walls
+    double wall_2_x0 = 0.45;
+    double wall_2_x1 = 0.55;
+    double wall_2_y0 = 0.55;
+    double wall_2_y1 = 1.0;
+
+    // Action displacement
+    double displacement = 0.1;
+
+    // Reward smoothness
+    double reward_smoothness = 0.05;
+
+    // Standard dev of reward noise (gaussian)
+    double reward_noise_stdev = 0.01;
+
+    // Standard dev of transition noise (gaussian) 
+    double transition_noise_stdev = 0.01;
+
+    // Check if (xx, yy) is a point inside a wall
+    bool is_inside_wall(double xx, double yy);
+
+    // Clip to domain
+    void clip_to_domain(double &xx, double &yy);
+
+public:
+    WallSquareWorld();
+    ~WallSquareWorld(){};
+
+    std::unique_ptr<ContinuousStateEnv> clone() const override;
+    std::vector<double> reset() override;
+    env::StepResult<std::vector<double>> step(int action) override;
+
+    utils::render::Scene2D get_scene_for_render2d(std::vector<double> state_var) override;    
+    utils::render::Scene2D get_background_for_render2d();
+
+};
+
+}  // namespace env
+}  // namespace rlly
+
+#endif
+#ifndef __RLLY_CHANGING_SQUAREWORLD_H__
+#define __RLLY_CHANGING_SQUAREWORLD_H__
+
+/**
+ * @file 
+ * @brief Contains a class for the ChangingSquareWorld environment.
+ */
+
+namespace rlly
+{
+namespace env
+{
+
+/**
+ * @brief ChangingSquareWorld environment with states in [0, 1]^2 and 4 actions 
+ * @details 
+ *      The agent starts at (start_x, start_y) and, in each state, it can take for actions (0 to 3) representing a
+ *      displacement of (-d, 0), (d, 0), (0, -d) and (0, d), respectively.
+ *          
+ *      The immediate reward received in each state s = (s_x, s_y) is, for any action a,
+ *          r(s, a) = exp( - ((s_x-goal_x)^2 + (s_y-goal_y)^2)/(2*reward_smoothness^2)  )
+ * 
+ *      The position of the reward changes every <period> episodes.
+ *      The direction of the actions also change.
+ *   
+ */
+class ChangingSquareWorld: public ContinuousStateEnv, public rlly::utils::render::RenderInterface2D<std::vector<double>>
+{
+private:
+    // Coordinates of start position
+    double start_x = 0.5;
+    double start_y = 0.5;
+
+    // Index of the current configuration (from 0 to 3)
+    int current_reward_configuration = 0;
+    int current_transition_configuration = 0;
+
+    // Number of configurations
+    int n_configurations = 4;
+
+    // Coordinates of the goal position in each configuration
+    std::vector<double> goal_x_vec = {0.9, 0.9, 0.1, 0.1};
+    std::vector<double> goal_y_vec = {0.9, 0.1, 0.9, 0.1};
+
+    // (-d, 0), (d, 0), (0, -d) and (0, d)
+    // Action displacement vector in each configuration
+    std::vector<std::vector<double>> action_0_displacement_vec =  {  
+                                                                    {-0.1,  0.0},  // left
+                                                                    { 0.1,  0.0},  // right
+                                                                    { 0.0, -0.1},  // down
+                                                                    { 0.0,  0.1}   // up
+                                                                  };
+
+    std::vector<std::vector<double>> action_1_displacement_vec =  {  
+                                                                    { 0.1,  0.0},  // right
+                                                                    {-0.1,  0.0},  // left
+                                                                    { 0.0,  0.1},  // up
+                                                                    { 0.0, -0.1}   // down
+                                                                  }; 
+
+    std::vector<std::vector<double>> action_2_displacement_vec =  {  
+                                                                    { 0.0, -0.1},  // down
+                                                                    { 0.0,  0.1},  // up
+                                                                    {-0.1,  0.0},  // left
+                                                                    { 0.1,  0.0}   // right
+                                                                  }; 
+
+    std::vector<std::vector<double>> action_3_displacement_vec =  {  
+                                                                    { 0.0,  0.1},   // up
+                                                                    { 0.0, -0.1},   // down
+                                                                    { 0.1,  0.0},   // right
+                                                                    {-0.1,  0.0}    // left
+                                                                  }; 
+
+    // Reward smoothness
+    double reward_smoothness = 0.05;
+
+    // Standard dev of reward noise (gaussian)
+    double reward_noise_stdev = 0.01;
+
+    // Standard dev of transition noise (gaussian) 
+    double transition_noise_stdev = 0.01;
+
+    // Clip to domain
+    void clip_to_domain(double &xx, double &yy);
+
+public:
+    ChangingSquareWorld(int _period, bool _changing_reward = true, bool _changing_transition = true);
+    ~ChangingSquareWorld(){};
+
+    // period of changes in the environment
+    int period;
+
+    // True if rewards change
+    bool changing_reward = true;
+
+    // True if transitions change
+    bool changing_transition = true;
+
+    // current episode, increased every time reset() is called
+    int current_episode = 0;
+
+    std::unique_ptr<ContinuousStateEnv> clone() const override;
+    std::vector<double> reset() override;
+    env::StepResult<std::vector<double>> step(int action) override;
+
+    utils::render::Scene2D get_scene_for_render2d(std::vector<double> state_var) override;    
+    utils::render::Scene2D get_background_for_render2d();
+
+};
+
+}  // namespace env
+}  // namespace rlly
+
+#endif
+#ifndef __RLLY_CHANGING_WALL_SQUAREWORLD_H__
+#define __RLLY_CHANGING_WALL_SQUAREWORLD_H__
+
+/**
+ * @file 
+ * @brief Contains a class for the ChangingWallSquareWorld environment.
+ */
+
+namespace rlly
+{
+namespace env
+{
+
+/**
+ * @brief ChangingWallSquareWorld environment with states in [0, 1]^2 and 4 actions 
+ * @details 
+ *      The agent starts at (start_x, start_y) and, in each state, it can take for actions (0 to 3) representing a
+ *      displacement of (-d, 0), (d, 0), (0, -d) and (0, d), respectively.
+ *          
+ *      The immediate reward received in each state s = (s_x, s_y) is, for any action a,
+ *          r(s, a) = exp( - ((s_x-goal_x)^2 + (s_y-goal_y)^2)/(2*reward_smoothness^2)  )
+ * 
+ * 
+ *      There is a wall that makes it more difficult for the agent to find the reward. 
+ *      The position of passage in the wall changes every N episodes.
+ * 
+ *      The position of the reward also changes.
+ * 
+ *      The direction of the actions also change (left <-> right / up <-> down)
+ *   
+ */
+class ChangingWallSquareWorld: public ContinuousStateEnv, public rlly::utils::render::RenderInterface2D<std::vector<double>>
+{
+private:
+    // Coordinates of start position
+    double start_x = 0.1;
+    double start_y = 0.1;
+
+    // Index of the current configuration (from 0 to 3)
+    int current_configuration = 0;
+    
+    // Number of configurations
+    int n_configurations = 4;
+
+    // Coordinates of the goal position in each configuration
+    std::vector<double> goal_x_vec = {0.85, 0.85, 0.85, 0.15};
+    std::vector<double> goal_y_vec = {0.85, 0.85, 0.15, 0.85};
+
+    // Coordinates of the wall position in each configuration
+    std::vector<double> wall_x0_vec = {0.45, 0.20, 0.45, 0.00};
+    std::vector<double> wall_x1_vec = {0.55, 1.00, 0.55, 0.80};
+    std::vector<double> wall_y0_vec = {0.20, 0.45, 0.00, 0.45};
+    std::vector<double> wall_y1_vec = {1.00, 0.55, 0.80, 0.55};
+
+    // (-d, 0), (d, 0), (0, -d) and (0, d)
+    // Action displacement vector in each configuration
+    std::vector<std::vector<double>> action_0_displacement_vec =  {  
+                                                                    {-0.1,  0.0},  // left
+                                                                    { 0.1,  0.0},  // right
+                                                                    { 0.0, -0.1},  // down
+                                                                    { 0.0,  0.1}   // up
+                                                                  };
+
+    std::vector<std::vector<double>> action_1_displacement_vec =  {  
+                                                                    { 0.1,  0.0},  // right
+                                                                    {-0.1,  0.0},  // left
+                                                                    { 0.0,  0.1},  // up
+                                                                    { 0.0, -0.1}   // down
+                                                                  }; 
+
+    std::vector<std::vector<double>> action_2_displacement_vec =  {  
+                                                                    { 0.0, -0.1},  // down
+                                                                    { 0.0,  0.1},  // up
+                                                                    {-0.1,  0.0},  // left
+                                                                    { 0.1,  0.0}   // right
+                                                                  }; 
+
+    std::vector<std::vector<double>> action_3_displacement_vec =  {  
+                                                                    { 0.0,  0.1},   // up
+                                                                    { 0.0, -0.1},   // down
+                                                                    { 0.1,  0.0},   // right
+                                                                    {-0.1,  0.0}    // left
+                                                                  }; 
+
+    // Reward smoothness
+    double reward_smoothness = 0.05;
+
+    // Standard dev of reward noise (gaussian)
+    double reward_noise_stdev = 0.01;
+
+    // Standard dev of transition noise (gaussian) 
+    double transition_noise_stdev = 0.01;
+
+    // Check if (xx, yy) is a point inside a wall
+    bool is_inside_wall(double xx, double yy);
+
+    // Clip to domain
+    void clip_to_domain(double &xx, double &yy);
+
+public:
+    ChangingWallSquareWorld(int _period);
+    ~ChangingWallSquareWorld(){};
+
+    // period of changes in the environmen
+    int period;
+
+    // current episode, increased every time reset() is called
+    int current_episode = 0;
+
+    std::unique_ptr<ContinuousStateEnv> clone() const override;
+    std::vector<double> reset() override;
+    env::StepResult<std::vector<double>> step(int action) override;
+
+    utils::render::Scene2D get_scene_for_render2d(std::vector<double> state_var) override;    
+    utils::render::Scene2D get_background_for_render2d();
+
+};
+
+}  // namespace env
+}  // namespace rlly
+
+#endif
+#ifndef __RLLY_FALLINGBALL_H__
+#define __RLLY_FALLINGBALL_H__
+
+namespace rlly
+{
+namespace env
+{
+
+/**
+ * @brief Simple Linear–quadratic regulator problem to control a particle in a 2D space.
+ * @details The particle is a ball in the space [-1,1]^2
+ * The state is (position_x, position_y, velocity_x, velocity_y). 
+ * The action is a force applied to the particle (force_x, force_y). 
+ * 
+ * 
+ * State space:    Low         High
+ * position_x       -1.0         1.0
+ * position_y       -1.0         1.0
+ * velocity_x     -250.0       250.0
+ * velocity_y     -250.0       250.0
+ * 
+ * Action space:   Low        High
+ * force_x        -1.5        1.5
+ * force_y        -1.5        1.5
+ */
+class MovingBall: public LQR, public rlly::utils::render::RenderInterface2D<std::vector<double>>
+{
+private:
+    const double ball_mass =  0.1;
+    const double delta_t   =  0.01;
+public:
+    MovingBall(/* args */);
+    ~MovingBall() {};
+
+    // reset and step functions
+    std::vector<double> reset() override;
+    StepResult<std::vector<double>> step(std::vector<double> action) override;
+
+    // clone function
+    std::unique_ptr<ContinuousEnv> clone() const override;
+
+    // Get scene representing a given state
+    utils::render::Scene2D get_scene_for_render2d(std::vector<double> state_var) override;
+
+    // Returns background for rendering 
+    utils::render::Scene2D get_background_for_render2d() override;
+};
+
+} // namespace env
+} // namespace rlly
+
+#endif
 #ifndef __RLLY_ENV_H__
 #define __RLLY_ENV_H__
 
@@ -1634,6 +2119,160 @@ public:
 } // namespace rlly
 
 #endif
+/**
+ * @file
+ * @brief Contains class for rendering lists of Geometric2D objects
+ */
+
+#ifndef __RLLY_RENDER_2D_H__
+#define __RLLY_RENDER_2D_H__
+
+#include <GL/freeglut.h>
+
+namespace rlly
+{
+namespace render
+{
+
+class Render2D
+{
+private:
+    // Window width (in pixels)
+    static int window_width;
+
+     // Window height (in pixels)
+    static int window_height;
+
+    // Background color
+    static constexpr float background_color[3] = {0.6, 0.75, 1.0}; 
+
+    // Backgroud image 
+    static utils::render::Scene2D background;
+
+    // Data to be rendered (represented by a vector of scenes)
+    static std::vector<utils::render::Scene2D> data;
+
+    // Time counter 
+    static unsigned int time_count;
+
+    // Initialize GL
+    static void initGL();
+
+    // Callback function, handler for window re-paint
+    static void display();
+
+    // Timer, to call display() periodically (period = refresh_interval)
+    static void timer(int value);
+
+    // Draw a 2D shape
+    static void draw_geometric2d(utils::render::Geometric2D geom);
+
+    // Clipping area. Vector with elements {left, right, bottom, top}
+    // Default = {-1.0, 1.0, -1.0, 1.0}
+    static std::vector<float> clipping_area;
+
+    // Window name
+    static std::string window_name;
+
+    // Window refresh inteval (in milliseconds)
+    static int refresh_interval; 
+
+public:
+    Render2D();
+    ~Render2D(){};
+    
+    /**
+     * Main function, set up the window and enter the event-processing loop
+     */ 
+    int run_graphics();
+
+    /**
+     * Set scene to be rendered
+     */
+    void set_data(std::vector<utils::render::Scene2D> _data);
+
+    /**
+     * Set background
+     */
+    void set_background(utils::render::Scene2D _background);
+
+    /**
+     * Set window name
+     */
+    void set_window_name(std::string name);
+
+    /**
+     * Set refresh interval (in milliseconds)
+     */
+    void set_refresh_interval(int interval);
+
+    /**
+     * Set clipping area. window_width and window_height are adapted 
+     * to respect the proportions of the clipping_area
+     * @param area vector with elements {left, right, bottom, top}
+     */ 
+    void set_clipping_area(std::vector<float> area);
+};
+
+} // namspace render
+} // namespace rlly
+
+#endif
+/**
+ * @file
+ * @brief Contains class for rendering environments
+ */
+
+#ifndef __RLLY_RENDER_ENV_H__
+#define __RLLY_RENDER_ENV_H__
+
+namespace rlly
+{
+namespace render
+{
+
+/**
+ * @param env  Environment
+ * @tparam EnvType an enviroment that implements a rendering interface
+ * @tparam S type of state space
+ */
+template <typename EnvType>
+void render_env(EnvType& env)
+{
+    if (env.rendering_enabled && env.rendering_type == "2d")
+    {
+        // Background
+        auto background = env.get_background_for_render2d();
+
+        // Data
+        std::vector<utils::render::Scene2D> data;    
+        int n_data = env.state_history_for_rendering.size();
+        for(int ii = 0; ii < n_data; ii++)
+        {
+            utils::render::Scene2D scene = env.get_scene_for_render2d(env.state_history_for_rendering[ii]);
+            data.push_back(scene);
+        }   
+
+        // Render
+        Render2D renderer;
+        renderer.set_window_name(env.id);
+        renderer.set_refresh_interval(env.refresh_interval_for_render2d);
+        renderer.set_clipping_area(env.clipping_area_for_render2d);
+        renderer.set_data(data);
+        renderer.set_background(background);
+        renderer.run_graphics();
+    }
+    else
+    {
+        std::cerr << "Error: environement " << env.id << " is not enabled for rendering. Try calling env.enable_rendering()." << std::endl;
+    }
+    
+}
+
+} // namspace render
+} // namespace rlly
+
+#endif
 #ifndef __RLLY_DISCRETIZE_STATE_WRAPPER_H___
 #define __RLLY_DISCRETIZE_STATE_WRAPPER_H___
 
@@ -1775,6 +2414,24 @@ int DiscretizeStateWrapper<EnvType>::reset()
 }   
 
 } // namespace wrappers
+} // namespace rlly
+
+#endif
+/**
+ * @file
+ * @brief Headers for rendering the environments using freeglut.
+ * @details Based on the OpenGL tutorial at https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_Introduction.html 
+ */
+
+#ifndef __RLLY_RENDER_H__
+#define __RLLY_RENDER_H__
+
+namespace rlly
+{
+namespace render
+{
+
+} // namspace render
 } // namespace rlly
 
 #endif
@@ -2070,6 +2727,251 @@ utils::render::Scene2D GridWorld::get_background_for_render2d()
 } // namespace rlly
 namespace rlly
 {
+namespace utils
+{
+namespace params
+{
+
+int Params::save(std::string filename)
+{
+    std::ofstream myfile(filename);
+    if (myfile.is_open())
+    {
+        myfile << "(string)" << std::endl;
+        for(auto it = string_params.begin(); it != string_params.end(); ++it)
+        {
+            myfile << "    " << it->first << " = " << it->second << std::endl;
+        }
+        myfile << "(int)" << std::endl;
+        for(auto it = int_params.begin(); it != int_params.end(); ++it)
+        {
+            myfile << "    " << it->first << " = " << it->second << std::endl;
+        }
+        myfile << "(double)" << std::endl;
+        for(auto it = double_params.begin(); it != double_params.end(); ++it)
+        {
+            myfile << "    " << it->first << " = " << it->second << std::endl;
+        }
+        myfile.close();
+        return 0;
+    }
+    std::cerr << "(!) Params error: unable to open file " <<  filename << std::endl;
+    return 1;
+}
+
+void Params::print()
+{
+
+    std::cout << "(string)" << std::endl;
+    for(auto it = string_params.begin(); it != string_params.end(); ++it)
+    {
+        std::cout << "    " << it->first << " = " << it->second << std::endl;
+    }
+    std::cout << std::endl;
+
+    std::cout << "(int) " << std::endl;
+    for(auto it = int_params.begin(); it != int_params.end(); ++it)
+    {
+        std::cout << "    " << it->first << " = " << it->second << std::endl;
+    }
+    std::cout << std::endl;
+
+    std::cout << "(double)" << std::endl;
+    for(auto it = double_params.begin(); it != double_params.end(); ++it)
+    {
+        std::cout << "    " << it->first << " = " << it->second << std::endl;
+    }
+    std::cout << std::endl;
+}
+
+bool Params::is_defined(std::string param_name, std::string param_type /*= ""*/)
+{
+    // Search in string params
+    bool string_param_found = ( string_params.find(param_name) != string_params.end() );
+    if(param_type == "string") return string_param_found;
+
+    // Search in int params
+    bool int_param_found = ( int_params.find(param_name) != int_params.end() );
+    if (param_type == "int") return int_param_found;
+
+    // Search in double params
+    bool double_param_found = ( double_params.find(param_name) != double_params.end() );
+    if (param_type == "double") return double_param_found;
+
+    return (string_param_found || int_param_found || double_param_found);
+}
+
+} // namespace params
+} // namespace utils
+} // namespace rlly
+namespace rlly
+{
+namespace env
+{
+
+WallSquareWorld::WallSquareWorld(/* args */)
+{
+    id = "WallSquareWorld";
+    state.push_back(start_x);
+    state.push_back(start_y);
+
+    // observation and action spaces
+    std::vector<double> _low  = {0.0, 0.0};
+    std::vector<double> _high = {1.0, 1.0};
+    observation_space.set_bounds(_low, _high);
+    action_space.set_n(4);
+
+    // set seed
+    int _seed = std::rand();
+    set_seed(_seed);
+
+    // SquareWorld supports 2d rendering
+    refresh_interval_for_render2d = 500;
+    clipping_area_for_render2d[0] = 0.0;
+    clipping_area_for_render2d[1] = 1.0;
+    clipping_area_for_render2d[2] = 0.0;
+    clipping_area_for_render2d[3] = 1.0;
+}
+
+env::StepResult<std::vector<double>> WallSquareWorld::step(int action)
+{
+    // for rendering
+    if (rendering_enabled) append_state_for_rendering(state);
+
+    //
+    bool done = false; 
+    double reward = std::exp( -0.5*(std::pow(state[0]-goal_x, 2) + std::pow(state[1]-goal_y, 2))/(std::pow(reward_smoothness, 2)));
+    reward += randgen.sample_gaussian(0, reward_noise_stdev);
+
+    double noise_x = randgen.sample_gaussian(0, transition_noise_stdev);
+    double noise_y = randgen.sample_gaussian(0, transition_noise_stdev);
+
+    double prev_x = state[0];
+    double prev_y = state[1];
+    state[0] = std::min(1.0, std::max(0.0, state[0] + noise_x));
+    state[1] = std::min(1.0, std::max(0.0, state[1] + noise_y)); 
+
+    if      (action == 0) state[0] = std::max(0.0, state[0] - displacement);
+    else if (action == 1) state[0] = std::min(1.0, state[0] + displacement);
+    else if (action == 2) state[1] = std::max(0.0, state[1] - displacement);
+    else if (action == 3) state[1] = std::min(1.0, state[1] + displacement);
+
+    // Check walls
+    double delta_x = state[0] - prev_x;
+    double delta_y = state[1] - prev_y;
+    double xx = prev_x; 
+    double yy = prev_y;
+    int N = 10;
+    double eps_x = delta_x / N;
+    double eps_y = delta_y / N;
+    for(int ii = 1; ii <= N; ii++)
+    {
+        if( ! is_inside_wall( xx + eps_x, yy + eps_y) )
+        {
+            xx = xx + eps_x;
+            yy = yy + eps_y;
+        }
+    }
+    clip_to_domain(xx, yy);
+    state[0] = xx;
+    state[1] = yy;
+
+    env::StepResult<std::vector<double>> result(state, reward, done);
+    return result;
+}
+
+void WallSquareWorld::clip_to_domain(double &xx, double &yy)
+{
+    xx = std::max(0.0, xx);
+    xx = std::min(1.0, xx);
+    yy = std::max(0.0, yy);
+    yy = std::min(1.0, yy);
+}
+
+bool WallSquareWorld::is_inside_wall(double xx, double yy)
+{
+    clip_to_domain(xx, yy);
+    bool flag = false;
+    flag = flag ||  ( xx <= wall_1_x1 && xx >= wall_1_x0 && yy <= wall_1_y1 && yy >= wall_1_y0);
+    flag = flag ||  ( xx <= wall_2_x1 && xx >= wall_2_x0 && yy <= wall_2_y1 && yy >= wall_2_y0);
+    return flag;
+}
+
+std::vector<double> WallSquareWorld::reset()
+{
+    std::vector<double> initial_state {start_x, start_y};
+    state = initial_state;
+    return initial_state; 
+}
+
+std::unique_ptr<ContinuousStateEnv> WallSquareWorld::clone() const
+{
+    return std::make_unique<WallSquareWorld>(*this);
+}
+
+utils::render::Scene2D WallSquareWorld::get_scene_for_render2d(std::vector<double> state_var)
+{
+    utils::render::Scene2D agent_scene;
+    utils::render::Geometric2D agent;
+    agent.type = "GL_QUADS";
+    agent.set_color(0.75, 0.0, 0.5);
+
+    float size = 0.025;
+    float x = state_var[0];
+    float y = state_var[1];
+    agent.add_vertex(x-size/4.0, y-size);
+    agent.add_vertex(x+size/4.0, y-size);
+    agent.add_vertex(x+size/4.0, y+size);
+    agent.add_vertex(x-size/4.0, y+size);
+
+    agent.add_vertex(x-size, y-size/4.0);
+    agent.add_vertex(x+size, y-size/4.0);
+    agent.add_vertex(x+size, y+size/4.0);
+    agent.add_vertex(x-size, y+size/4.0);
+
+    agent_scene.add_shape(agent);
+    return agent_scene;
+}
+
+utils::render::Scene2D WallSquareWorld::get_background_for_render2d()
+{
+    utils::render::Scene2D background;
+    
+    // Flag
+    utils::render::Geometric2D flag;
+    flag.set_color(0.0, 0.5, 0.0);
+    flag.type     = "GL_TRIANGLES";
+    flag.add_vertex(goal_x, goal_y);
+    flag.add_vertex(goal_x+0.025f, goal_y+0.075f);
+    flag.add_vertex(goal_x-0.025f, goal_y+0.075f);
+    background.add_shape(flag);
+
+    // wall visualization
+    utils::render::Geometric2D wall_1;
+    wall_1.type = "GL_QUADS";
+    wall_1.set_color(0.0, 0.0, 0.0);
+    wall_1.add_vertex(wall_1_x0, wall_1_y0);
+    wall_1.add_vertex(wall_1_x0, wall_1_y1);
+    wall_1.add_vertex(wall_1_x1, wall_1_y1);
+    wall_1.add_vertex(wall_1_x1, wall_1_y0);    
+    background.add_shape(wall_1);
+
+    utils::render::Geometric2D wall_2;
+    wall_2.type = "GL_QUADS";
+    wall_2.set_color(0.0, 0.0, 0.0);
+    wall_2.add_vertex(wall_2_x0, wall_2_y0);
+    wall_2.add_vertex(wall_2_x0, wall_2_y1);
+    wall_2.add_vertex(wall_2_x1, wall_2_y1);
+    wall_2.add_vertex(wall_2_x1, wall_2_y0);    
+    background.add_shape(wall_2);
+
+    return background;
+}
+
+}  // namespace env
+}  // namespace rlly
+namespace rlly
+{
 namespace env
 {
 
@@ -2224,10 +3126,6 @@ namespace env
 
 MountainCar::MountainCar()
 {
-    // Set seed
-    int _seed = std::rand();
-    set_seed(_seed);
-
     // observation and action spaces
     std::vector<double> _low = {-1.2, -0.07};
     std::vector<double> _high = {0.6, 0.07};
@@ -2237,8 +3135,10 @@ MountainCar::MountainCar()
     goal_position = 0.5;
     goal_velocity = 0;
 
+    // Initialize state
     state.push_back(0);
     state.push_back(0);
+    reset();
 
     id = "MountainCar";
 
@@ -2251,7 +3151,7 @@ MountainCar::MountainCar()
 
 std::vector<double> MountainCar::reset()
 {
-    state[position] = randgen.sample_real_uniform(observation_space.low[position], observation_space.high[position]);
+    state[position] = randgen.sample_real_uniform(-0.6, -0.4);
     state[velocity] = 0;
     return state;
 }
@@ -2849,6 +3749,253 @@ double DiscreteReward::sample(int state, int action, int next_state, utils::rand
 }  // namespace rlly
 namespace rlly
 {
+namespace render
+{
+
+std::vector<utils::render::Scene2D> Render2D::data;
+
+//
+
+utils::render::Scene2D Render2D::background;
+
+// 
+
+int Render2D::refresh_interval = 50;
+unsigned int Render2D::time_count = 0;
+std::string Render2D::window_name = "render";
+std::vector<float> Render2D::clipping_area;
+int Render2D::window_width = 640;
+int Render2D::window_height = 640;
+
+//
+
+Render2D::Render2D()
+{
+    // setting some defaults
+    clipping_area.push_back(-1.0);
+    clipping_area.push_back( 1.0);
+    clipping_area.push_back(-1.0);
+    clipping_area.push_back( 1.0);
+}
+
+//
+
+void Render2D::set_window_name(std::string name)
+{
+    window_name = name;
+}
+
+void Render2D::set_refresh_interval(int interval)
+{
+    refresh_interval = interval;
+}
+
+void Render2D::set_clipping_area(std::vector<float> area)
+{
+    clipping_area = area; 
+    int base_size = std::max(window_width, window_height);
+    float width_range  = area[1] - area[0];
+    float height_range = area[3] - area[2];
+    float base_range   = std::max(width_range, height_range);
+    width_range /= base_range;
+    height_range /= base_range;
+    // update window width and height
+    window_width  = (int) (base_size*width_range);
+    window_height = (int) (base_size*height_range);
+}
+
+void Render2D::set_data(std::vector<utils::render::Scene2D> _data)
+{
+    data = _data;
+}
+
+void Render2D::set_background(utils::render::Scene2D _background)
+{
+    background = _background;
+}
+
+//
+
+void Render2D::initGL()
+{
+    // set clipping area
+    glMatrixMode(GL_PROJECTION);  // To operate on the Projection matrix
+    glLoadIdentity();  
+    gluOrtho2D(clipping_area[0], clipping_area[1], clipping_area[2], clipping_area[3]); 
+}
+
+//
+
+void Render2D::timer(int value)
+{
+    glutPostRedisplay();
+    glutTimerFunc(refresh_interval, timer, 0);
+}
+
+// 
+
+void Render2D::display()
+{
+    // Set background color (clear background)
+    glClearColor(background_color[0], background_color[1], background_color[2], 1.0f); 
+    glClear(GL_COLOR_BUFFER_BIT);    
+
+    // Display background
+    for(auto p_shape = background.shapes.begin(); p_shape != background.shapes.end(); ++p_shape)
+        draw_geometric2d(*p_shape);
+    
+    // Display objects
+    if (data.size() > 0)
+    {
+        int idx = time_count % data.size();
+        for(auto p_shape = data[idx].shapes.begin(); p_shape != data[idx].shapes.end(); ++ p_shape)
+            draw_geometric2d(*p_shape);
+    }
+    time_count += 1; // Increment time 
+    glFlush();       // Render now
+}
+
+// 
+
+int Render2D::run_graphics()
+{
+    int argc = 0;
+    char **argv = nullptr;
+    glutInit(&argc, argv);                 // Initialize GLUT
+
+    // Continue execution after window is closed
+    glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE,
+                  GLUT_ACTION_GLUTMAINLOOP_RETURNS);
+
+    glutInitWindowSize(window_width, window_height);   // Set the window's initial width & height
+    glutInitWindowPosition(50, 50); // Position the window's initial top-left corner
+
+    glutCreateWindow(window_name.c_str()); // Create a window with the given title
+    glutDisplayFunc(display); // Register display callback handler for window re-paint
+    glutTimerFunc(0, timer, 0);     // First timer call immediately
+    initGL();
+    glutMainLoop();           // Enter the event-processing loop
+    return 0;
+}
+
+//
+
+void Render2D::draw_geometric2d(utils::render::Geometric2D geom)
+{
+    // Begin according to geometric primitive
+    if      (geom.type == "GL_POINTS")         glBegin(GL_POINTS);
+    else if (geom.type == "GL_LINES")          glBegin(GL_LINES);
+    else if (geom.type == "GL_LINE_STRIP")     glBegin(GL_LINE_STRIP);
+    else if (geom.type == "GL_LINE_LOOP")      glBegin(GL_LINE_LOOP);
+    else if (geom.type == "GL_POLYGON")        glBegin(GL_POLYGON);
+    else if (geom.type == "GL_TRIANGLES")      glBegin(GL_TRIANGLES);
+    else if (geom.type == "GL_TRIANGLE_STRIP") glBegin(GL_TRIANGLE_STRIP);
+    else if (geom.type == "GL_TRIANGLE_FAN")   glBegin(GL_TRIANGLE_FAN);
+    else if (geom.type == "GL_QUADS")          glBegin(GL_QUADS);
+    else if (geom.type == "GL_QUAD_STRIP")     glBegin(GL_QUAD_STRIP);
+    else std::cerr << "Error in Render2D::draw_geometric2d: invatid primitive type!" << std::endl;
+    
+    // Set color
+    glColor3f(geom.color[0], geom.color[1], geom.color[2]); 
+    
+    // Create vertices
+    int n_vertices = geom.vertices.size();
+    for(int ii = 0; ii < n_vertices; ii++)
+    {
+        float x = geom.vertices[ii][0];
+        float y = geom.vertices[ii][1];
+        glVertex2f(x, y);
+    }
+
+    //
+    glEnd();
+}
+
+}
+}namespace rlly
+{
+namespace env
+{
+
+FiniteEnv* make_finite_env(std::string env_name, utils::params::Params* env_params /*= nullptr*/)
+{
+    return nullptr;
+}
+
+ContinuousStateEnv*  make_continuous_state_env(std::string env_name, utils::params::Params* env_params /*= nullptr*/)
+{
+    if      (env_name == "SquareWorld")     return new SquareWorld();
+    else if (env_name == "WallSquareWorld") return new WallSquareWorld();
+    else if (env_name == "MountainCar")     return new MountainCar();
+    else if (env_name == "CartPole")        return new CartPole();
+    else if (env_name == "WallSquareWorld") return new WallSquareWorld();
+    else if (env_name == "ChangingSquareWorld")
+    {
+        if(env_params != nullptr && env_params->is_defined("period", "int"))
+            return new ChangingSquareWorld(env_params->int_params["period"]);                  
+    }
+    else if (env_name == "ChangingWallSquareWorld")
+    {
+        if(env_params != nullptr && env_params->is_defined("period", "int"))
+            return new ChangingWallSquareWorld(env_params->int_params["period"]);   
+    }
+    else if(env_name == "ChangingRewardSquareWorld")
+    {
+        if(env_params != nullptr && env_params->is_defined("period", "int"))
+            return new ChangingSquareWorld(env_params->int_params["period"], true, false); 
+    }
+    // else if (env_name.rfind("ChangingSquareWorld", 0) == 0)
+    // {
+    //     std::string period_str = env_name.substr(env_name.find("_") + 1); 
+    //     int period = 1;
+    //     try
+    //     {
+    //         period = std::stoi(period_str);
+    //         return new ChangingSquareWorld(period);        
+    //     }
+    //     catch(const std::exception& e){}
+    // }
+    // else if (env_name.rfind("ChangingWallSquareWorld", 0) == 0)
+    // {
+    //     std::string period_str = env_name.substr(env_name.find("_") + 1); 
+    //     int period = 1;
+    //     try
+    //     {
+    //         period = std::stoi(period_str);
+    //         return new ChangingWallSquareWorld(period);        
+    //     }
+    //     catch(const std::exception& e){}
+    // }
+    // else if (env_name.rfind("ChangingRewardSquareWorld", 0) == 0)
+    // {
+    //     std::string period_str = env_name.substr(env_name.find("_") + 1); 
+    //     int period = 1;
+    //     try
+    //     {
+    //         period = std::stoi(period_str);
+    //         return new ChangingSquareWorld(period, true, false);        
+    //     }
+    //     catch(const std::exception& e){}
+    // }
+    std::cerr << " Error! Invalid name or missing parameters in make_continuous_state_env. Returning nullptr" << std::endl;
+    return nullptr;
+}
+
+ContinuousEnv*       make_continuous_env(std::string env_name, utils::params::Params* env_params /*= nullptr*/)
+{
+    if       (env_name == "MovingBall") return new MovingBall();
+    return nullptr;
+}
+
+ContinuousActionEnv* make_continuous_action_env(std::string env_name, utils::params::Params* env_params /*= nullptr*/)
+{
+    return nullptr;
+}
+
+} // namespace env
+} // namespace rlly
+namespace rlly
+{
 namespace spaces
 {
 
@@ -2915,6 +4062,154 @@ std::vector<double> Box::sample()
 }
 }namespace rlly
 {
+namespace env
+{
+
+} // namespace env
+} // namespace rlly
+namespace rlly
+{
+namespace env
+{
+
+MovingBall::MovingBall()
+{
+    // Set seed
+    set_seed(-1);
+
+    // observation and action spaces
+    std::vector<double> _state_low  = {-1.0, -1.0, -250.0, -250.0};
+    std::vector<double> _state_high = { 1.0,  1.0,  250.0,  250.0};
+    observation_space.set_bounds(_state_low, _state_high);
+
+    std::vector<double> _action_low  = {-1.5, -1.5};
+    std::vector<double> _action_high = { 1.5,  1.5};
+    action_space.set_bounds(_action_low, _action_high);
+
+    // Initialize LQR matrices
+    A = utils::vec::get_zeros_2d(4, 4);
+    B = utils::vec::get_zeros_2d(4, 2);
+    Q = utils::vec::get_zeros_2d(4, 4);
+    R = utils::vec::get_zeros_2d(2, 2);
+
+    A[0][0] = 1.0; A[1][1] = 1.0; A[2][2] = 1.0; A[3][3] = 1.0;
+    A[0][2] = delta_t;  A[1][3] = delta_t;
+    B[2][0] = delta_t/ball_mass; B[3][1] = delta_t/ball_mass;
+    
+    Q[0][0] = 1.0; Q[1][1] = 1.0; Q[2][2] = 1.0/100.0; Q[3][3] = 1.0/100.0;
+    R[0][0] = 0.25; R[1][1] = 0.25;
+
+    // Initialize state
+    for (int ii = 0; ii < 4; ii++) state.push_back(0);
+    reset();
+
+    id = "MovingBall";
+}
+
+std::vector<double> MovingBall::reset()
+{
+    state[0] =  randgen.sample_real_uniform(-1.0, 1.0);
+    state[1] =  randgen.sample_real_uniform(-1.0, 1.0);
+    state[2] =  0.0;
+    state[3] =  0.0;
+    return state;
+}
+
+StepResult<std::vector<double>> MovingBall::step(std::vector<double> action)
+{
+    // for rendering
+    if (rendering_enabled) append_state_for_rendering(state);
+    //
+    double x  = state[0];
+    double y  = state[1];
+    double vx = state[2];
+    double vy = state[3];
+
+    double Fx = action[0];
+    double Fy = action[1];
+
+    // compute reward 
+    double cost = x*x + y*y + (vx*vx + vy*vy)/(100.0) + 0.25*(Fx*Fx + Fy*Fy);
+    double reward = -1.0*cost;
+    bool   done = false;
+
+    // compute next state
+    x  = x + delta_t*vx; 
+    y  = y + delta_t*vy;
+    vx = vx + (delta_t/ball_mass)*Fx; 
+    vy = vy + (delta_t/ball_mass)*Fy;
+    
+    // clipping
+    x  = utils::clamp( x  , -1.0,   1.0);
+    y  = utils::clamp( y,   -1.0,   1.0);
+    vx = utils::clamp(vx, -250.0, 250.0);
+    vy = utils::clamp(vy, -250.0, 250.0);
+
+    // if a wall is hit, set velocity to zero and the episode is over
+    if (x == -1.0 || x == 1.0 || y == -1.0 || y == 1.0)
+    {
+        vx = 0; vy = 0;
+        done = true;
+    }
+
+    // update state 
+    state[0] = x;  state[1] = y;
+    state[2] = vx; state[3] = vy; 
+    StepResult<std::vector<double>> step_result(state, reward, done);
+    return step_result;
+}
+
+std::unique_ptr<ContinuousEnv> MovingBall::clone() const
+{
+    return std::make_unique<MovingBall>(*this);
+}
+
+utils::render::Scene2D MovingBall::get_scene_for_render2d(std::vector<double> state_var)
+{
+    float x = state_var[0];
+    float y = state_var[1];
+    
+    utils::render::Scene2D ball_scene;
+    utils::render::Geometric2D ball;
+    ball.type = "GL_POLYGON";
+    ball.set_color(0.5f, 0.0f, 0.5f);
+    
+    float radius = 0.05;
+    int n_points = 25;
+    for(int ii = 0; ii < n_points; ii++)
+    {
+        float angle = 2.0*3.141592*ii/n_points;
+        float xcirc = x + radius*std::cos(angle);
+        float ycirc = y + radius*std::sin(angle);
+        ball.add_vertex(xcirc, ycirc);    
+    }
+
+    ball_scene.add_shape(ball);
+    return ball_scene;
+}
+
+utils::render::Scene2D MovingBall::get_background_for_render2d()
+{
+    utils::render::Scene2D background;
+    utils::render::Geometric2D goal;
+    goal.type = "GL_LINE_STRIP";
+    float size = 0.075;
+    float x = 0.0;
+    float y = 0.0;
+    goal.set_color(0.0f, 0.5f, 0.0f);
+    goal.add_vertex(x - size, y - size);
+    goal.add_vertex(x + size, y - size);
+    goal.add_vertex(x + size, y + size);
+    goal.add_vertex(x - size, y + size);
+    goal.add_vertex(x - size, y - size);
+    background.add_shape(goal);
+    return background;
+}
+
+} // namespace env
+} // namespace rlly
+namespace rlly
+{
 namespace wrappers
 {
 
@@ -2967,13 +4262,13 @@ namespace utils
 namespace rand
 {
 
-Random::Random(unsigned _seed /* = 42 */)
+Random::Random(uint _seed /* = 42 */)
 {
     seed = _seed;
     generator.seed(_seed);
 }
 
-void Random::set_seed(unsigned _seed)
+void Random::set_seed(uint _seed)
 {
     seed = _seed;
     generator.seed(_seed);
@@ -3017,6 +4312,12 @@ double Random::sample_real_uniform(double a, double b)
     return (b - a)*unif_sample + a;
 }
 
+double Random::sample_int_uniform(int a, int b)
+{
+    std::uniform_int_distribution<> unif_int_distr(a, b);
+    return unif_int_distr(generator);
+}
+
 double Random::sample_gaussian(double mu, double sigma)
 {
     assert ( sigma > 0  && "Standard deviation must be positive.");
@@ -3024,7 +4325,7 @@ double Random::sample_gaussian(double mu, double sigma)
     return mu + sigma*standard_sample;
 }
 
-int Random::get_seed()
+uint Random::get_seed()
 {
     return seed;
 }
@@ -3032,6 +4333,221 @@ int Random::get_seed()
 } // namespace rand
 } // namesmape utils
 } // namespace rlly
+namespace rlly
+{
+namespace env
+{
+
+ChangingWallSquareWorld::ChangingWallSquareWorld(int _period): period(_period)
+{
+    id = "ChangingWallSquareWorld";
+    state.push_back(start_x);
+    state.push_back(start_y);
+
+    // observation and action spaces
+    std::vector<double> _low  = {0.0, 0.0};
+    std::vector<double> _high = {1.0, 1.0};
+    observation_space.set_bounds(_low, _high);
+    action_space.set_n(4);
+
+    // set seed
+    int _seed = std::rand();
+    set_seed(_seed);
+
+    // SquareWorld supports 2d rendering
+    refresh_interval_for_render2d = 500;
+    clipping_area_for_render2d[0] = 0.0;
+    clipping_area_for_render2d[1] = 1.0;
+    clipping_area_for_render2d[2] = 0.0;
+    clipping_area_for_render2d[3] = 1.0;
+}
+
+env::StepResult<std::vector<double>> ChangingWallSquareWorld::step(int action)
+{
+    // get current env parameters
+    double goal_x  = goal_x_vec[current_configuration];
+    double goal_y  = goal_y_vec[current_configuration];
+
+    if (rendering_enabled)
+    { 
+        // state for rendering -> the renderer needs to know the wall and reward positions!
+        double wall_x0 = wall_x0_vec[current_configuration];
+        double wall_x1 = wall_x1_vec[current_configuration]; 
+        double wall_y0 = wall_y0_vec[current_configuration]; 
+        double wall_y1 = wall_y1_vec[current_configuration]; 
+
+        std::vector<double> state_with_env_info = state;
+        state_with_env_info.push_back(goal_x);
+        state_with_env_info.push_back(goal_y);
+        state_with_env_info.push_back(wall_x0);
+        state_with_env_info.push_back(wall_x1);
+        state_with_env_info.push_back(wall_y0);
+        state_with_env_info.push_back(wall_y1);
+        append_state_for_rendering(state_with_env_info);
+    }
+
+    //
+    bool done = false; 
+    double reward = std::exp( -0.5*(std::pow(state[0]-goal_x, 2) + std::pow(state[1]-goal_y, 2))/(std::pow(reward_smoothness, 2)));
+    reward += randgen.sample_gaussian(0, reward_noise_stdev);
+
+    double noise_x = randgen.sample_gaussian(0, transition_noise_stdev);
+    double noise_y = randgen.sample_gaussian(0, transition_noise_stdev);
+
+    double prev_x = state[0];
+    double prev_y = state[1];
+
+    // compute action dispacement
+    double action_x, action_y;
+    if      (action == 0)
+    {
+        action_x = action_0_displacement_vec[current_configuration][0];
+        action_y = action_0_displacement_vec[current_configuration][1];
+    }
+    else if (action == 1)
+    {
+        action_x = action_1_displacement_vec[current_configuration][0];
+        action_y = action_1_displacement_vec[current_configuration][1];
+    }
+    else if (action == 2)
+    {
+        action_x = action_2_displacement_vec[current_configuration][0];
+        action_y = action_2_displacement_vec[current_configuration][1];
+    }
+    else if (action == 3)
+    {
+        action_x = action_3_displacement_vec[current_configuration][0];
+        action_y = action_3_displacement_vec[current_configuration][1];        
+    }
+    state[0] = state[0] + action_x + noise_x;
+    state[1] = state[1] + action_y + noise_y;
+    clip_to_domain(state[0], state[1]);
+
+    // Check walls
+    double delta_x = state[0] - prev_x;
+    double delta_y = state[1] - prev_y;
+    double xx = prev_x; 
+    double yy = prev_y;
+    int N = 10;
+    double eps_x = delta_x / N;
+    double eps_y = delta_y / N;
+    for(int ii = 1; ii <= N; ii++)
+    {
+        if( ! is_inside_wall( xx + eps_x, yy + eps_y) )
+        {
+            xx = xx + eps_x;
+            yy = yy + eps_y;
+        }
+    }
+    clip_to_domain(xx, yy);
+    state[0] = xx;
+    state[1] = yy;
+
+    env::StepResult<std::vector<double>> result(state, reward, done);
+    return result;
+}
+
+void ChangingWallSquareWorld::clip_to_domain(double &xx, double &yy)
+{
+    xx = std::max(0.0, xx);
+    xx = std::min(1.0, xx);
+    yy = std::max(0.0, yy);
+    yy = std::min(1.0, yy);
+}
+
+bool ChangingWallSquareWorld::is_inside_wall(double xx, double yy)
+{
+    double wall_x0 = wall_x0_vec[current_configuration];
+    double wall_x1 = wall_x1_vec[current_configuration]; 
+    double wall_y0 = wall_y0_vec[current_configuration]; 
+    double wall_y1 = wall_y1_vec[current_configuration]; 
+    clip_to_domain(xx, yy);
+    bool flag = false;
+    flag = flag ||  ( xx <= wall_x1 && xx >= wall_x0 && yy <= wall_y1 && yy >= wall_y0);
+    return flag;
+}
+
+std::vector<double> ChangingWallSquareWorld::reset()
+{
+    // increase episode counter
+    current_episode += 1;
+    // change wall position according to period
+    if (current_episode % period == 0)
+    {
+        // current_configuration = (current_configuration + 1) % n_configurations;
+        current_configuration = randgen.sample_int_uniform(0, n_configurations-1);
+    }
+    // set initial state
+    std::vector<double> initial_state {start_x, start_y};
+    state = initial_state;
+    return initial_state; 
+}
+
+std::unique_ptr<ContinuousStateEnv> ChangingWallSquareWorld::clone() const
+{
+    return std::make_unique<ChangingWallSquareWorld>(*this);
+}
+
+utils::render::Scene2D ChangingWallSquareWorld::get_scene_for_render2d(std::vector<double> state_var)
+{
+    double goal_x  = state_var[2];
+    double goal_y  = state_var[3];
+    double wall_x0 = state_var[4];
+    double wall_x1 = state_var[5];
+    double wall_y0 = state_var[6];
+    double wall_y1 = state_var[7];
+
+    utils::render::Scene2D agent_scene;
+    utils::render::Geometric2D agent;
+    agent.type = "GL_QUADS";
+    agent.set_color(0.75, 0.0, 0.5);
+
+    float size = 0.025;
+    float x = state_var[0];
+    float y = state_var[1];
+    agent.add_vertex(x-size/4.0, y-size);
+    agent.add_vertex(x+size/4.0, y-size);
+    agent.add_vertex(x+size/4.0, y+size);
+    agent.add_vertex(x-size/4.0, y+size);
+
+    agent.add_vertex(x-size, y-size/4.0);
+    agent.add_vertex(x+size, y-size/4.0);
+    agent.add_vertex(x+size, y+size/4.0);
+    agent.add_vertex(x-size, y+size/4.0);
+
+    agent_scene.add_shape(agent);
+
+    // wall visualization
+    utils::render::Geometric2D wall_1;
+    wall_1.type = "GL_QUADS";
+    wall_1.set_color(0.0, 0.0, 0.0);
+    wall_1.add_vertex(wall_x0, wall_y0);
+    wall_1.add_vertex(wall_x0, wall_y1);
+    wall_1.add_vertex(wall_x1, wall_y1);
+    wall_1.add_vertex(wall_x1, wall_y0);    
+    agent_scene.add_shape(wall_1);
+
+    // Flag
+    utils::render::Geometric2D flag;
+    flag.set_color(0.0, 0.5, 0.0);
+    flag.type     = "GL_TRIANGLES";
+    flag.add_vertex(goal_x, goal_y);
+    flag.add_vertex(goal_x+0.025f, goal_y+0.075f);
+    flag.add_vertex(goal_x-0.025f, goal_y+0.075f);
+    agent_scene.add_shape(flag);
+
+    return agent_scene;
+}
+
+utils::render::Scene2D ChangingWallSquareWorld::get_background_for_render2d()
+{
+    utils::render::Scene2D background;
+    
+    return background;
+}
+
+}  // namespace env
+}  // namespace rlly
 namespace rlly
 {
 namespace utils
@@ -3083,5 +4599,180 @@ int binary_search_nd(std::vector<double> d_val, std::vector<std::vector<double>>
 
 }
 }
+namespace rlly
+{
+namespace env
+{
+
+ChangingSquareWorld::ChangingSquareWorld(int _period, 
+                                         bool _changing_reward /*= true*/, 
+                                         bool _changing_transition /*= true */): 
+                                         period(_period),
+                                         changing_reward(_changing_reward),
+                                         changing_transition(_changing_transition)
+{
+    id = "ChangingSquareWorld";
+    state.push_back(start_x);
+    state.push_back(start_y);
+
+    // observation and action spaces
+    std::vector<double> _low  = {0.0, 0.0};
+    std::vector<double> _high = {1.0, 1.0};
+    observation_space.set_bounds(_low, _high);
+    action_space.set_n(4);
+
+    // set seed
+    int _seed = std::rand();
+    set_seed(_seed);
+
+    // SquareWorld supports 2d rendering
+    refresh_interval_for_render2d = 500;
+    clipping_area_for_render2d[0] = 0.0;
+    clipping_area_for_render2d[1] = 1.0;
+    clipping_area_for_render2d[2] = 0.0;
+    clipping_area_for_render2d[3] = 1.0;
+}
+
+env::StepResult<std::vector<double>> ChangingSquareWorld::step(int action)
+{
+    double goal_x = goal_x_vec[current_reward_configuration];
+    double goal_y = goal_y_vec[current_reward_configuration];
+
+    if (rendering_enabled)
+    { 
+        std::vector<double> state_with_env_info = state;
+        state_with_env_info.push_back(goal_x);
+        state_with_env_info.push_back(goal_y);
+        append_state_for_rendering(state_with_env_info);
+    }
+
+    //
+    bool done = false; 
+    double reward = std::exp( -0.5*(std::pow(state[0]-goal_x, 2) + std::pow(state[1]-goal_y, 2))/(std::pow(reward_smoothness, 2)));
+    reward += randgen.sample_gaussian(0, reward_noise_stdev);
+
+    double noise_x = randgen.sample_gaussian(0, transition_noise_stdev);
+    double noise_y = randgen.sample_gaussian(0, transition_noise_stdev);
+
+    // compute action dispacement
+    double action_x, action_y;
+    if      (action == 0)
+    {
+        action_x = action_0_displacement_vec[current_transition_configuration][0];
+        action_y = action_0_displacement_vec[current_transition_configuration][1];
+    }
+    else if (action == 1)
+    {
+        action_x = action_1_displacement_vec[current_transition_configuration][0];
+        action_y = action_1_displacement_vec[current_transition_configuration][1];
+    }
+    else if (action == 2)
+    {
+        action_x = action_2_displacement_vec[current_transition_configuration][0];
+        action_y = action_2_displacement_vec[current_transition_configuration][1];
+    }
+    else if (action == 3)
+    {
+        action_x = action_3_displacement_vec[current_transition_configuration][0];
+        action_y = action_3_displacement_vec[current_transition_configuration][1];        
+    }
+    state[0] = state[0] + action_x + noise_x;
+    state[1] = state[1] + action_y + noise_y;
+    clip_to_domain(state[0], state[1]);
+
+    env::StepResult<std::vector<double>> result(state, reward, done);
+    return result;
+}
+
+void ChangingSquareWorld::clip_to_domain(double &xx, double &yy)
+{
+    xx = std::max(0.0, xx);
+    xx = std::min(1.0, xx);
+    yy = std::max(0.0, yy);
+    yy = std::min(1.0, yy);
+}
+
+std::vector<double> ChangingSquareWorld::reset()
+{
+    // increase episode counter
+    current_episode += 1;
+    // change environment according to period
+    if (current_episode % period == 0)
+    {
+        // current_configuration = (current_configuration + 1) % n_configurations;
+        if (changing_transition)
+        {
+            int new_config = randgen.sample_int_uniform(0, n_configurations-1);
+            if (new_config != current_transition_configuration)
+                current_transition_configuration = new_config;
+            else 
+                current_transition_configuration = (current_transition_configuration + 1) % n_configurations;
+        }
+        if(changing_reward)
+        {
+            int new_config = randgen.sample_int_uniform(0, n_configurations-1);
+            if (new_config != current_reward_configuration)
+                current_reward_configuration = new_config;
+            else 
+                current_reward_configuration = (current_reward_configuration + 1) % n_configurations;
+        }
+    }
+    // set initial state
+    std::vector<double> initial_state {start_x, start_y};
+    state = initial_state;
+    return initial_state; 
+}
+
+std::unique_ptr<ContinuousStateEnv> ChangingSquareWorld::clone() const
+{
+    return std::make_unique<ChangingSquareWorld>(*this);
+}
+
+utils::render::Scene2D ChangingSquareWorld::get_scene_for_render2d(std::vector<double> state_var)
+{
+    double goal_x  = state_var[2];
+    double goal_y  = state_var[3];
+
+    utils::render::Scene2D agent_scene;
+    utils::render::Geometric2D agent;
+    agent.type = "GL_QUADS";
+    agent.set_color(0.75, 0.0, 0.5);
+
+    float size = 0.025;
+    float x = state_var[0];
+    float y = state_var[1];
+    agent.add_vertex(x-size/4.0, y-size);
+    agent.add_vertex(x+size/4.0, y-size);
+    agent.add_vertex(x+size/4.0, y+size);
+    agent.add_vertex(x-size/4.0, y+size);
+
+    agent.add_vertex(x-size, y-size/4.0);
+    agent.add_vertex(x+size, y-size/4.0);
+    agent.add_vertex(x+size, y+size/4.0);
+    agent.add_vertex(x-size, y+size/4.0);
+
+    agent_scene.add_shape(agent);
+
+    // Flag
+    utils::render::Geometric2D flag;
+    flag.set_color(0.0, 0.5, 0.0);
+    flag.type     = "GL_TRIANGLES";
+    flag.add_vertex(goal_x, goal_y);
+    flag.add_vertex(goal_x+0.025f, goal_y+0.075f);
+    flag.add_vertex(goal_x-0.025f, goal_y+0.075f);
+    agent_scene.add_shape(flag);
+
+    return agent_scene;
+}
+
+utils::render::Scene2D ChangingSquareWorld::get_background_for_render2d()
+{
+    utils::render::Scene2D background;
+    
+    return background;
+}
+
+}  // namespace env
+}  // namespace rlly
 
  #endif

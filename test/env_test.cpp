@@ -201,6 +201,35 @@ TEST_CASE( "Testing SquareWorld", "[squareworld]" )
     REQUIRE( (*unique_p_env).observation_space.contains(env.reset()) ); 
 }
 
+TEST_CASE( "Testing ChasingBlobs", "[chasingblobs]" )
+{   
+    rlly::env::ChasingBlobs env(10);
+    rlly::env::ContinuousStateEnv& p_env = env;
+    auto unique_p_env = env.clone();
+
+    REQUIRE( env.id.compare("ChasingBlobs") == 0);
+    REQUIRE(env.observation_space.name == rlly::spaces::box);
+    REQUIRE(env.action_space.name == rlly::spaces::discrete);
+
+    auto step_result = env.step(env.action_space.sample());
+    REQUIRE( env.observation_space.contains(step_result.next_state) );
+
+
+    REQUIRE( p_env.id.compare("ChasingBlobs") == 0);
+    REQUIRE( p_env.observation_space.name == rlly::spaces::box);
+    REQUIRE( p_env.action_space.name == rlly::spaces::discrete);
+    REQUIRE( p_env.action_space.n == 4 );
+    REQUIRE( p_env.observation_space.n == -1 );
+    REQUIRE( p_env.observation_space.contains(env.reset()) ); 
+
+    REQUIRE( (*unique_p_env).id.compare("ChasingBlobs") == 0);
+    REQUIRE( (*unique_p_env).observation_space.name == rlly::spaces::box);
+    REQUIRE( (*unique_p_env).action_space.name == rlly::spaces::discrete);
+    REQUIRE( (*unique_p_env).action_space.n == 4 );
+    REQUIRE( (*unique_p_env).observation_space.n == -1 );
+    REQUIRE( (*unique_p_env).observation_space.contains(env.reset()) ); 
+}
+
 
 TEST_CASE( "Testing WallSquareWorld", "[wallsquareworld]" )
 {   
@@ -268,6 +297,8 @@ TEST_CASE( "Testing Factory", "[factory]" )
     rlly::env::ContinuousStateEnv* p_env_4;
     rlly::env::ContinuousStateEnv* p_env_5;
     rlly::env::ContinuousStateEnv* p_env_6;
+    rlly::env::ContinuousStateEnv* p_env_7;
+
     
     rlly::utils::params::Params env_params;
     env_params.append("period", 12345);
@@ -278,7 +309,7 @@ TEST_CASE( "Testing Factory", "[factory]" )
     p_env_4 = rlly::env::make_continuous_state_env("WallSquareWorld");
     p_env_5 = rlly::env::make_continuous_state_env("ChangingWallSquareWorld", &env_params);
     p_env_6 = rlly::env::make_continuous_state_env("ChangingSquareWorld", &env_params);
-
+    p_env_7 = rlly::env::make_continuous_state_env("ChasingBlobs", &env_params);
 
     REQUIRE( p_env_1->id.compare("SquareWorld") == 0);
     REQUIRE( p_env_2->id.compare("MountainCar") == 0);
@@ -286,11 +317,15 @@ TEST_CASE( "Testing Factory", "[factory]" )
     REQUIRE( p_env_4->id.compare("WallSquareWorld")    == 0);
     REQUIRE( p_env_5->id.compare("ChangingWallSquareWorld")  == 0);
     REQUIRE( p_env_6->id.compare("ChangingSquareWorld")  == 0);
-
+    REQUIRE( p_env_7->id.compare("ChasingBlobs")  == 0);
 
     delete p_env_1;
     delete p_env_2;
     delete p_env_3;
+    delete p_env_4;
+    delete p_env_5;
+    delete p_env_6;
+    delete p_env_7;
 }
 
 

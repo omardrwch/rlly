@@ -34,6 +34,11 @@ ContinuousStateEnv*  make_continuous_state_env(std::string env_name, utils::para
         if(env_params != nullptr && env_params->is_defined("period", "int"))
             return new ChangingSquareWorld(env_params->int_params["period"], true, false); 
     }
+    else if(env_name == "ChasingBlobs")
+    {
+        if(env_params != nullptr && env_params->is_defined("period", "int"))
+            return new ChasingBlobs(env_params->int_params["period"]); 
+    }
     std::cerr << " Error! Invalid name or missing parameters in make_continuous_state_env. Returning nullptr" << std::endl;
     return nullptr;
 }

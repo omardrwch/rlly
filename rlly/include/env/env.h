@@ -18,6 +18,7 @@
 #include "wallsquareworld.h"
 #include "changingsquareworld.h"
 #include "changingwallsquareworld.h"
+#include "chasingblobs.h"
 #include "movingball.h"
 
 /**

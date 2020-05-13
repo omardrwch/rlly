@@ -1,6 +1,6 @@
 /*
     To run this example:
-    $ bash scripts/compile.sh cartpole_example && ./build/examples/cartpole_example
+    $ bash scripts/compile_examples.sh cartpole_example && ./examples/build/cartpole_example
 */
 
 #include <iostream>

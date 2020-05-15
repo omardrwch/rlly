@@ -302,10 +302,19 @@ TEST_CASE( "Testing Factory", "[factory]" )
     rlly::env::ContinuousStateEnv* p_env_5;
     rlly::env::ContinuousStateEnv* p_env_6;
     rlly::env::ContinuousStateEnv* p_env_7;
+    rlly::env::FiniteEnv* p_env_8;
+
 
     
     rlly::utils::params::Params env_params;
+    rlly::utils::params::Params env_params_gridworld;
+
     env_params.append("period", 12345);
+    env_params_gridworld.append("nrows", 10);
+    env_params_gridworld.append("ncols", 10);
+    env_params_gridworld.append("fail_p",            0.1);
+    env_params_gridworld.append("reward_smoothness", 0.1);
+    env_params_gridworld.append("reward_sigma",      0.1);
 
     p_env_1 = rlly::env::make_continuous_state_env("SquareWorld");
     p_env_2 = rlly::env::make_continuous_state_env("MountainCar");
@@ -314,6 +323,7 @@ TEST_CASE( "Testing Factory", "[factory]" )
     p_env_5 = rlly::env::make_continuous_state_env("ChangingWallSquareWorld", &env_params);
     p_env_6 = rlly::env::make_continuous_state_env("ChangingSquareWorld", &env_params);
     p_env_7 = rlly::env::make_continuous_state_env("ChasingBlobs", &env_params);
+    p_env_8 = rlly::env::make_finite_env("GridWorld", &env_params_gridworld);
 
     REQUIRE( p_env_1->id.compare("SquareWorld") == 0);
     REQUIRE( p_env_2->id.compare("MountainCar") == 0);
@@ -322,6 +332,9 @@ TEST_CASE( "Testing Factory", "[factory]" )
     REQUIRE( p_env_5->id.compare("ChangingWallSquareWorld")  == 0);
     REQUIRE( p_env_6->id.compare("ChangingSquareWorld")  == 0);
     REQUIRE( p_env_7->id.compare("ChasingBlobs")  == 0);
+    REQUIRE( p_env_8->id.compare("GridWorld")  == 0);
+    REQUIRE( p_env_8->observation_space.n == 100);
+
 
     delete p_env_1;
     delete p_env_2;
@@ -330,6 +343,7 @@ TEST_CASE( "Testing Factory", "[factory]" )
     delete p_env_5;
     delete p_env_6;
     delete p_env_7;
+    delete p_env_8;
 }
 
 

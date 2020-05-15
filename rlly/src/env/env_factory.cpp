@@ -9,6 +9,27 @@ namespace env
 
 FiniteEnv* make_finite_env(std::string env_name, utils::params::Params* env_params /*= nullptr*/)
 {
+    if (env_name == "GridWorld")
+    {
+        //  GridWorld(int _nrows, int _ncols, double fail_p = 0, double reward_smoothness = 0, double reward_sigma = 0)
+        if(env_params != nullptr 
+           && env_params->is_defined("nrows", "int")
+           && env_params->is_defined("ncols", "int") 
+           && env_params->is_defined("fail_p", "double")
+           && env_params->is_defined("reward_smoothness", "double")
+           && env_params->is_defined("reward_sigma", "double") 
+           )
+        {
+            return new GridWorld( 
+                                env_params->int_params["nrows"],
+                                env_params->int_params["ncols"],
+                                env_params->double_params["fail_p"],
+                                env_params->double_params["reward_smoothness"],
+                                env_params->double_params["reward_sigma"]
+                                );
+        }
+    }
+    std::cerr << " Error! Invalid name or missing parameters in make_finite_env. Returning nullptr" << std::endl;
     return nullptr;
 }
 
@@ -46,11 +67,14 @@ ContinuousStateEnv*  make_continuous_state_env(std::string env_name, utils::para
 ContinuousEnv*       make_continuous_env(std::string env_name, utils::params::Params* env_params /*= nullptr*/)
 {
     if       (env_name == "MovingBall") return new MovingBall();
+    
+    std::cerr << " Error! Invalid name or missing parameters in make_continuous_env. Returning nullptr" << std::endl;
     return nullptr;
 }
 
 ContinuousActionEnv* make_continuous_action_env(std::string env_name, utils::params::Params* env_params /*= nullptr*/)
 {
+    std::cerr << " Error! Invalid name or missing parameters in make_continuous_action_env. Returning nullptr" << std::endl;
     return nullptr;
 }
 

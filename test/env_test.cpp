@@ -90,7 +90,11 @@ TEST_CASE( "Testing GridWorld", "[gridworld]" )
     REQUIRE( p_env.action_space.n == 4 );
     REQUIRE( p_env.observation_space.n == 50 );  
 
-
+    for(int ii = 0; ii < env.observation_space.n; ii++)
+    {
+        env.set_state(ii);
+        REQUIRE(env.get_state() == ii);
+    }
 
     REQUIRE( env.reset() == 0);  
     REQUIRE( (env.index2coord[0][0] == 0 &&  env.index2coord[0][1] == 0) );

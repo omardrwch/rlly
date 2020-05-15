@@ -70,6 +70,11 @@ public:
     void render_values(std::vector<double> values);
 
     /**
+     * Set state
+     */
+    void set_state(int state) override;
+
+    /**
      * Step function (overriden for storing states for rendering)
      */ 
     StepResult<int> step(int action) override;

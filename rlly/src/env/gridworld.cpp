@@ -199,6 +199,10 @@ void GridWorld::render_values(std::vector<double> values)
     std::cout << std::endl;       
 }
 
+void GridWorld::set_state(int state)
+{
+    this->state = state;
+}
 
 StepResult<int> GridWorld::step(int action)
 {

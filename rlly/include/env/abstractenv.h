@@ -71,6 +71,23 @@ public:
     virtual StepResult<S_type> step(A_type action)=0;
 
     /**
+     * Function to clone the environment
+     */
+    virtual std::unique_ptr<Env<S_space, A_space>> clone() const = 0;
+
+    /**
+     * @brief Return current state of the MDP
+     */
+    virtual S_type get_state(){ return state; };
+
+    /**
+     * @brief Set state of the environment. Not necessarily implemented, but
+     * allows the environment to be used in algorithms that require a 
+     * simulator/generative model.
+     */
+    virtual void set_state(S_type state){ throw "Error: set_state() not implemented for this environment."; };
+
+    /**
      *  Environment identifier
      */
     std::string id;
@@ -79,11 +96,6 @@ public:
     * For random number generation
     */
     utils::rand::Random randgen;
-
-    /**
-     * Function to clone the environment
-     */
-    virtual std::unique_ptr<Env<S_space, A_space>> clone() const = 0;
 
     /**
      * Set the seed of randgen and seed of action space and observation space
